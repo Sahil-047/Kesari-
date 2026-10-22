@@ -89,18 +89,18 @@ export function getIstLightState(now = new Date()): IstLightState {
   const noon =
     smoothstep(10.2, 11.8, hour) * (1 - smoothstep(13.8, 15.2, hour));
 
-  // Dark-pop: crushed fill, warm punchy key, richer saffron accent.
-  const ambient = 0.08 + dayFactor * 0.16 + golden * 0.03;
-  const hemi = 0.12 + dayFactor * 0.22;
-  const key = 0.62 + dayFactor * 1.2 + noon * 0.3 + golden * 0.28;
-  const shaft = 0.18 + dayFactor * 0.38 + golden * 0.48 + morning * 0.2;
-  const saffron = 0.16 + morning * 0.42 + golden * 0.38;
-  const rim = 0.08 + dayFactor * 0.12 + golden * 0.12;
+  // Higher contrast: lower fill, harder key, deeper shadows.
+  const ambient = 0.05 + dayFactor * 0.11 + golden * 0.02;
+  const hemi = 0.08 + dayFactor * 0.16;
+  const key = 0.75 + dayFactor * 1.35 + noon * 0.35 + golden * 0.32;
+  const shaft = 0.14 + dayFactor * 0.32 + golden * 0.42 + morning * 0.18;
+  const saffron = 0.18 + morning * 0.45 + golden * 0.4;
+  const rim = 0.06 + dayFactor * 0.1 + golden * 0.1;
   const door = 0.35 + dayFactor * 0.35 + golden * 0.45 + (1 - dayFactor) * 0.25;
   const ember = 0.15 + (1 - dayFactor) * 0.45 + golden * 0.28;
   const spot = 0.4 + dayFactor * 0.85 + golden * 0.55;
   const spot2 = 0.25 + dayFactor * 0.55 + golden * 0.35;
-  const exposure = 0.58 + dayFactor * 0.28 + golden * 0.1;
+  const exposure = 0.52 + dayFactor * 0.24 + golden * 0.08;
 
   let keyColor = "#f0d8a0";
   let shaftColor = "#ffe4b0";

@@ -114,61 +114,61 @@ function ageWarmMaterials(root: THREE.Object3D) {
       std.emissive = new THREE.Color(0x000000);
       std.emissiveIntensity = 0;
 
-      // Deepen + pop saturation in HSL so terracotta / wood read darker-rich.
+      // Deeper lows + richer chroma for higher model contrast.
       const hsl = { h: 0, s: 0, l: 0 };
       std.color.getHSL(hsl);
       std.color.setHSL(
         hsl.h,
-        Math.min(1, hsl.s * 1.35 + 0.06),
-        Math.max(0.08, hsl.l * 0.78),
+        Math.min(1, hsl.s * 1.42 + 0.08),
+        Math.max(0.06, hsl.l * 0.68),
       );
 
       if (isMetal) {
-        std.color.lerp(AGE_BRONZE, 0.22);
-        std.metalness = Math.min(1, (std.metalness ?? 0.4) * 0.7 + 0.16);
-        std.roughness = Math.min(1, (std.roughness ?? 0.5) + 0.2);
+        std.color.lerp(AGE_BRONZE, 0.26);
+        std.metalness = Math.min(1, (std.metalness ?? 0.4) * 0.7 + 0.18);
+        std.roughness = Math.min(1, (std.roughness ?? 0.5) + 0.16);
       } else {
-        std.color.lerp(AGE_SHADOW, 0.16);
+        std.color.lerp(AGE_SHADOW, 0.22);
         std.metalness = Math.min(std.metalness ?? 0, 0.04);
-        std.roughness = Math.min(1, (std.roughness ?? 0.7) + 0.16);
+        std.roughness = Math.min(1, (std.roughness ?? 0.7) + 0.12);
       }
 
-      if ("envMapIntensity" in std) std.envMapIntensity = 0.14;
+      if ("envMapIntensity" in std) std.envMapIntensity = 0.1;
       std.needsUpdate = true;
     }
   });
 }
 
 function addWarmLighting(scene: THREE.Scene) {
-  // Lower fill, punchier key — dark pop with readable carved shadows.
-  const ambient = new THREE.AmbientLight("#e8d4b0", 0.2);
+  // Harder contrast: crushed fill, brighter key, sharper relief shadows.
+  const ambient = new THREE.AmbientLight("#e0c8a0", 0.12);
   scene.add(ambient);
 
-  const hemi = new THREE.HemisphereLight("#f0e0c4", "#5a3018", 0.28);
+  const hemi = new THREE.HemisphereLight("#edd8b0", "#3a1c0c", 0.18);
   scene.add(hemi);
 
-  const key = new THREE.DirectionalLight("#f0c878", 1.45);
+  const key = new THREE.DirectionalLight("#f2cc7a", 1.7);
   key.position.set(2.5, 5, 12);
   key.castShadow = true;
   key.shadow.mapSize.set(4096, 4096);
   key.shadow.bias = -0.00008;
-  key.shadow.normalBias = 0.018;
-  key.shadow.radius = 1.75;
+  key.shadow.normalBias = 0.016;
+  key.shadow.radius = 1.1;
   key.shadow.camera.near = 0.5;
   key.shadow.camera.far = 80;
   key.shadow.autoUpdate = true;
   scene.add(key);
   scene.add(key.target);
 
-  const shaft = new THREE.DirectionalLight("#ffd089", 0.42);
+  const shaft = new THREE.DirectionalLight("#ffd089", 0.38);
   shaft.position.set(-1.5, 8, 6);
   scene.add(shaft);
 
-  const saffron = new THREE.DirectionalLight("#b84818", 0.32);
+  const saffron = new THREE.DirectionalLight("#b84818", 0.36);
   saffron.position.set(-7, 2, 8);
   scene.add(saffron);
 
-  const rim = new THREE.DirectionalLight("#6a3218", 0.18);
+  const rim = new THREE.DirectionalLight("#4a2410", 0.14);
   rim.position.set(6, 1, -3);
   scene.add(rim);
 
@@ -257,7 +257,7 @@ export function FacadeHero() {
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.86;
+    renderer.toneMappingExposure = 0.78;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     mount.appendChild(renderer.domElement);
@@ -496,7 +496,7 @@ export function FacadeHero() {
         className="pointer-events-none absolute inset-0 z-[1] transition-opacity duration-[2000ms]"
         style={{
           background: `
-            linear-gradient(180deg, rgba(40, 22, 10, 0.08) 0%, rgba(50, 24, 10, 0.22) 100%)
+            linear-gradient(180deg, rgba(40, 22, 10, 0.12) 0%, rgba(40, 18, 8, 0.3) 100%)
           `,
           mixBlendMode: "multiply",
         }}
@@ -513,7 +513,7 @@ export function FacadeHero() {
         className="pointer-events-none absolute inset-0 z-[5]"
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 44%, rgba(28, 14, 6, 0.42) 100%)",
+            "radial-gradient(ellipse at center, transparent 40%, rgba(22, 10, 4, 0.5) 100%)",
         }}
         aria-hidden="true"
       />
