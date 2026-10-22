@@ -1,0 +1,350 @@
+.kesari-opening {
+  --p: 0;
+  --paper: #e7d6b4;
+  --paper-deep: #d3bc93;
+  --ink: #1a1510;
+  --ink-soft: #3f3528;
+  --gold: #9a7434;
+  --gold-bright: #c9a45c;
+  --saffron: #c45a22;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 200;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  color: var(--ink);
+  isolation: isolate;
+}
+
+.kesari-opening[hidden] {
+  display: none;
+}
+
+.ko-curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.1%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  transition: transform 1.25s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.ko-curtain.is-left {
+  left: 0;
+  background:
+    radial-gradient(circle at 10% 82%, rgba(110, 52, 22, 0.38) 0 16%, transparent 38%),
+    radial-gradient(circle at 40% 8%, rgba(90, 48, 20, 0.18) 0 12%, transparent 32%),
+    linear-gradient(90deg, #b89a6c 0%, #d4bc94 48%, #e6d4b0 100%);
+  box-shadow: inset -22px 0 36px rgba(70, 42, 18, 0.34);
+}
+
+.ko-curtain.is-right {
+  right: 0;
+  background:
+    radial-gradient(circle at 90% 14%, rgba(96, 50, 22, 0.32) 0 14%, transparent 36%),
+    radial-gradient(circle at 70% 92%, rgba(80, 40, 18, 0.2) 0 12%, transparent 34%),
+    linear-gradient(270deg, #b49368 0%, #d0b68c 48%, #e4d0aa 100%);
+  box-shadow: inset 22px 0 36px rgba(70, 42, 18, 0.34);
+}
+
+.kesari-opening.is-exit .ko-curtain.is-left {
+  transform: translateX(-102%);
+}
+
+.kesari-opening.is-exit .ko-curtain.is-right {
+  transform: translateX(102%);
+}
+
+.ko-stage {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding:
+    max(1.5rem, env(safe-area-inset-top))
+    max(1.25rem, env(safe-area-inset-right))
+    max(1.5rem, env(safe-area-inset-bottom))
+    max(1.25rem, env(safe-area-inset-left));
+  transform-origin: 50% 42%;
+  transition:
+    transform 1.25s cubic-bezier(0.19, 1, 0.22, 1),
+    opacity 0.85s ease;
+}
+
+.kesari-opening.is-exit .ko-stage {
+  transform: scale(1.06);
+  opacity: 0;
+}
+
+.ko-glow {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  width: clamp(220px, 54vw, 520px);
+  height: clamp(220px, 54vw, 520px);
+  translate: -50% -52%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(201, 164, 92, calc(0.12 + var(--p) * 0.38)) 0%,
+    rgba(196, 90, 34, calc(0.08 + var(--p) * 0.2)) 34%,
+    transparent 70%
+  );
+}
+
+.ko-arch {
+  position: relative;
+  width: clamp(176px, 42vw, 320px);
+  height: auto;
+  overflow: visible;
+}
+
+.ko-arch svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.ko-draw {
+  fill: none;
+  stroke: var(--gold);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.ko-draw.is-outer {
+  stroke-width: 1.7;
+  animation: ko-draw 2.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.ko-draw.is-inner {
+  stroke-width: 1.15;
+  stroke: var(--gold-bright);
+  animation: ko-draw 2.6s cubic-bezier(0.22, 1, 0.36, 1) 0.9s forwards;
+}
+
+.ko-finial,
+.ko-plinth {
+  fill: none;
+  stroke: var(--gold);
+  stroke-linecap: round;
+  opacity: 0;
+  animation: ko-fade 0.9s ease 1.6s forwards;
+}
+
+.ko-finial-dot {
+  fill: var(--gold-bright);
+  opacity: 0;
+  animation: ko-fade 0.7s ease 1.85s forwards;
+}
+
+.ko-jali-dim {
+  opacity: 0.28;
+}
+
+.ko-jali-lit {
+  opacity: 0.95;
+}
+
+.ko-copy {
+  position: relative;
+  margin-top: clamp(1.1rem, 3vh, 2rem);
+  text-align: center;
+}
+
+.ko-word {
+  margin: 0;
+  font-family: var(--font-cinzel), "Palatino Linotype", serif;
+  font-size: clamp(1.35rem, 4.2vw, 2.35rem);
+  font-weight: 500;
+  letter-spacing: 0.6em;
+  text-indent: 0.6em;
+  text-transform: uppercase;
+  color: #2a1c12;
+  text-shadow: 0 1px 0 rgba(244, 232, 208, 0.35);
+  opacity: 0;
+  animation: ko-word 2.2s cubic-bezier(0.22, 1, 0.36, 1) 1.15s forwards;
+}
+
+.ko-byline {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-script), "Palatino Linotype", cursive;
+  font-size: clamp(1.15rem, 2.6vw, 1.7rem);
+  color: var(--gold);
+  opacity: 0;
+  animation: ko-fade 1.1s ease 1.7s forwards;
+}
+
+.ko-count {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.18em;
+  margin-top: 0.85rem;
+  font-family: var(--font-tiro), "Noto Serif Devanagari", serif;
+  font-size: clamp(1rem, 2.4vw, 1.35rem);
+  color: var(--ink-soft);
+  opacity: 0;
+  animation: ko-fade 0.8s ease 1.1s forwards;
+}
+
+.ko-count .ko-pct {
+  font-family: var(--font-cormorant), serif;
+  font-size: 0.62em;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+}
+
+.ko-grain,
+.ko-grain-fine,
+.ko-speckle,
+.ko-foxing,
+.ko-fibers,
+.ko-sepia,
+.ko-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 0.7s ease;
+}
+
+.ko-grain,
+.ko-grain-fine,
+.ko-speckle {
+  inset: -30%;
+}
+
+.ko-grain {
+  z-index: 7;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch' seed='7'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: multiply;
+  opacity: 0.48;
+}
+
+.ko-grain-fine {
+  z-index: 8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='3' stitchTiles='stitch' seed='21'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 110px 110px;
+  mix-blend-mode: overlay;
+  opacity: 0.34;
+}
+
+.ko-speckle {
+  z-index: 8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.9' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0.28  0 0 0 0 0.16  0 0 0 0 0.08  0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  mix-blend-mode: multiply;
+  opacity: 0.3;
+}
+
+.ko-fibers {
+  z-index: 4;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(90, 56, 24, 0.045) 0 1px,
+    transparent 1px 7px
+  );
+  opacity: 0.55;
+}
+
+.ko-sepia {
+  z-index: 5;
+  background: rgba(138, 92, 42, 0.16);
+  mix-blend-mode: multiply;
+}
+
+.ko-foxing {
+  z-index: 4;
+  background:
+    radial-gradient(ellipse at 6% 78%, rgba(120, 58, 24, 0.42) 0 10%, transparent 28%),
+    radial-gradient(ellipse at 92% 12%, rgba(96, 48, 20, 0.34) 0 9%, transparent 26%),
+    radial-gradient(ellipse at 18% 8%, rgba(80, 44, 18, 0.22) 0 8%, transparent 24%),
+    radial-gradient(ellipse at 74% 94%, rgba(110, 62, 28, 0.28) 0 11%, transparent 30%),
+    radial-gradient(ellipse at 48% -6%, rgba(70, 42, 18, 0.2) 0 22%, transparent 52%);
+  mix-blend-mode: multiply;
+}
+
+.ko-vignette {
+  z-index: 6;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 26%,
+    rgba(70, 42, 18, 0.32) 68%,
+    rgba(40, 22, 10, 0.62) 100%
+  );
+}
+
+.kesari-opening.is-exit .ko-grain,
+.kesari-opening.is-exit .ko-grain-fine,
+.kesari-opening.is-exit .ko-speckle,
+.kesari-opening.is-exit .ko-foxing,
+.kesari-opening.is-exit .ko-fibers,
+.kesari-opening.is-exit .ko-sepia,
+.kesari-opening.is-exit .ko-vignette {
+  opacity: 0;
+}
+
+@keyframes ko-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ko-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ko-word {
+  to {
+    opacity: 1;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ko-draw.is-outer,
+  .ko-draw.is-inner,
+  .ko-finial,
+  .ko-plinth,
+  .ko-finial-dot,
+  .ko-word,
+  .ko-byline,
+  .ko-count {
+    animation: none;
+    opacity: 1;
+    stroke-dashoffset: 0;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+  }
+
+  .ko-grain {
+    opacity: 0.4;
+  }
+
+  .ko-stage,
+  .ko-curtain {
+    transition-duration: 0.35s;
+  }
+
+  .kesari-opening.is-exit .ko-stage {
+    transform: scale(1.04);
+  }
+}
