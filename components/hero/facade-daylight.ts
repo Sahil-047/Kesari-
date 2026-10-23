@@ -54,7 +54,8 @@ export function daylight(hour: number): Daylight {
   const up = smooth(-1, 8, elevDeg);                       // sun above the horizon
   const kelvin = 2000 + 3600 * smooth(0, 38, elevDeg);
   // Air mass: low sun is dimmer as well as warmer.
-  const sunIntensity = 3.4 * up * (0.35 + 0.65 * smooth(2, 30, elevDeg));
+  // Strong key vs. soft sky fill (≈ 4:1) — the cinematic contrast that makes form read.
+  const sunIntensity = 4.2 * up * (0.35 + 0.65 * smooth(2, 30, elevDeg));
 
   const day = smooth(-8, 15, elevDeg);
   const golden = smooth(-2, 6, elevDeg) * (1 - smooth(10, 22, elevDeg));
@@ -62,7 +63,7 @@ export function daylight(hour: number): Daylight {
     .lerp(new THREE.Color("#9fbbe6"), day)                    // clear daytime sky
     .lerp(new THREE.Color("#d8b9b0"), golden * 0.45);         // pinkish golden-hour sky
   const groundColor = new THREE.Color("#3a3128").lerp(new THREE.Color("#a68e6e"), day);
-  const skyIntensity = 0.18 + 0.9 * day;
+  const skyIntensity = 0.14 + 0.55 * day;
   const night = 1 - smooth(-6, 4, elevDeg);
   // Camera-like exposure: brighter at dusk / night, as a photographer would.
   const exposure = THREE.MathUtils.lerp(1.0, 1.6, night);
@@ -143,7 +144,8 @@ export function trueFacadeMaterials(root: THREE.Object3D) {
         if (!baked) std.roughness = Math.max(std.roughness ?? 0.85, 0.82);
         std.envMapIntensity = 0.35;
       }
-      if (std.normalMap) std.normalScale = new THREE.Vector2(1.1, 1.1);
+      // deeper relief so carving and plaster texture catch the raking sun
+      if (std.normalMap) std.normalScale = new THREE.Vector2(1.45, 1.45);
       std.needsUpdate = true;
     }
   });

@@ -313,7 +313,7 @@ function addWarmLighting(scene: THREE.Scene) {
   key.shadow.mapSize.set(4096, 4096);
   key.shadow.bias = -0.00008;
   key.shadow.normalBias = 0.016;
-  key.shadow.radius = 2.4;
+  key.shadow.radius = 1.5;   // crisp sun edge, still not razor-hard
   key.shadow.camera.near = 0.5;
   key.shadow.camera.far = 80;
   key.shadow.autoUpdate = true;

@@ -129,10 +129,17 @@ const TrueColorShader = {
   `,
 };
 
+/**
+ * Cinematic grade in display space. Outside (facade) it adds clarity — a
+ * midtone local-contrast boost so carving, paint and wood grain read crisply —
+ * a filmic S-curve, a touch more colour, a warm-highlight / cool-shadow split
+ * and a lens vignette. Inside (hall) the same pass stays gentle so products
+ * keep their true colour. `inside` blends between the two.
+ */
 const GradeShader = {
   uniforms: {
     tDiffuse: { value: null as THREE.Texture | null },
-    amount: { value: 0 },
+    inside: { value: 0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -143,26 +150,43 @@ const GradeShader = {
   `,
   fragmentShader: /* glsl */ `
     uniform sampler2D tDiffuse;
-    uniform float amount;
+    uniform float inside;
     varying vec2 vUv;
     const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
     void main() {
       vec4 src = texture2D(tDiffuse, vUv);
       vec3 col = clamp(src.rgb, 0.0, 1.0);
       float l = dot(col, LUMA);
-      vec3 g = col;
-      // Split-tone: teal in the shadows, amber in the highlights.
-      // (kept subtle: products must keep their true colour)
-      g += vec3(-0.012, 0.002, 0.016) * pow(1.0 - l, 2.2);
-      g += vec3(0.02, 0.008, -0.014) * l * l;
+
+      // Clarity: luminance minus a two-ring local mean (≈3 and 7 px), applied
+      // mostly to midtones so highlights and blacks don't clip or halo.
+      vec2 texel = 1.0 / vec2(textureSize(tDiffuse, 0));
+      float mean = 0.0;
+      for (int i = 0; i < 8; i++) {
+        float a = float(i) * 0.785398;
+        vec2 dir = vec2(cos(a), sin(a)) * texel;
+        mean += dot(texture2D(tDiffuse, vUv + dir * 3.0).rgb, LUMA);
+        mean += dot(texture2D(tDiffuse, vUv + dir * 7.0).rgb, LUMA);
+      }
+      mean /= 16.0;
+      float clarity = mix(0.75, 0.25, inside);
+      float mid = 4.0 * l * (1.0 - l);
+      vec3 g = col + (l - mean) * clarity * mid;
       g = clamp(g, 0.0, 1.0);
-      // Filmic S-curve for deeper blacks and rolled highlights.
-      g = mix(g, g * g * (3.0 - 2.0 * g), 0.2);
-      g = mix(vec3(dot(g, LUMA)), g, 1.02);
+      l = dot(g, LUMA);
+
+      // Split-tone: cool shadows, warm highlights (stronger outside).
+      float split = mix(1.0, 0.35, inside);
+      g += vec3(-0.03, 0.004, 0.035) * pow(1.0 - l, 2.2) * split;
+      g += vec3(0.05, 0.02, -0.035) * l * l * split;
+      g = clamp(g, 0.0, 1.0);
+      // Filmic S-curve: deeper blacks, rolled highlights.
+      g = mix(g, g * g * (3.0 - 2.0 * g), mix(0.4, 0.2, inside));
+      g = mix(vec3(dot(g, LUMA)), g, mix(1.12, 1.02, inside));
       // Lens vignette, slightly wider than tall.
       vec2 d = (vUv - 0.5) * vec2(1.0, 0.82);
-      g *= mix(0.6, 1.0, smoothstep(0.78, 0.18, length(d)));
-      gl_FragColor = vec4(mix(col, clamp(g, 0.0, 1.0), amount), src.a);
+      g *= mix(mix(0.66, 0.6, inside), 1.0, smoothstep(0.8, 0.2, length(d)));
+      gl_FragColor = vec4(clamp(g, 0.0, 1.0), src.a);
     }
   `,
 };
@@ -222,8 +246,8 @@ export function createHallPost(
       // Contact shadows everywhere: carved relief, door frame, pillars, lanterns.
       ao.enabled = true;
       ao.blendIntensity = THREE.MathUtils.lerp(0.6, 0.9, inside);
-      grade.enabled = inside > 0.01;
-      grade.uniforms.amount.value = inside;
+      grade.enabled = true;
+      grade.uniforms.inside.value = THREE.MathUtils.smoothstep(inside, 0.15, 0.85);
     },
   };
 }
