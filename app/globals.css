@@ -269,14 +269,16 @@ img {
   inset: -20%;
   z-index: 4;
   pointer-events: none;
-  opacity: 0.22;
+  /* fades out inside the hall (--hero-inside) so outfits keep true colour */
+  /* subtle neutral film grain only (photo-real facade) */
+  opacity: calc(0.07 * (1 - 0.85 * var(--hero-inside, 0)));
   mix-blend-mode: multiply;
   background-image: url("/textures/grain.svg");
   background-size: 260px 260px;
 }
 
 .hero-warm-grain--fine {
-  opacity: 0.14;
+  opacity: 0;
   mix-blend-mode: overlay;
   background-size: 150px 150px;
   filter: sepia(0.36) saturate(1.1) hue-rotate(-8deg);

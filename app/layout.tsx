@@ -67,9 +67,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${casOlgans.variable} ${cinzel.variable} ${cormorant.variable} ${outfit.variable} ${script.variable} ${tiro.variable} h-full antialiased`}
+      className={`${casOlgans.variable} ${cinzel.variable} ${cormorant.variable} ${outfit.variable} ${script.variable} ${tiro.variable} h-full overflow-hidden antialiased`}
     >
-      <body className="min-h-full overflow-y-auto bg-[#efe4cc]">
+      <body className="min-h-full overflow-hidden bg-[#efe4cc]">
         <KesariOpening />
         {children}
         <AmbientMusic />

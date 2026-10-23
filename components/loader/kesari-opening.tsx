@@ -5,6 +5,11 @@ import "./opening.css";
 
 const DEVA = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
 const SIMULATED_MS = 9000;
+/** Display smoothing: the counter eases toward the real progress (≈ this many
+ * seconds to cover most of a gap) and creeps on during silent work. */
+const EASE_SECONDS = 0.45;
+const CREEP_PER_SECOND = 0.012;
+const CREEP_HEADROOM = 0.06;
 const EXIT_PAUSE_MS = 280;
 const EXIT_MS = 1400;
 
@@ -42,6 +47,10 @@ export function KesariOpening() {
   const finishingRef = useRef(false);
   const manualRef = useRef(false);
   const lastPctRef = useRef(-1);
+  const targetRef = useRef(0);
+  const shownRef = useRef(0);
+  const creepRef = useRef(0);
+  const smoothFrameRef = useRef(0);
   const [visible, setVisible] = useState(true);
   const [exiting, setExiting] = useState(false);
 
@@ -114,13 +123,43 @@ export function KesariOpening() {
       Falls back to a slow simulated fill if the model never reports.
     */
     window.__kesariUseSimulatedProgress = true;
+    let last = performance.now();
+    let smoothing = false;
+    const smoothTick = (now: number) => {
+      const dt = Math.min((now - last) / 1000, 0.1);
+      last = now;
+      const target = targetRef.current;
+      // Creep: while the real value is quiet, drift on slowly (never past
+      // just below the next real milestone), so long steps don't look frozen.
+      if (target < 1) creepRef.current = Math.min(creepRef.current + CREEP_PER_SECOND * dt, CREEP_HEADROOM);
+      const goal = target >= 1 ? 1 : Math.min(target + creepRef.current, 0.985);
+      const k = 1 - Math.exp(-dt / (EASE_SECONDS / 3));
+      const next = Math.max(shownRef.current, shownRef.current + (goal - shownRef.current) * k);
+      shownRef.current = goal - next < 0.0015 ? goal : next;
+      applyProgress(shownRef.current);
+      if (target >= 1 && shownRef.current >= 1) {
+        smoothing = false;
+        finish();
+        return;
+      }
+      smoothFrameRef.current = requestAnimationFrame(smoothTick);
+    };
     window.__kesariSetProgress = (value: number) => {
       manualRef.current = true;
       window.__kesariUseSimulatedProgress = false;
       window.__kesariPendingProgress = value;
       cancelAnimationFrame(frameRef.current);
-      applyProgress(value);
-      if (value >= 1) finish();
+      const v = Math.max(0, Math.min(1, value));
+      if (v > targetRef.current) {
+        targetRef.current = v;
+        // real progress caught up with (or passed) the creep: start creeping afresh
+        creepRef.current = Math.max(0, shownRef.current - v);
+      }
+      if (!smoothing) {
+        smoothing = true;
+        last = performance.now();
+        smoothFrameRef.current = requestAnimationFrame(smoothTick);
+      }
     };
 
     if (typeof window.__kesariPendingProgress === "number") {
@@ -131,6 +170,7 @@ export function KesariOpening() {
 
     return () => {
       cancelAnimationFrame(frameRef.current);
+      cancelAnimationFrame(smoothFrameRef.current);
       document.body.style.overflow = "";
       delete window.__kesariSetProgress;
     };

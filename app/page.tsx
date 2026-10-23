@@ -1,12 +1,6 @@
 import { FacadeHero } from "@/components/hero/facade-hero";
-import { InteriorLook } from "@/components/hero/interior-look";
 
-/** Temporary: facade door on top, interior courtyard below. */
+/** Temporary: hero-only facade preview (no navbar / site chrome). */
 export default function HomePage() {
-  return (
-    <>
-      <FacadeHero />
-      <InteriorLook />
-    </>
-  );
+  return <FacadeHero />;
 }

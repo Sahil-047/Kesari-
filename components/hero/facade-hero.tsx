@@ -4,12 +4,14 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { daylight, outdoorEnvironment, trueFacadeMaterials } from "@/components/hero/facade-daylight";
 import { addHallAtmosphere } from "@/components/hero/hall-atmosphere";
+import { studyInteriorMaterial } from "@/components/hero/hall-materials";
+import { loadHallTextures, type HallTextures } from "@/components/hero/hall-textures";
+import { createHallPost } from "@/components/hero/hall-post";
 import { LightRays } from "@/components/hero/light-rays";
 import { WarmDust } from "@/components/hero/warm-dust";
 import { getIstLightState } from "@/lib/ist-light";
@@ -17,6 +19,10 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const MODEL_URL = "/3d%20model/haveli_facade_door.glb";
 const INTERIOR_URL = "/3d%20model/haveli_interior.glb";
+/** Rebuilt top-right lehenga (O4), modelled to the reference photos; same frame as the interior. */
+const LEHENGA_O4_URL = "/3d%20model/lehenga_o4.glb";
+/** Old O4 garment meshes in the interior GLB, replaced by LEHENGA_O4_URL (mannequin stays). */
+const O4_REPLACED = /^W_O4_(Skirt|Blouse|Sleeve[LR]|Dupatta|Waistband)$/;
 const DRACO_PATH = "/draco/";
 const WALL = "#d8c4a0";
 
@@ -25,9 +31,6 @@ const FACADE_WALL = /Facade_Atlas|Facade_Metal/i;
 /** Wall plus carved door leaves, brass, props and the jhumka lanterns. */
 const FACADE_SURFACE = /Facade_Atlas|Facade_Metal|Facade_Props|Door_|Lantern_(L|R)(_Bracket)?$/i;
 const FACADE_HIDDEN = /Facade_Ground/i;
-const FACADE_METAL = /Metal|Lock|brass|grey|gold|Lantern/i;
-/** Emissive lamp glass — keeps its own glow, skipped by the ageing pass. */
-const FACADE_GLOW = /_Glow/i;
 /** Blender's jhumka / chandelier bulb colour (1, 0.72, 0.42). */
 const LAMP_COLOR = "#ffb86b";
 
@@ -136,6 +139,7 @@ const FLIGHT: RigKey[] = [
   // outfits (they span x ≈ ±5.3 on the row at z = -7.4).
   { s: 0.53, pos: [0, 2.55, -3.3], look: [0, 1.85, -7.4], fov: 56, fitHalfWidth: 5.4 },
   // Showcase: glide left → right, stopping in front of each outfit.
+  // Keep these `s` values in sync with OUTFITS (the follow-spot uses them).
   { s: 0.6, pos: [-3.6, 2.1, -4.7], look: [-4.2, 1.8, -7.4], fov: 46 },
   // Lehengas are ~2 m wide, so stand further back for those two.
   { s: 0.67, pos: [-1.3, 2.25, -3.9], look: [-1.45, 1.8, -7.4], fov: 50 },
@@ -216,60 +220,67 @@ function applyRig(
 function loadGltf(
   loader: GLTFLoader,
   url: string,
-  onProgress: (ratio: number) => void,
+  onProgress: (loaded: number, total: number) => void,
 ) {
   return new Promise<GLTF>((resolve, reject) => {
-    loader.load(
-      url,
-      resolve,
-      (event) => onProgress(event.total ? event.loaded / event.total : 0.15),
-      reject,
-    );
+    loader.load(url, resolve, (event) => onProgress(event.loaded, event.total), reject);
   });
 }
 
-/** Interior meshes that throw shadows from the outfit key spots. */
-const INT_CASTERS = /^W_O\d_|Fountain|Elephant|Altar|ProductPed|ProductItem/i;
-const INT_RECEIVERS = /Floor|Dado|Wall|Carpet|Lobby|Basin|Fountain_Step|ProductPed/i;
+/** Byte sizes of the models (scripts/model-manifest.mjs), for real progress when
+ * the server streams them gzip-compressed without a Content-Length. */
+const MANIFEST_URL = "/3d%20model/manifest.json";
+/** Rough fallback sizes if the manifest is missing (bytes). */
+const FALLBACK_BYTES: Record<string, number> = {
+  "haveli_facade_door.glb": 12_000_000,
+  "haveli_interior.glb": 20_000_000,
+  "lehenga_o4.glb": 5_000_000,
+};
 
-/**
- * Per-material look for the hall. Reflection strengths assume the warm
- * interior cube map from `bakeInteriorEnv`, not the neutral room env.
- */
-function tuneInteriorMaterial(std: THREE.MeshStandardMaterial) {
-  const name = std.name ?? "";
-  const phys = std as THREE.MeshPhysicalMaterial;
-  if (/gold|brass|chrome/i.test(name)) {
-    std.envMapIntensity = 1.15;
-    std.roughness = THREE.MathUtils.clamp(std.roughness, 0.18, 0.32);
-  } else if (/marble|floor/i.test(name)) {
-    std.envMapIntensity = 0.55;
-    std.roughness = Math.max(std.roughness, 0.16);
-  } else if (/water/i.test(name)) {
-    std.envMapIntensity = 1.3;
-    std.roughness = 0.04;
-    std.transparent = true;
-    std.opacity = 0.78;
-    std.color.set("#bfe3e6");
-  } else if (/glass_amber/i.test(name)) {
-    std.envMapIntensity = 1.4;
-    if (phys.isMeshPhysicalMaterial) phys.transmission = Math.min(phys.transmission, 0.6);
-  } else if (/stained_glass/i.test(name)) {
-    // Brighter backlight so the windows bloom like the Blender render.
-    std.emissiveIntensity *= 2.6;
-    std.envMapIntensity = 0.3;
-  } else if (/lamp/i.test(name)) {
-    std.emissiveIntensity *= 2.4;
-  } else if (/plaster|ceiling|trim|painting/i.test(name)) {
-    std.envMapIntensity = 0.22;
-  } else {
-    // Fabrics, mannequins, carpets: mostly matte.
-    std.envMapIntensity = 0.3;
-  }
+function nextFrame() {
+  return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-function prepareInterior(root: THREE.Object3D) {
-  const seen = new Set<THREE.Material>();
+/** Interior meshes that throw shadows (window sun + main chandelier). */
+const INT_CASTERS =
+  /^W_O\d_|^O4R_(Skirt|Blouse|Sleeve|Latkans|BeadCurtain)|Fountain|Elephant|Altar|ProductPed|ProductItem|Int_Columns|Frame_|Basin_Rim/i;
+const INT_RECEIVERS =
+  /Floor|Dado|Wall|Carpet|Lobby|Basin|Fountain|ProductPed|ProductItem|Int_Columns|Dome|Ceiling|Cornice|Elephant|Altar|^W_O\d_|^O4R_|Painting|Frame_|Window/i;
+
+/**
+ * Each painting gets its own Pichwai, fitted to its frame from the mesh's own
+ * UV bounds (painting UVs are centred metres, so sizes differ per frame).
+ */
+function hangPainting(mesh: THREE.Mesh, material: THREE.Material, tex: HallTextures, index: number) {
+  const uv = mesh.geometry.attributes.uv;
+  if (!uv) return material;
+  let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+  for (let i = 0; i < uv.count; i++) {
+    u0 = Math.min(u0, uv.getX(i)); u1 = Math.max(u1, uv.getX(i));
+    v0 = Math.min(v0, uv.getY(i)); v1 = Math.max(v1, uv.getY(i));
+  }
+  const map = tex.pichwai[index % tex.pichwai.length].clone();
+  map.repeat.set(1 / (u1 - u0), 1 / (v1 - v0));
+  map.offset.set(-u0 / (u1 - u0), -v0 / (v1 - v0));
+  map.wrapS = map.wrapT = THREE.ClampToEdgeWrapping;
+  map.needsUpdate = true;
+  const m = (material as THREE.MeshPhysicalMaterial).clone();
+  m.map = map;
+  m.color.set("#ffffff");
+  m.needsUpdate = true;
+  return m;
+}
+
+function prepareInterior(root: THREE.Object3D, tex?: HallTextures) {
+  const studied = new Map<THREE.Material, THREE.Material>();
+  let paintings = 0;
+  const study = (mat: THREE.Material) => {
+    if (!studied.has(mat)) {
+      const std = mat as THREE.MeshStandardMaterial;
+      studied.set(mat, "envMapIntensity" in std ? studyInteriorMaterial(std, tex) : mat);
+    }
+    return studied.get(mat)!;
+  };
   root.traverse((obj) => {
     if ((obj as THREE.Light).isLight) {
       obj.visible = false;
@@ -279,66 +290,11 @@ function prepareInterior(root: THREE.Object3D) {
     const mesh = obj as THREE.Mesh;
     mesh.receiveShadow = INT_RECEIVERS.test(mesh.name);
     mesh.castShadow = INT_CASTERS.test(mesh.name);
-    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-    for (const mat of materials) {
-      const std = mat as THREE.MeshStandardMaterial;
-      if (!std || seen.has(std)) continue;
-      seen.add(std);
-      if (std.map) std.map.colorSpace = THREE.SRGBColorSpace;
-      if ("envMapIntensity" in std) tuneInteriorMaterial(std);
-      std.needsUpdate = true;
-    }
-  });
-}
-
-const AGE_SHADOW = new THREE.Color("#6a4020");
-const AGE_BRONZE = new THREE.Color("#8a5428");
-
-/** Darker, richer facade — saturate + deepen without emissive glow. */
-function ageWarmMaterials(root: THREE.Object3D) {
-  const seen = new Set<THREE.Material>();
-
-  root.traverse((obj) => {
-    if (!(obj as THREE.Mesh).isMesh || !obj.visible) return;
-    const mesh = obj as THREE.Mesh;
-    if (FACADE_GLOW.test(mesh.name)) return;
-    const materials = Array.isArray(mesh.material)
-      ? mesh.material
-      : [mesh.material];
-
-    for (const mat of materials) {
-      const std = mat as THREE.MeshStandardMaterial;
-      if (!std || !("color" in std) || seen.has(std)) continue;
-      seen.add(std);
-
-      if (std.map) std.map.colorSpace = THREE.SRGBColorSpace;
-
-      // No material emissive — only scene lights illuminate the facade.
-      std.emissive = new THREE.Color(0x000000);
-      std.emissiveIntensity = 0;
-
-      // Deeper lows + richer chroma for higher model contrast.
-      const hsl = { h: 0, s: 0, l: 0 };
-      std.color.getHSL(hsl);
-      std.color.setHSL(
-        hsl.h,
-        Math.min(1, hsl.s * 1.42 + 0.08),
-        Math.max(0.06, hsl.l * 0.68),
-      );
-
-      const isMetal = FACADE_METAL.test(`${mesh.name} ${std.name ?? ""}`);
-      if (isMetal) {
-        std.color.lerp(AGE_BRONZE, 0.26);
-        std.metalness = Math.min(1, (std.metalness ?? 0.4) * 0.7 + 0.18);
-        std.roughness = Math.min(1, (std.roughness ?? 0.5) + 0.16);
-      } else {
-        std.color.lerp(AGE_SHADOW, 0.22);
-        std.metalness = Math.min(std.metalness ?? 0, 0.04);
-        std.roughness = Math.min(1, (std.roughness ?? 0.7) + 0.12);
-      }
-
-      if ("envMapIntensity" in std) std.envMapIntensity = 0.1;
-      std.needsUpdate = true;
+    mesh.material = Array.isArray(mesh.material)
+      ? mesh.material.map(study)
+      : study(mesh.material);
+    if (tex && /^W_Painting_/.test(mesh.name) && !Array.isArray(mesh.material)) {
+      mesh.material = hangPainting(mesh, mesh.material, tex, paintings++);
     }
   });
 }
@@ -357,7 +313,7 @@ function addWarmLighting(scene: THREE.Scene) {
   key.shadow.mapSize.set(4096, 4096);
   key.shadow.bias = -0.00008;
   key.shadow.normalBias = 0.016;
-  key.shadow.radius = 1.1;
+  key.shadow.radius = 2.4;
   key.shadow.camera.near = 0.5;
   key.shadow.camera.far = 80;
   key.shadow.autoUpdate = true;
@@ -406,24 +362,16 @@ function fitSunShadow(
 }
 
 /** Sun path over the facade from IST hour (east morning → west evening). */
+/** Place the sun on its real IST path (see facade-daylight), aimed at its target. */
 function placeIstSun(
   key: THREE.DirectionalLight,
   shaft: THREE.DirectionalLight,
   hour: number,
   root?: THREE.Object3D | null,
 ) {
-  // 6:00 east (−X), 12:00 high front, 18:00 west (+X)
-  // Wider arc so morning/evening shadows rake hard across the relief.
-  const t = (hour - 5.5) / 13;
-  const az = THREE.MathUtils.lerp(-1.35, 1.35, Math.max(0, Math.min(1, t)));
-  const elev = Math.sin(Math.max(0.04, Math.min(1, t)) * Math.PI) * 0.92 + 0.18;
-  const dist = 16;
-  key.position.set(Math.sin(az) * dist, elev * 11, Math.cos(az) * dist * 0.65 + 5);
-  shaft.position.set(
-    Math.sin(az - 0.32) * 11,
-    elev * 13 + 2,
-    Math.cos(az - 0.32) * 9 + 3,
-  );
+  const d = daylight(hour);
+  key.position.copy(key.target.position).addScaledVector(d.sunDir, 18);
+  shaft.position.copy(key.position);
   if (root) fitSunShadow(key, root);
 }
 
@@ -431,51 +379,97 @@ function centerOf(obj: THREE.Object3D) {
   return new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3());
 }
 
+/** Outfit row in the model frame, and the scroll stop that frames each (see FLIGHT). */
+const OUTFITS = [
+  { x: -4.2, s: 0.6 },
+  { x: -1.45, s: 0.67 },
+  { x: 1.4, s: 0.74 },
+  { x: 4.2, s: 0.81 },
+];
+const OUTFIT_Z = -7.4;
+const OUTFIT_Y = 1.8;
+
 /**
- * Hall lights mirroring the Blender "Interior" rig: three chandeliers
- * (160 / 90 / 90 W), four lobby jhumkas (40 W), two warm ceiling fills and a
- * key spot on each outfit — all in the same warm 1 / 0.72 / 0.42 bulb colour.
- * Positions are read from the lamp meshes in the model.
+ * Cinematic hall rig built on the Blender "Interior" lights:
+ * - chandeliers (160 / 90 / 90 W) that sway gently, the main one casting
+ *   soft shadows so pools and silhouettes move a little, like real lamps;
+ * - lobby jhumkas, low warm fills and a very low sky bounce for deep contrast;
+ * - per outfit a warm key from the front and a cool rim from behind (teal vs
+ *   amber separation), plus a follow-spot that travels from outfit to outfit
+ *   with the camera while the others dim — the product always owns the frame.
  */
 function addHallLighting(interiorRoot: THREE.Object3D) {
   interiorRoot.updateMatrixWorld(true);
   const group = new THREE.Group();
-  // Low sky bounce only — the lamps do the work, like the Blender render.
-  group.add(new THREE.HemisphereLight("#ffe2b4", "#2a170b", 0.18));
+  group.add(new THREE.HemisphereLight("#ffe2b4", "#1c0f07", 0.12));
 
-  const flicker: THREE.PointLight[] = [];
-  const addLamp = (obj: THREE.Object3D | undefined, power: number, drop: number, range: number) => {
-    if (!obj) return;
+  type Lamp = { light: THREE.PointLight; base: number; home: THREE.Vector3; sway: number };
+  const lamps: Lamp[] = [];
+  const addLamp = (
+    obj: THREE.Object3D | undefined,
+    power: number,
+    drop: number,
+    range: number,
+    sway: number,
+  ) => {
+    if (!obj) return null;
     const c = centerOf(obj);
     const light = new THREE.PointLight(LAMP_COLOR, power, range, 2);
-    light.position.set(c.x, c.y - drop, c.z);
-    light.userData.base = power;
+    const home = new THREE.Vector3(c.x, c.y - drop, c.z);
+    light.position.copy(home);
     group.add(light);
-    flicker.push(light);
+    lamps.push({ light, base: power, home, sway });
+    return light;
   };
 
-  addLamp(interiorRoot.getObjectByName("W_Chand_Main_Bulbs"), 68, 0.2, 0);
-  addLamp(interiorRoot.getObjectByName("W_Chand_N_Bulbs"), 38, 0.2, 0);
-  addLamp(interiorRoot.getObjectByName("W_Chand_S_Bulbs"), 38, 0.2, 0);
+  const main = addLamp(interiorRoot.getObjectByName("W_Chand_Main_Bulbs"), 74, 0.2, 0, 0.07);
+  addLamp(interiorRoot.getObjectByName("W_Chand_N_Bulbs"), 40, 0.2, 0, 0.06);
+  addLamp(interiorRoot.getObjectByName("W_Chand_S_Bulbs"), 40, 0.2, 0, 0.06);
   for (let i = 0; i < 4; i++) {
-    addLamp(interiorRoot.getObjectByName(`W_Jhumka_Lobby_${i}_Glow`), 9, 0, 7);
+    addLamp(interiorRoot.getObjectByName(`W_Jhumka_Lobby_${i}_Glow`), 9, 0, 7, 0.02);
+  }
+  if (main) {
+    main.castShadow = true;
+    main.shadow.mapSize.set(1024, 1024);
+    main.shadow.bias = -0.004;
+    main.shadow.normalBias = 0.04;
+    main.shadow.radius = 6;
+    main.shadow.camera.near = 0.3;
+    main.shadow.camera.far = 26;
   }
 
-  // Fill_S / Fill_N area lights: broad, soft, slightly paler warm.
+  // Fill_S / Fill_N: kept low so the lamps and sun carve the room.
   for (const z of [-6.8, -15.2]) {
-    const fill = new THREE.PointLight("#ffd199", 5, 0, 2);
+    const fill = new THREE.PointLight("#ffd199", 3, 0, 2);
     fill.position.set(0, 6.6, z);
     group.add(fill);
   }
 
-  // Key spots on the four outfits. Shadows come from the window sun instead
-  // (hall-atmosphere), so they fall toward the door as in Blender.
-  for (const x of [-4.2, -1.4, 1.4, 4.2]) {
-    const spot = new THREE.SpotLight("#ffd19e", 38, 12, 0.42, 0.75, 1.6);
-    spot.position.set(x, 5.4, -4.4);
-    spot.target.position.set(x, 1.6, -7.4);
-    group.add(spot, spot.target);
+  const keys: THREE.SpotLight[] = [];
+  const rims: THREE.SpotLight[] = [];
+  for (const { x } of OUTFITS) {
+    // Warm key from the front. Shadows come from the window sun (they fall
+    // toward the door, as in Blender), so the key stays shadowless.
+    const key = new THREE.SpotLight("#ffe4ce", 34, 12, 0.42, 0.75, 1.6);
+    key.position.set(x, 5.4, -4.4);
+    key.target.position.set(x, 1.6, OUTFIT_Z);
+    group.add(key, key.target);
+    keys.push(key);
+
+    // Cool rim from behind and above: outlines the silhouette against the hall.
+    const rim = new THREE.SpotLight("#e4eaff", 20, 9, 0.5, 0.9, 1.5);
+    rim.position.set(x * 1.05, 4.9, -9.8);
+    rim.target.position.set(x, OUTFIT_Y, OUTFIT_Z);
+    group.add(rim, rim.target);
+    rims.push(rim);
   }
+
+  // Follow-spot: tight warm beam from high front that travels with the camera.
+  const follow = new THREE.SpotLight("#ffecdf", 0, 16, 0.2, 0.55, 1.3);
+  follow.position.set(0, 6.8, -3.6);
+  follow.target.position.set(0, OUTFIT_Y, OUTFIT_Z);
+  group.add(follow, follow.target);
+  const followAim = new THREE.Vector3(0, OUTFIT_Y, OUTFIT_Z);
 
   // Coloured spill from the two stained-glass windows onto the back floor.
   for (const [x, color] of [
@@ -489,12 +483,46 @@ function addHallLighting(interiorRoot: THREE.Object3D) {
   }
   interiorRoot.add(group);
 
+  const weights = OUTFITS.map(() => 0);
+
   return {
-    update(t: number) {
-      flicker.forEach((l, i) => {
-        l.intensity =
-          l.userData.base * (1 + Math.sin(t * 7.3 + i * 2.1) * 0.015 + Math.sin(t * 3.1 + i) * 0.02);
+    /** `s` is the scroll progress, used to know which outfit is in frame. */
+    update(t: number, s: number) {
+      lamps.forEach(({ light, base, home, sway }, i) => {
+        // Candle-like breathing with the odd slow dip.
+        const breathe =
+          1 +
+          Math.sin(t * 7.3 + i * 2.1) * 0.02 +
+          Math.sin(t * 3.1 + i) * 0.03 -
+          Math.max(0, Math.sin(t * 0.37 + i * 1.7)) ** 12 * 0.12;
+        light.intensity = base * breathe;
+        // Chandeliers sway on their chains; shadows drift with them.
+        light.position.set(
+          home.x + Math.sin(t * 0.52 + i) * sway,
+          home.y,
+          home.z + Math.cos(t * 0.41 + i * 1.3) * sway,
+        );
       });
+
+      let any = 0;
+      let sum = 0;
+      let aimX = 0;
+      OUTFITS.forEach((o, i) => {
+        const w = 1 - THREE.MathUtils.smoothstep(Math.abs(s - o.s), 0.0, 0.05);
+        weights[i] = w;
+        any = Math.max(any, w);
+        sum += w;
+        aimX += o.x * w;
+      });
+      OUTFITS.forEach((_, i) => {
+        const w = weights[i];
+        keys[i].intensity = 34 * (0.45 + 0.55 * (1 - any) + 1.1 * w);
+        rims[i].intensity = 20 * (0.55 + 1.5 * w);
+      });
+      if (sum > 1e-3) followAim.set(aimX / sum, OUTFIT_Y, OUTFIT_Z);
+      follow.target.position.lerp(followAim, 0.08);
+      follow.position.x = THREE.MathUtils.lerp(follow.position.x, follow.target.position.x * 0.6, 0.05);
+      follow.intensity = 130 * any;
     },
   };
 }
@@ -563,9 +591,10 @@ function addLanternLights(doorRoot: THREE.Object3D) {
     lights.push(light);
   }
   return {
-    update(t: number) {
+    update(t: number, night = 0) {
+      // oil-lamp glow carries the facade at dusk / night
       lights.forEach((l, i) => {
-        l.intensity = l.userData.base * (1 + Math.sin(t * 6.1 + i * 1.7) * 0.03);
+        l.intensity = l.userData.base * (1 + 3 * night) * (1 + Math.sin(t * 6.1 + i * 1.7) * 0.03);
       });
     },
   };
@@ -632,7 +661,7 @@ export function FacadeHero() {
     );
 
     const pmrem = new THREE.PMREMGenerator(renderer);
-    const env = pmrem.fromScene(new RoomEnvironment(), 0.06).texture;
+    const env = outdoorEnvironment(pmrem);
     scene.environment = env;
 
     const lights = addWarmLighting(scene);
@@ -651,6 +680,9 @@ export function FacadeHero() {
     composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     composer.setSize(mount.clientWidth, mount.clientHeight);
     composer.addPass(new RenderPass(scene, camera));
+    const hallPost = createHallPost(scene, camera, mount.clientWidth, mount.clientHeight);
+    hallPost.addTo(composer, "ao");
+    hallPost.addTo(composer, "sanitize");
     const bloom = new UnrealBloomPass(
       new THREE.Vector2(mount.clientWidth, mount.clientHeight),
       0,
@@ -660,14 +692,11 @@ export function FacadeHero() {
     );
     bloom.enabled = false;
     composer.addPass(bloom);
-    composer.addPass(new OutputPass());
+    hallPost.addTo(composer, "output");
+    hallPost.addTo(composer, "grade");
     let hallEnv: THREE.Texture | null = null;
     const clock = new THREE.Clock();
     let ist = getIstLightState();
-    const keyColor = new THREE.Color(ist.keyColor);
-    const shaftColor = new THREE.Color(ist.shaftColor);
-    const targetKeyColor = new THREE.Color(ist.keyColor);
-    const targetShaftColor = new THREE.Color(ist.shaftColor);
     let shadowFitAt = 0;
 
     const dracoLoader = new DRACOLoader();
@@ -677,12 +706,37 @@ export function FacadeHero() {
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
 
-    const progress = { door: 0, interior: 0 };
+    // Loading budget: downloads fill 4% → 80% by bytes across all models;
+    // the rest is real work after download (setup, shader compile, reflection
+    // bake, first frames), so the bar never sits still and never jumps.
+    const DOWNLOAD_END = 0.8;
+    const files = [MODEL_URL, INTERIOR_URL, LEHENGA_O4_URL].map((url) => {
+      const name = decodeURIComponent(url.split("/").pop() ?? "");
+      return { url, name, loaded: 0, total: FALLBACK_BYTES[name] ?? 8_000_000 };
+    });
+    // realistic hall texture sets (public/textures/hall), ≈ 6 MB in 19 files
+    const TEXTURE_BYTES = 6_000_000;
+    files.push({ url: "/textures/hall/", name: "hall-textures", loaded: 0, total: TEXTURE_BYTES });
+    let downloadShown = 0;
     const syncProgress = () => {
-      reportOpeningProgress(
-        Math.min(0.96, 0.06 + progress.door * 0.44 + progress.interior * 0.48),
-      );
+      const loaded = files.reduce((n, f) => n + Math.min(f.loaded, f.total), 0);
+      const total = files.reduce((n, f) => n + f.total, 0);
+      // monotonic, never reaches the end of the download band before onLoad
+      downloadShown = Math.max(downloadShown, Math.min(loaded / total, 0.99));
+      reportOpeningProgress(0.04 + (DOWNLOAD_END - 0.04) * downloadShown);
     };
+    const track = (i: number) => (loaded: number, total: number) => {
+      files[i].loaded = loaded;
+      if (total > 0) files[i].total = total;   // trust Content-Length when present
+      syncProgress();
+    };
+    fetch(MANIFEST_URL)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((sizes: Record<string, number>) => {
+        for (const f of files) if (sizes[f.name]) f.total = sizes[f.name];
+        syncProgress();
+      })
+      .catch(() => {});
 
     const placeHaveli = (root: THREE.Object3D) => {
       root.position.set(0, 0, 0);
@@ -718,16 +772,25 @@ export function FacadeHero() {
     };
 
     Promise.all([
-      loadGltf(loader, MODEL_URL, (r) => {
-        progress.door = r;
-        syncProgress();
+      loadGltf(loader, MODEL_URL, track(0)),
+      loadGltf(loader, INTERIOR_URL, track(1)),
+      // Optional: if it fails, the interior's original O4 outfit stays visible.
+      loadGltf(loader, LEHENGA_O4_URL, track(2)).catch((error) => {
+        console.warn("lehenga_o4.glb not loaded; keeping the original outfit", error);
+        return null;
       }),
-      loadGltf(loader, INTERIOR_URL, (r) => {
-        progress.interior = r;
-        syncProgress();
-      }),
+      // Optional: without them the hall falls back to the exported swatches.
+      loadHallTextures((done, total) => track(3)((done / total) * TEXTURE_BYTES, TEXTURE_BYTES)).catch(
+        (error) => {
+          console.warn("hall textures not loaded; using exported materials", error);
+          return undefined;
+        },
+      ),
     ])
-      .then(([doorGltf, interiorGltf]) => {
+      .then(async ([doorGltf, interiorGltf, lehengaGltf, hallTextures]) => {
+        if (disposed) return;
+        reportOpeningProgress(0.82);
+        await nextFrame();
         if (disposed) return;
 
         const doorRoot = doorGltf.scene;
@@ -738,7 +801,7 @@ export function FacadeHero() {
           }
           if ((obj as THREE.Light).isLight) obj.visible = false;
         });
-        ageWarmMaterials(doorRoot);
+        trueFacadeMaterials(doorRoot);
         doorRoot.traverse((obj) => {
           if (!(obj as THREE.Mesh).isMesh || !obj.visible) return;
           if (!FACADE_SURFACE.test(obj.name)) return;
@@ -749,10 +812,16 @@ export function FacadeHero() {
         lanterns = addLanternLights(doorRoot);
 
         const interiorRoot = interiorGltf.scene;
-        prepareInterior(interiorRoot);
+        if (lehengaGltf) {
+          interiorRoot.traverse((obj) => {
+            if (O4_REPLACED.test(obj.name)) obj.visible = false;
+          });
+          interiorRoot.add(lehengaGltf.scene);
+        }
+        prepareInterior(interiorRoot, hallTextures);
 
         hall = addHallLighting(interiorRoot);
-        atmosphere = addHallAtmosphere(interiorRoot, scene, renderer.getPixelRatio());
+        atmosphere = addHallAtmosphere(interiorRoot, scene, hallTextures);
 
         const root = new THREE.Group();
         root.add(interiorRoot);
@@ -771,6 +840,18 @@ export function FacadeHero() {
         }
 
         scene.add(root);
+        reportOpeningProgress(0.86);
+        // Compile every shader now (in parallel where supported) instead of
+        // hitching on the first frames after the loader has closed.
+        try {
+          await renderer.compileAsync(scene, camera);
+        } catch {
+          renderer.compile(scene, camera);
+        }
+        if (disposed) return;
+        reportOpeningProgress(0.93);
+        await nextFrame();
+        if (disposed) return;
         hallEnv = bakeInteriorEnv(renderer, scene, pmrem, root, interiorRoot, outsideLights);
         facade = root;
         baseY = root.position.y;
@@ -783,6 +864,11 @@ export function FacadeHero() {
         ist = getIstLightState();
         placeIstSun(lights.key, lights.shaft, ist.hour, root);
 
+        reportOpeningProgress(0.97);
+        // a couple of real frames on screen (textures uploaded) before reveal
+        await nextFrame();
+        await nextFrame();
+        if (disposed) return;
         reportOpeningProgress(1);
       })
       .catch((error) => {
@@ -821,11 +907,9 @@ export function FacadeHero() {
     };
 
     const onWheel = (event: WheelEvent) => {
-      const delta = event.deltaY * (event.deltaMode === 1 ? 18 : 1);
-      const next = THREE.MathUtils.clamp(scrollTarget + delta * SCROLL_SPEED, 0, 1);
-      if (next === scrollTarget) return;
       event.preventDefault();
-      scrollTarget = next;
+      const delta = event.deltaY * (event.deltaMode === 1 ? 18 : 1);
+      scrollTarget = THREE.MathUtils.clamp(scrollTarget + delta * SCROLL_SPEED, 0, 1);
     };
 
     window.addEventListener("resize", onResize);
@@ -884,48 +968,54 @@ export function FacadeHero() {
         shadowFitAt = t;
       }
 
-      targetKeyColor.set(ist.keyColor);
-      targetShaftColor.set(ist.shaftColor);
-      keyColor.lerp(targetKeyColor, 0.04);
-      shaftColor.lerp(targetShaftColor, 0.04);
-      lights.key.color.copy(keyColor);
-      lights.shaft.color.copy(shaftColor);
+      // Physical daylight: one sun (blackbody colour by elevation) + skylight.
+      const sky = daylight(ist.hour);
+      lights.key.color.lerp(sky.sunColor, 0.04);
+      lights.hemi.color.lerp(sky.skyColor, 0.04);
+      lights.hemi.groundColor.lerp(sky.groundColor, 0.04);
 
       // Keep sun aim locked to the facade as it levitates / yaws.
       if (facade) {
         const center = wallBox(facade).getCenter(new THREE.Vector3());
         lights.key.target.position.lerp(center, 0.12);
         lights.key.target.updateMatrixWorld();
+        lights.key.position.copy(lights.key.target.position).addScaledVector(sky.sunDir, 18);
       }
 
-      // Soft atmospheric breath on top of IST (clouds passing).
-      const breath = 1 + Math.sin(t * 0.11) * 0.045 + Math.sin(t * 0.37) * 0.02;
-      lights.ambient.intensity = ist.ambient * breath * (0.5 + 0.5 * outside);
-      lights.hemi.intensity = ist.hemi * breath * outside;
-      lights.key.intensity = ist.key * breath * outside;
-      lights.key.castShadow = outside > 0.02;
-      lights.shaft.intensity = ist.shaft * (1 + Math.sin(t * 0.09) * 0.06) * outside;
-      lights.saffron.intensity = ist.saffron * breath * outside;
-      lights.rim.intensity = ist.rim * outside;
-      if (hall) hall.update(t);
-      if (lanterns) lanterns.update(t);
-      if (atmosphere) atmosphere.update(t, inside);
+      // Thin high cloud drifting across the sun now and then.
+      const breath = 1 + Math.sin(t * 0.11) * 0.03 + Math.sin(t * 0.37) * 0.015;
+      lights.ambient.intensity = 0;
+      lights.hemi.intensity = sky.skyIntensity * outside;
+      lights.key.intensity = sky.sunIntensity * breath * outside;
+      lights.key.castShadow = outside > 0.02 && sky.sunIntensity > 0.01;
+      // the old stylised fills (second sun, orange "saffron", brown rim) are retired
+      lights.shaft.intensity = 0;
+      lights.saffron.intensity = 0;
+      lights.rim.intensity = 0;
+      if (hall) hall.update(t, scrollP);
+      if (lanterns) lanterns.update(t, sky.night);
+      if (atmosphere) atmosphere.update(t, inside, camera, renderer.domElement.height);
       renderer.toneMappingExposure = THREE.MathUtils.lerp(
         renderer.toneMappingExposure,
-        THREE.MathUtils.lerp(ist.exposure, 1.0, inside),
+        THREE.MathUtils.lerp(sky.exposure, 0.86, inside),
         0.05,
       );
       (scene.background as THREE.Color).set(WALL).multiplyScalar(0.2 + 0.8 * outside);
 
       const section = mount.parentElement as HTMLElement | null;
       if (section) {
-        section.style.setProperty("--hero-ray", String(ist.rayStrength));
-        section.style.setProperty("--hero-dust", String(ist.dustGain));
+        // Warm film overlays suit the facade; inside they would tint the
+        // outfits, so they fade out for true product colour.
+        // Photo-real look: no CSS god-rays / dust / sepia over the facade.
+        section.style.setProperty("--hero-ray", "0");
+        section.style.setProperty("--hero-dust", "0");
+        section.style.setProperty("--hero-inside", inside.toFixed(3));
         const grade = section.querySelector("[data-hero-grade]") as HTMLElement | null;
-        if (grade) grade.style.opacity = String(ist.gradeOpacity);
+        if (grade) grade.style.opacity = "0";
       }
 
-      bloom.strength = 0.55 * inside;
+      bloom.strength = 0.7 * inside;
+      hallPost.update(inside, renderer.toneMappingExposure);
       bloom.enabled = inside > 0.01;
       composer.render();
     };
@@ -989,7 +1079,7 @@ export function FacadeHero() {
         className="pointer-events-none absolute inset-0 z-[5]"
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 40%, rgba(22, 10, 4, 0.5) 100%)",
+            "radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.28) 100%)",
         }}
         aria-hidden="true"
       />
