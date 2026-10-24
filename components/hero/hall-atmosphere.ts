@@ -1,11 +1,14 @@
 import * as THREE from "three";
 import { addFountainWater } from "@/components/hero/hall-fountain";
+import { gust, WIND_DIR } from "@/components/hero/hall-wind";
 import type { HallTextures } from "@/components/hero/hall-textures";
 
 /**
  * Cinematic atmosphere for the haveli hall, matching the Blender "Interior"
  * scene: baked carpets, low sun through the stained-glass windows (shadows fall
- * toward the door), coloured volumetric shafts, drifting dust and warm haze.
+ * toward the door), drifting dust that shows the beams, and warm haze. (The
+ * beams themselves are screen-space god rays in hall-post: earlier slice-based
+ * 3D shafts cut hard seam lines wherever their sheets met the floor.)
  * Everything lives in the interior model's local frame (Y up, door at z = 0,
  * back wall at z ≈ -19.3).
  */
@@ -55,14 +58,14 @@ export function applyCarpets(interiorRoot: THREE.Object3D, tex?: HallTextures) {
     const mat = new THREE.MeshPhysicalMaterial({
       name: "carpet_baked",
       map,
-      // Woven wool reads softer than the flat bake.
-      color: "#d8c8b6",
+      // natural-dye wool: true colour (the texture carries knots, heather, abrash)
+      color: "#f2f2f2",
       roughness: 0.94,
       metalness: 0,
-      // Pile catches light at grazing angles.
-      sheen: 0.7,
-      sheenRoughness: 0.85,
-      sheenColor: new THREE.Color("#ffe2c0"),
+      // wool pile glows softly, silvery, where light grazes the fibre tips
+      sheen: 0.65,
+      sheenRoughness: 0.5,
+      sheenColor: new THREE.Color("#cfc5ba"),
     });
     mat.envMapIntensity = 0.15;
     if (tex) {
@@ -76,13 +79,73 @@ export function applyCarpets(interiorRoot: THREE.Object3D, tex?: HallTextures) {
         t.needsUpdate = true;
       }
       mat.normalMap = n;
-      mat.normalScale = new THREE.Vector2(0.9, 0.9);
+      mat.normalScale = new THREE.Vector2(1.2, 1.2);
       mat.roughnessMap = r;
       mat.roughness = 1;
     }
     mesh.material = mat;
     mesh.receiveShadow = true;
+    // Cotton warp fringe on the short ends of the large carpets (the runners
+    // butt into them, so they have none).
+    if (max.x - min.x > max.z - min.z) mesh.add(fringe(min, max));
   }
+}
+
+const FRINGE_MAT = new THREE.MeshStandardMaterial({
+  name: "carpet_fringe",
+  color: "#e7dfcd",
+  roughness: 0.92,
+  side: THREE.DoubleSide,
+});
+
+/**
+ * Knotted warp-thread fringe: flat cotton ribbons (≈3 mm) every 1.2 cm along
+ * both short ends, 6–9 cm long, drooping from the rug edge to the floor with a
+ * little random splay and curl, like a real hand-knotted rug.
+ */
+function fringe(min: THREE.Vector3, max: THREE.Vector3) {
+  const positions: number[] = [];
+  const index: number[] = [];
+  const SEG = 4;
+  const width = 0.003;
+  let seed = 7;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  for (const end of [-1, 1]) {
+    const x0 = end < 0 ? min.x : max.x;
+    for (let z = min.z + 0.006; z < max.z - 0.004; z += 0.012) {
+      const len = 0.06 + rand() * 0.03;
+      const splay = (rand() - 0.5) * 0.45;          // radians, sideways
+      const curl = (rand() - 0.5) * 0.6;
+      const base = positions.length / 3;
+      for (let k = 0; k <= SEG; k++) {
+        const t = k / SEG;
+        const a = splay + curl * t * t;
+        const along = len * t;
+        const x = x0 + end * along * Math.cos(a);
+        const zz = z + along * Math.sin(a);
+        // leaves the rug mid-thickness, settles onto the floor
+        const y = min.y + 0.01 * (1 - t) * (1 - t) + 0.0015;
+        const nx = -Math.sin(a) * width * 0.5;
+        const nz = Math.cos(a) * width * 0.5;
+        positions.push(x + nx * end, y, zz + nz, x - nx * end, y, zz - nz);
+        if (k < SEG) {
+          const i = base + k * 2;
+          index.push(i, i + 1, i + 2, i + 1, i + 3, i + 2);
+        }
+      }
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geo.setIndex(index);
+  geo.computeVertexNormals();
+  const mesh = new THREE.Mesh(geo, FRINGE_MAT);
+  mesh.name = "carpet_fringe";
+  mesh.receiveShadow = true;
+  return mesh;
 }
 
 function findWindows(interiorRoot: THREE.Object3D) {
@@ -113,7 +176,8 @@ function addWindowSun(group: THREE.Group, windows: Window[], glass: THREE.Textur
   const back = 14;
   for (const w of windows) {
     const center = w.origin.clone().addScaledVector(w.right, 0.5).addScaledVector(w.up, 0.5);
-    const sun = new THREE.SpotLight("#fff0d6", 0, 0, 0.2, 0.12, 0);
+    // soft beam edge: the sun is a disc, not a point
+    const sun = new THREE.SpotLight("#fff0d6", 0, 0, 0.2, 0.3, 0);
     sun.position.copy(center).addScaledVector(SUN_DIR, -back);
     sun.target.position.copy(center).addScaledVector(SUN_DIR, 10);
     const half = Math.max(w.right.length(), w.up.length()) * 0.5;
@@ -133,134 +197,6 @@ function addWindowSun(group: THREE.Group, windows: Window[], glass: THREE.Textur
     suns.push(sun);
   }
   return suns;
-}
-
-const shaftVert = /* glsl */ `
-  attribute vec3 wuv;
-  varying vec3 vWuv;
-  varying vec3 vView;
-  varying vec3 vNormalV;
-  void main() {
-    vWuv = wuv;
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    vView = -mv.xyz;
-    vNormalV = normalMatrix * normal;
-    gl_Position = projectionMatrix * mv;
-  }
-`;
-
-const shaftFrag = /* glsl */ `
-  uniform sampler2D glass;
-  uniform float strength;
-  uniform float time;
-  varying vec3 vWuv;
-  varying vec3 vView;
-  varying vec3 vNormalV;
-  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-  float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
-               mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
-  }
-  void main() {
-    vec2 uv = vWuv.xy;
-    float s = vWuv.z;
-    vec3 tint = texture2D(glass, uv).rgb;
-    tint = mix(vec3(1.0, 0.86, 0.66), tint, 0.65);
-    float edge = smoothstep(0.0, 0.12, uv.x) * smoothstep(1.0, 0.88, uv.x)
-               * smoothstep(0.0, 0.1, uv.y) * smoothstep(1.0, 0.9, uv.y);
-    float along = smoothstep(0.0, 0.06, s) * pow(1.0 - s, 1.6);
-    float vl = length(vView);
-    float nl = length(vNormalV);
-    float facing = (vl > 1e-5 && nl > 1e-5) ? abs(dot(vView / vl, vNormalV / nl)) : 0.0;
-    float drift = 0.82 + 0.18 * sin(time * 0.35 + uv.x * 7.0 + s * 5.0);
-    // Fade slices near the lens so walking through a shaft never fogs the view.
-    float near = smoothstep(0.6, 4.0, vl);
-    // God rays: the glass pattern breaks the beam into streaks that run its
-    // whole length (noise depends only on the window cross-section).
-    float rays = 0.3 + 0.7 * smoothstep(0.25, 0.8,
-      noise(uv * vec2(16.0, 10.0) + vec2(time * 0.015, 0.0)) * 0.7 +
-      noise(uv * vec2(41.0, 27.0)) * 0.3);
-    // Brightest where the light pours in at the glass.
-    float glow = 1.0 + 1.6 * exp(-s * 8.0);
-    float a = edge * along * facing * drift * near * rays * glow * strength;
-    gl_FragColor = vec4(tint * a, a);
-  }
-`;
-
-/**
- * Volumetric shafts: stacks of soft additive slices swept along the sun
- * direction from each window, tinted by the glass they passed through.
- */
-function createShafts(windows: Window[], glass: THREE.Texture | null) {
-  const uniforms = {
-    glass: { value: glass ?? new THREE.Texture() },
-    strength: { value: 0 },
-    time: { value: 0 },
-  };
-  const material = new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader: shaftVert,
-    fragmentShader: shaftFrag,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    side: THREE.DoubleSide,
-    fog: false,
-  });
-
-  const group = new THREE.Group();
-  const SEG = 24;
-  const SLICES = 9;
-  for (const w of windows) {
-    const positions: number[] = [];
-    const wuvs: number[] = [];
-    const index: number[] = [];
-    const point = (u: number, v: number, s: number) => {
-      // Slight spread so the beam softens as it travels.
-      const spread = 1 + s * 0.18;
-      const p = w.origin
-        .clone()
-        .addScaledVector(w.right, 0.5 + (u - 0.5) * spread)
-        .addScaledVector(w.up, 0.5 + (v - 0.5) * spread)
-        .addScaledVector(SUN_DIR, s * SHAFT_LENGTH);
-      positions.push(p.x, p.y, p.z);
-      wuvs.push(u, v, s);
-    };
-    const sheet = (fixU: number | null, fixV: number | null) => {
-      const base = positions.length / 3;
-      for (let i = 0; i <= SEG; i++) {
-        for (let j = 0; j <= SEG; j++) {
-          const a = j / SEG;
-          const s = i / SEG;
-          point(fixU ?? a, fixV ?? a, s);
-        }
-      }
-      for (let i = 0; i < SEG; i++) {
-        for (let j = 0; j < SEG; j++) {
-          const k = base + i * (SEG + 1) + j;
-          index.push(k, k + SEG + 1, k + 1, k + 1, k + SEG + 1, k + SEG + 2);
-        }
-      }
-    };
-    for (let k = 0; k < SLICES; k++) sheet((k + 0.5) / SLICES, null);
-    for (let k = 0; k < SLICES; k++) sheet(null, (k + 0.5) / SLICES);
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    geo.setAttribute("wuv", new THREE.Float32BufferAttribute(wuvs, 3));
-    geo.setIndex(index);
-    geo.computeVertexNormals();
-    const mesh = new THREE.Mesh(geo, material);
-    mesh.frustumCulled = false;
-    mesh.renderOrder = 10;
-    // Additive volume: keep it out of the AO normal pass.
-    mesh.userData.noAO = true;
-    group.add(mesh);
-  }
-  return { group, uniforms, material };
 }
 
 /**
@@ -286,6 +222,9 @@ const dustVert = /* glsl */ `
   uniform vec3 winU1;
   uniform float shaftLength;
   uniform sampler2D glass;
+  uniform float windPhase;
+  uniform float windGust;
+  uniform vec3 windDir;
   attribute vec4 anchor;
   attribute vec2 kind;
   attribute vec4 seed;
@@ -329,6 +268,8 @@ const dustVert = /* glsl */ `
       o.y = y - R;
       // Brownian jitter.
       o += wobble(o * 1.3, t, seed) * 0.05 * R;
+      // The breeze leans the cloud downwind and lets it sway with the gusts.
+      o += windDir * R * (0.1 * windGust + 0.05 * sin(windPhase * 1.7 + seed.x * 6.283));
       p = anchor.xyz + o;
 
       float d = length(o) / R;
@@ -346,6 +287,9 @@ const dustVert = /* glsl */ `
       vec3 q = position;
       q.xy += wobble(vec3(q.xy * 3.0, q.z * 4.0), t * 0.5, seed).xy * 0.015;
       q.z += t * 0.0015 * (seed.z - 0.5);
+      // Motes ride the breeze in from the window, faster in a gust.
+      q.z += windPhase * (0.004 + 0.004 * seed.w);
+      q.xy += sin(windPhase * 0.9 + seed.xy * 6.283) * 0.01 * windGust;
       q = fract(q);
       // Spread motes 15% past each beam edge so dust also hangs around the rays.
       vec2 b = q.xy * 1.3 - 0.15;
@@ -366,7 +310,9 @@ const dustVert = /* glsl */ `
     vec3 tc = cameraPosition - wp.xyz;
     vec3 toCam = tc / max(length(tc), 1e-4);
     // Forward scattering: motes blaze when backlit, almost vanish side-on.
-    float phase = henyeyGreenstein(dot(lightDir, toCam), 0.62) * 0.22 + 0.08;
+    float hg = henyeyGreenstein(dot(lightDir, toCam), 0.62);
+    // beam motes are in direct sun: they show from most angles, blaze backlit
+    float phase = kind.x > 0.5 ? hg * 0.3 + 0.35 : hg * 0.22 + 0.08;
     // Tumbling flakes catch the light now and then.
     float glint = pow(max(0.0, sin(t * (0.5 + seed.w * 1.8) + seed.x * 60.0)), 28.0) * 3.0;
     float lum = light * phase * (1.0 + glint) * strength;
@@ -374,7 +320,7 @@ const dustVert = /* glsl */ `
     vec4 mv = viewMatrix * wp;
     float dist = max(-mv.z, 0.05);
     // Real dust: 2–6 mm, i.e. about a pixel or two at room distances.
-    float worldSize = (0.002 + 0.004 * seed.z * seed.z) * (kind.x > 0.5 ? 1.4 : 1.0);
+    float worldSize = (0.002 + 0.004 * seed.z * seed.z) * (kind.x > 0.5 ? 2.2 : 1.0);
     float px = worldSize * pxScale / dist;
     // Shallow depth of field: anything closer than ~1 m melts into bokeh.
     float coc = clamp((1.0 - dist) * 18.0, 0.0, 22.0);
@@ -425,7 +371,7 @@ function findLampSources(interiorRoot: THREE.Object3D) {
   return sources;
 }
 
-const SHAFT_MOTES = 1600;
+const SHAFT_MOTES = 3200;
 
 function createDust(
   interiorRoot: THREE.Object3D,
@@ -462,7 +408,7 @@ function createDust(
     for (let n = 0; n < SHAFT_MOTES; n++) {
       // (u, v, s) in the beam; more motes near the window where it is brightest.
       v.set(Math.random(), Math.random(), Math.pow(Math.random(), 1.4));
-      push(none, w === 0 ? 1 : 2, 3.6);
+      push(none, w === 0 ? 1 : 2, 6.0);
     }
   });
 
@@ -486,6 +432,9 @@ function createDust(
     winR1: { value: w1.right },
     winU1: { value: w1.up },
     shaftLength: { value: SHAFT_LENGTH },
+    windPhase: { value: 0 },
+    windGust: { value: 0.6 },
+    windDir: { value: WIND_DIR },
     glass: { value: glass ?? new THREE.Texture() },
   };
   const points = new THREE.Points(
@@ -515,18 +464,27 @@ export function addHallAtmosphere(
   tex?: HallTextures,
 ) {
   applyCarpets(interiorRoot, tex);
-  const { windows, glass } = findWindows(interiorRoot);
+  const found = findWindows(interiorRoot);
+  const windows = found.windows;
+  // The light a sunlit window throws is its glass pattern, softened by the
+  // sun's disc over several metres and a touch richer in colour.
+  const glass = tex?.glassCookie ?? found.glass;
   const group = new THREE.Group();
   if (!windows.length) {
     interiorRoot.add(group);
-    return { update() {} } as { update(...args: unknown[]): void };
+    return { update() {}, rayTargets: () => [] } as {
+      update(...args: unknown[]): void;
+      rayTargets(): RayTarget[];
+    };
   }
+  let sunlight = 0;
+  let windPhase = 0;
+  let lastT = 0;
 
   const suns = addWindowSun(group, windows, glass);
-  const shafts = createShafts(windows, glass);
   const dust = createDust(interiorRoot, windows, glass);
   const fountain = addFountainWater(interiorRoot);
-  group.add(shafts.group, dust.points);
+  group.add(dust.points);
   interiorRoot.add(group);
 
   // Warm haze — density follows `inside` so the daylit facade stays clear.
@@ -549,16 +507,31 @@ export function addHallAtmosphere(
         const home = s.userData.home as THREE.Vector3;
         s.position.set(home.x + Math.sin(t * 0.021 + i) * 0.9, home.y + Math.sin(t * 0.017) * 0.3, home.z);
       });
-      shafts.uniforms.time.value = t;
-      shafts.uniforms.strength.value = 0.36 * on * cloud;
-      shafts.group.visible = on > 0.01;
+      sunlight = on * cloud;
       dust.uniforms.time.value = t;
+      windPhase += Math.min(Math.max(t - lastT, 0), 0.1) * gust(t);
+      lastT = t;
+      dust.uniforms.windPhase.value = windPhase;
+      dust.uniforms.windGust.value = gust(t);
       dust.uniforms.strength.value = on * (0.55 + 0.45 * cloud);
       dust.uniforms.pxScale.value =
         bufferHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
       fountain.update(t, on, dust.uniforms.pxScale.value);
       dust.points.visible = on > 0.01;
-      fog.density = 0.022 * on;
+      fog.density = 0.011 * on;
+    },
+    /** Windows in world space (centre + size) for the screen-space god rays. */
+    rayTargets(): RayTarget[] {
+      return windows.map((w) => ({
+        center: interiorRoot.localToWorld(
+          w.origin.clone().addScaledVector(w.right, 0.5).addScaledVector(w.up, 0.5),
+        ),
+        size: Math.max(w.right.length(), w.up.length()),
+        strength: sunlight,
+        dir: SUN_DIR.clone().transformDirection(interiorRoot.matrixWorld),
+      }));
     },
   };
 }
+
+export type RayTarget = { center: THREE.Vector3; size: number; strength: number; dir: THREE.Vector3 };

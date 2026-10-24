@@ -10,16 +10,32 @@ import * as THREE from "three";
  *   brass   — aged brass / gilt with brushing and tarnish, 0.5 m
  *   pile    — hand-knotted wool pile detail for the carpets, 0.1 m
  *   pichwai — two lotus-pond Pichwai paintings
+ *   glass   — leaded antique stained glass for the two hall windows
+ *   frame   — the Kesari photos in carved royal giltwood frames (wall niches)
+ *   o3/*    — the ivory sherwani (O3): embroidered silk, plain silk, zari
+ *             border, stole weave; basecolor + data (R height, G rough, B metal)
  * Each set has basecolor (sRGB), orm (G = roughness, B = metal) and normal.
  */
 const BASE = "/textures/hall/";
-const SETS = ["floor", "marble", "plaster", "dome", "brass"] as const;
+const SETS = ["floor", "marble", "plaster", "dome", "brass", "glass"] as const;
 
 export type PbrSet = { map: THREE.Texture; orm: THREE.Texture; normal: THREE.Texture };
 export type HallTextures = Record<(typeof SETS)[number], PbrSet> & {
   pile: { orm: THREE.Texture; normal: THREE.Texture };
   pichwai: THREE.Texture[];
+  /** transmitted daylight through the stained glass */
+  glassEmissive: THREE.Texture;
+  /** softened, richer glass pattern: the light it throws into the room */
+  glassCookie: THREE.Texture;
+  /** framed photos for the wall niches: one basecolor each, shared gilt ORM + relief */
+  frames: PbrSet[];
+  o3: O3Textures;
 };
+
+const FRAMED_PHOTOS = 4;
+
+const O3_SETS = ["silk", "plain", "border", "stole"] as const;
+export type O3Textures = Record<(typeof O3_SETS)[number], { map: THREE.Texture; data: THREE.Texture }>;
 
 /** Box-projected hall UVs run 1 unit = 2 m; repeat so each set lands at real size. */
 export const UV_METRES = 2;
@@ -28,7 +44,7 @@ function prep(tex: THREE.Texture, srgb: boolean) {
   tex.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.flipY = false; // glTF UV convention
-  tex.anisotropy = 8;
+  tex.anisotropy = 16; // clamped to the GPU max
   return tex;
 }
 
@@ -41,6 +57,10 @@ export async function loadHallTextures(onProgress: (done: number, total: number)
   }
   files.push(["pile_orm.jpg", false], ["pile_normal.jpg", false]);
   files.push(["pichwai_a_basecolor.jpg", true], ["pichwai_b_basecolor.jpg", true]);
+  files.push(["glass_emissive.jpg", true], ["glass_cookie.jpg", true]);
+  files.push(["frame_orm.jpg", false], ["frame_normal.jpg", false]);
+  for (let i = 1; i <= FRAMED_PHOTOS; i++) files.push([`frame_${i}_basecolor.jpg`, true]);
+  for (const s of O3_SETS) files.push([`../o3/o3_${s}_basecolor.jpg`, true], [`../o3/o3_${s}_data.jpg`, false]);
   let done = 0;
   const loaded = await Promise.all(
     files.map(([name, srgb]) =>
@@ -58,6 +78,22 @@ export async function loadHallTextures(onProgress: (done: number, total: number)
   }
   out.pile = { orm: get("pile_orm.jpg"), normal: get("pile_normal.jpg") };
   out.pichwai = [get("pichwai_a_basecolor.jpg"), get("pichwai_b_basecolor.jpg")];
+  out.glassEmissive = get("glass_emissive.jpg");
+  out.glassCookie = get("glass_cookie.jpg");
+  out.o3 = {} as O3Textures;
+  for (const s of O3_SETS) {
+    const map = get(`../o3/o3_${s}_basecolor.jpg`);
+    const data = get(`../o3/o3_${s}_data.jpg`);
+    // projected in garment space: image top = up
+    map.flipY = data.flipY = true;
+    map.anisotropy = data.anisotropy = 16;
+    map.needsUpdate = data.needsUpdate = true;
+    out.o3[s] = { map, data };
+  }
+  out.frames = [];
+  for (let i = 1; i <= FRAMED_PHOTOS; i++) {
+    out.frames.push({ map: get(`frame_${i}_basecolor.jpg`), orm: get("frame_orm.jpg"), normal: get("frame_normal.jpg") });
+  }
   return out;
 }
 

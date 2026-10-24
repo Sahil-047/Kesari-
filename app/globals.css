@@ -271,7 +271,7 @@ img {
   pointer-events: none;
   /* fades out inside the hall (--hero-inside) so outfits keep true colour */
   /* subtle neutral film grain only (photo-real facade) */
-  opacity: calc(0.07 * (1 - 0.85 * var(--hero-inside, 0)));
+  opacity: 0;
   mix-blend-mode: multiply;
   background-image: url("/textures/grain.svg");
   background-size: 260px 260px;

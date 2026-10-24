@@ -30,11 +30,11 @@ const TOP_WATER = 4.05;
 
 type Tier = { rimR: number; rimY: number; landY: number; out: number; droplets: number };
 const TIERS: Tier[] = [
-  { rimR: 0.5, rimY: 4.23, landY: 3.43, out: 0.32, droplets: 500 },
-  { rimR: 0.92, rimY: 3.66, landY: 2.68, out: 0.34, droplets: 800 },
+  { rimR: 0.5, rimY: 4.23, landY: 3.43, out: 0.32, droplets: 800 },
+  { rimR: 0.92, rimY: 3.66, landY: 2.68, out: 0.34, droplets: 1300 },
   // Lowest bowl spills into the basin; where the ring overhangs the basin
   // walls (z) the water lands on the rim instead.
-  { rimR: 1.45, rimY: 2.99, landY: BASIN_Y, out: 0.12, droplets: 1100 },
+  { rimR: 1.45, rimY: 2.99, landY: BASIN_Y, out: 0.12, droplets: 1900 },
 ];
 
 /** Crown of arcing jets from the finial. */
@@ -231,6 +231,84 @@ function jetGeometry(angle: number) {
   return geo;
 }
 
+/**
+ * Aerated "white water" over each stream. Seen from across the hall a clear
+ * refracting sheet vanishes against white marble; what the eye actually
+ * catches is the churned layer: streaks of foam racing down the fall, a
+ * darker blue-green body between them (contrast against the cream stone),
+ * bright rims where the sheet turns edge-on, and HDR glints that bloom.
+ */
+const foamVert = /* glsl */ `
+  attribute vec4 color;
+  varying vec2 vUv;
+  varying float vAlpha;
+  varying float vFres;
+  void main() {
+    vUv = uv;
+    vAlpha = color.a;
+    vec4 wp = modelMatrix * vec4(position, 1.0);
+    vec3 n = normalize(mat3(modelMatrix) * normal);
+    vec3 v = normalize(cameraPosition - wp.xyz);
+    vFres = pow(1.0 - abs(dot(n, v)), 2.0);
+    gl_Position = projectionMatrix * viewMatrix * wp;
+  }
+`;
+
+const foamFrag = /* glsl */ `
+  uniform float time;
+  uniform float strength;
+  uniform float speed;
+  uniform vec2 scale;
+  varying vec2 vUv;
+  varying float vAlpha;
+  varying float vFres;
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float vnoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+               mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+  }
+  void main() {
+    vec2 p = vUv * scale;
+    // Long streaks racing down the fall, broken up by finer churn.
+    float streak = vnoise(vec2(p.x, p.y * 0.12 - time * speed));
+    streak = smoothstep(0.42, 0.88, streak);
+    float churn = vnoise(vec2(p.x * 3.1, p.y * 0.5 - time * speed * 1.6));
+    float fine = vnoise(vec2(p.x * 9.0, p.y * 1.4 - time * speed * 2.2));
+    float foam = clamp(streak * (0.55 + 0.6 * churn) + 0.35 * smoothstep(0.6, 0.95, fine), 0.0, 1.0);
+    // Body: blue-green water darker than the marble; foam: bright, backlit.
+    vec3 body = vec3(0.42, 0.6, 0.64);
+    vec3 white = vec3(1.0, 0.99, 0.96);
+    vec3 col = mix(body, white, foam) * (1.0 + 1.6 * foam * foam);
+    // Edge-on rims catch the lamps.
+    col += vec3(0.9, 0.95, 1.0) * vFres * 1.2;
+    // Rare glints hot enough to bloom.
+    float glint = smoothstep(0.93, 1.0, fine * churn * 1.4);
+    col += vec3(1.0, 0.95, 0.85) * glint * 9.0;
+    float a = vAlpha * strength * clamp(0.22 + 0.62 * foam + 0.55 * vFres + glint, 0.0, 0.92);
+    gl_FragColor = vec4(col, a);
+  }
+`;
+
+function foamMaterial(scale: THREE.Vector2, speed: number) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      strength: { value: 0 },
+      speed: { value: speed },
+      scale: { value: scale },
+    },
+    vertexShader: foamVert,
+    fragmentShader: foamFrag,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
+}
+
 function createStreams() {
   const flow = flowNormalMap();
   flow.repeat.set(1.6, 0.9);
@@ -241,12 +319,20 @@ function createStreams() {
   const jetMat = waterMaterial(jetFlow, 0.8);
   jetMat.thickness = 0.05;
 
+  // u around the rim / v along the fall are metres on curtains; jets are thinner.
+  const curtainFoam = foamMaterial(new THREE.Vector2(9, 9), 2.6);
+  const jetFoam = foamMaterial(new THREE.Vector2(60, 7), 3.4);
+
   const group = new THREE.Group();
   for (const tier of TIERS) {
-    const mesh = new THREE.Mesh(curtainGeometry(tier), curtainMat);
+    const geo = curtainGeometry(tier);
+    const mesh = new THREE.Mesh(geo, curtainMat);
     mesh.renderOrder = 9;
     mesh.userData.noAO = true;
-    group.add(mesh);
+    const foam = new THREE.Mesh(geo, curtainFoam);
+    foam.renderOrder = 10;
+    foam.userData.noAO = true;
+    group.add(mesh, foam);
   }
   // Short central column feeding the crown.
   const column = new THREE.Mesh(
@@ -260,16 +346,24 @@ function createStreams() {
   column.geometry.setAttribute("color", new THREE.Float32BufferAttribute(colAlpha, 4));
   group.add(column);
   for (let k = 0; k < JET_ARCS; k++) {
-    const mesh = new THREE.Mesh(jetGeometry((k / JET_ARCS) * Math.PI * 2 + 0.13), jetMat);
+    const geo = jetGeometry((k / JET_ARCS) * Math.PI * 2 + 0.13);
+    const mesh = new THREE.Mesh(geo, jetMat);
     mesh.renderOrder = 9;
     mesh.userData.noAO = true;
-    group.add(mesh);
+    const foam = new THREE.Mesh(geo, jetFoam);
+    foam.renderOrder = 10;
+    foam.userData.noAO = true;
+    group.add(mesh, foam);
   }
 
   return {
     group,
     materials: [curtainMat, jetMat],
-    update(t: number) {
+    update(t: number, on: number) {
+      for (const f of [curtainFoam, jetFoam]) {
+        f.uniforms.time.value = t % 1000;
+        f.uniforms.strength.value = on;
+      }
       // Scroll the flow texture down the falls (v is along the flow).
       flow.offset.set(wrap(Math.sin(t * 0.3) * 0.02), wrap(-t * 1.9));
       jetFlow.offset.set(0, wrap(-t * 2.6));
@@ -301,8 +395,8 @@ const dropVert = /* glsl */ `
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     float dist = max(-mv.z, 0.05);
     float px = info.z * pxScale / dist;
-    float size = clamp(px, 1.5, 14.0);
-    float cover = min(px * px / 2.25, 1.0);
+    float size = clamp(px, 2.2, 16.0);
+    float cover = min(px * px / 4.84, 1.0) * 0.85 + 0.15;
     float k = kind > 1.5 ? 0.9 : (kind > 0.5 ? 1.0 : 0.8);
     vAlpha = fade * cover * k;
     gl_PointSize = size;
@@ -323,7 +417,7 @@ const dropFrag = /* glsl */ `
     float ring = smoothstep(1.0, 0.75, r2) * smoothstep(0.3, 0.7, r2) * 0.35;
     float a = (core + ring) * vAlpha * strength;
     // HDR on purpose: glints rise above the marble and bloom slightly.
-    vec3 col = vec3(1.0, 0.96, 0.9) * (1.6 * vSpark);
+    vec3 col = vec3(1.0, 0.97, 0.92) * (2.6 * vSpark);
     gl_FragColor = vec4(col * a, a);
   }
 `;
@@ -372,7 +466,7 @@ function createDroplets() {
       if (i % 2 === 0) {
         const lx = p.x + v.x * life;
         const lz = p.z + v.z * life;
-        splashAt(lx, landingY(tier, lx - AXIS.x, lz - AXIS.y), lz, 1, 0.85);
+        splashAt(lx, landingY(tier, lx - AXIS.x, lz - AXIS.y), lz, 2, 1.1);
       }
     }
   }
@@ -414,6 +508,80 @@ function createDroplets() {
   );
   points.frustumCulled = false;
   points.renderOrder = 12;
+  return { points, uniforms };
+}
+
+/* ------------------------------------------------------------------------ */
+/* Spray mist: soft billows where each fall lands, drifting up and away.     */
+/* ------------------------------------------------------------------------ */
+
+const mistVert = /* glsl */ `
+  uniform float time;
+  uniform float pxScale;
+  attribute vec4 info; // life, phase, size (m), rise
+  varying float vAlpha;
+  void main() {
+    float life = info.x;
+    float age = fract(time / life + info.y) * life;
+    float f = age / life;
+    vec3 p = position + vec3(0.0, info.w * f, 0.0);
+    vec2 out2 = position.xz - vec2(0.0, -11.0);
+    p.xz += out2 / max(length(out2), 1e-3) * 0.18 * f;
+    vAlpha = smoothstep(0.0, 0.2, f) * (1.0 - smoothstep(0.55, 1.0, f));
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    float dist = max(-mv.z, 0.1);
+    gl_PointSize = clamp(info.z * (0.6 + 0.8 * f) * pxScale / dist, 3.0, 220.0);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const mistFrag = /* glsl */ `
+  uniform float strength;
+  varying float vAlpha;
+  void main() {
+    vec2 c = gl_PointCoord * 2.0 - 1.0;
+    float r2 = dot(c, c);
+    if (r2 > 1.0) discard;
+    float a = exp(-r2 * 3.5) * vAlpha * strength * 0.16;
+    gl_FragColor = vec4(vec3(1.05, 1.07, 1.1), a);
+  }
+`;
+
+function createMist() {
+  const pos: number[] = [];
+  const info: number[] = [];
+  const ring = (r0: number, r1: number, y: number, n: number, size: number, rise: number) => {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = rand(r0, r1);
+      const x = Math.cos(a) * r;
+      const z = Math.sin(a) * r;
+      if (Math.abs(x) > BASIN_HALF.x || Math.abs(z) > BASIN_HALF.y + 0.1) continue;
+      pos.push(AXIS.x + x, y + rand(0, 0.06), AXIS.y + z);
+      info.push(rand(2.2, 4.2), Math.random(), size * rand(0.7, 1.3), rise * rand(0.6, 1.4));
+    }
+  };
+  ring(1.45, 1.75, BASIN_Y, 260, 0.42, 0.5);
+  ring(0.92, 1.2, TIERS[1].landY, 140, 0.3, 0.35);
+  ring(0.5, 0.75, TIERS[0].landY, 90, 0.22, 0.28);
+  ring(0.2, 0.45, TOP_WATER, 60, 0.18, 0.25);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("info", new THREE.Float32BufferAttribute(info, 4));
+  const uniforms = { time: { value: 0 }, pxScale: { value: 1000 }, strength: { value: 0 } };
+  const points = new THREE.Points(
+    geo,
+    new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader: mistVert,
+      fragmentShader: mistFrag,
+      transparent: true,
+      depthWrite: false,
+      fog: false,
+    }),
+  );
+  points.frustumCulled = false;
+  points.renderOrder = 11;
   return { points, uniforms };
 }
 
@@ -464,14 +632,18 @@ export function addFountainWater(interiorRoot: THREE.Object3D) {
   const group = new THREE.Group();
   const streams = createStreams();
   const drops = createDroplets();
-  group.add(streams.group, drops.points);
+  const mist = createMist();
+  group.add(streams.group, mist.points, drops.points);
   interiorRoot.add(group);
   const water = animateWaterSurfaces(interiorRoot);
 
   return {
     update(t: number, on: number, pxScale: number) {
       group.visible = on > 0.01;
-      streams.update(t);
+      streams.update(t, on);
+      mist.uniforms.time.value = t;
+      mist.uniforms.pxScale.value = pxScale;
+      mist.uniforms.strength.value = on;
       drops.uniforms.time.value = t;
       drops.uniforms.pxScale.value = pxScale;
       drops.uniforms.strength.value = on;

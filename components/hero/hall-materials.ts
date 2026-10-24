@@ -42,9 +42,25 @@ export function studyInteriorMaterial(
 
   // Self-lit materials keep their type; they only need more punch for bloom.
   if (/stained_glass/i.test(name)) {
-    src.emissiveIntensity *= 2.6;
-    src.envMapIntensity = 0.3;
-    return src;
+    if (!tex) {
+      src.emissiveIntensity *= 2.6;
+      src.envMapIntensity = 0.3;
+      return src;
+    }
+    // Leaded antique glass, backlit by daylight: clear cathedral panes blaze
+    // (soft bloom), jewel colours stay deep, the lead came is dull grey metal,
+    // and the inner surface is glossy enough to mirror the chandeliers.
+    const g = toPhysical(src);
+    applySet(g, tex.glass, 1.0);
+    g.emissiveMap = tex.glassEmissive;
+    g.emissive.set("#ffffff");
+    g.emissiveIntensity = 8.5;
+    g.clearcoat = 1;
+    g.clearcoatRoughness = MIN_ROUGHNESS;
+    g.envMapIntensity = 0.8;
+    g.side = THREE.DoubleSide;
+    g.needsUpdate = true;
+    return g;
   }
   if (/lamp/i.test(name)) {
     src.emissiveIntensity *= 2.4;
