@@ -1,0 +1,295 @@
+@import "tailwindcss";
+
+:root {
+  --parchment: #b8a686;
+  --parchment-light: #d9cdb8;
+  --parchment-mid: #c4b496;
+  --parchment-deep: #a89476;
+  --cream: #ebe3d4;
+  --gold: #c5a059;
+  --gold-soft: #b8a070;
+  --ink: #2c241c;
+  --ink-soft: #4a3f35;
+  --charcoal: #14110f;
+  --footer: #12100e;
+  --header-h: 7.5rem;
+}
+
+@theme inline {
+  --color-parchment: var(--parchment);
+  --color-parchment-light: var(--parchment-light);
+  --color-parchment-mid: var(--parchment-mid);
+  --color-parchment-deep: var(--parchment-deep);
+  --color-cream: var(--cream);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-charcoal: var(--charcoal);
+  --color-footer: var(--footer);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-script: var(--font-script);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--parchment-light);
+  color: var(--ink);
+  font-family: var(--font-serif), "Cas Olgans", Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(197, 160, 89, 0.35);
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.parchment-surface {
+  background: radial-gradient(
+    ellipse 90% 70% at 50% 35%,
+    #d4c4a8 0%,
+    #b8a484 52%,
+    #9a8668 100%
+  );
+}
+
+/*
+  Noise overlay only. Do NOT set position here — it was overriding Tailwind
+  `fixed` on loading/intro screens (custom CSS loads after @import), which
+  put the loader in document flow and made the navbar area jump.
+  Containing block for ::before comes from an explicit relative/fixed/absolute
+  on the same element.
+*/
+.parchment-noise::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.page-grain {
+  position: relative;
+  background: radial-gradient(
+    ellipse 90% 70% at 50% 35%,
+    #d4c4a8 0%,
+    #b8a484 52%,
+    #9a8668 100%
+  );
+}
+
+.page-grain::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.18;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.site-shell {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+}
+
+.site-main {
+  flex: 1 0 auto;
+}
+
+.nav-link {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.625rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 400;
+  line-height: 1;
+  transition: opacity 0.25s ease;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  opacity: 0.5;
+}
+
+.ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid currentColor;
+  padding: 0.75rem 1.75rem;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.625rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  background: transparent;
+  color: inherit;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.ghost-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ghost-btn-dark:hover {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.solid-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--ink);
+  color: var(--cream);
+  padding: 0.85rem 1.85rem;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.625rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  transition: background 0.25s ease;
+}
+
+.solid-btn:hover {
+  background: var(--ink-soft);
+}
+
+.eyebrow {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  line-height: 1.2;
+}
+
+.display {
+  font-family: var(--font-serif), "Cas Olgans", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+}
+
+.script {
+  font-family: var(--font-script), cursive;
+}
+
+.hairline {
+  display: block;
+  width: 2.25rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+.section-pad {
+  padding-inline: clamp(1.25rem, 4vw, 3rem);
+}
+
+.full-bleed {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.full-bleed-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6rem 1.5rem 4rem;
+  z-index: 2;
+}
+
+.card-rail {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.card-rail > * {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+.card-rail::-webkit-scrollbar {
+  height: 3px;
+}
+
+.card-rail::-webkit-scrollbar-thumb {
+  background: rgba(44, 36, 28, 0.25);
+}
+
+.rail-hide-scroll {
+  display: flex;
+  gap: 0.85rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.rail-hide-scroll > * {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+.rail-hide-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(44, 36, 28, 0.22);
+}
+
+@media (max-width: 767px) {
+  :root {
+    --header-h: 5.5rem;
+  }
+}
+
