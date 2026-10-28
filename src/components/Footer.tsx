@@ -32,7 +32,9 @@ export default function Footer() {
   return (
     <footer className="bg-footer text-parchment-light">
       <div className="section-pad mx-auto max-w-5xl pb-12 pt-16 text-center md:pb-14 md:pt-20">
-        <Logo tone="gold" size="lg" showMark={false} />
+        <div className="flex justify-center">
+          <Logo tone="gold" size="lg" />
+        </div>
         <span className="mx-auto mt-5 hairline bg-gold opacity-70" />
         <p className="mt-5 text-sm italic text-parchment-light/75">
           Same traditions. New stories.

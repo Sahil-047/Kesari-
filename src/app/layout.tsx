@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Great_Vibes, Jost } from "next/font/google";
-import RouteTransitionLoader from "@/components/RouteTransitionLoader";
+import IntroSplash from "@/components/IntroSplash";
 import { BagWishlistProvider } from "@/context/BagWishlistContext";
 import "./globals.css";
 
@@ -45,7 +45,7 @@ export default function RootLayout({
         className={`${casOlgans.className} min-h-full flex flex-col bg-parchment-light text-ink`}
       >
         <BagWishlistProvider>
-          <RouteTransitionLoader />
+          <IntroSplash />
           {children}
         </BagWishlistProvider>
       </body>

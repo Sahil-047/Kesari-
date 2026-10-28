@@ -4,21 +4,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import LoadingScreen, { DURATION_MS } from "./LoadingScreen";
 
-/** First visit: same simple Sanskrit % load — no arch / door mark. */
+/**
+ * Plays on every full page load (first visit or reload). Mounted in the root
+ * layout, so client-side navigation between pages never re-triggers it.
+ */
 export default function IntroSplash() {
   const [visible, setVisible] = useState(true);
   const [progress, setProgress] = useState(1);
   const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
-    const seen =
-      typeof window !== "undefined" &&
-      sessionStorage.getItem("kesari-intro") === "1";
-    if (seen) {
-      setVisible(false);
-      return;
-    }
-
     const start = performance.now();
     let raf = 0;
     let exitTimer = 0;
@@ -31,7 +26,6 @@ export default function IntroSplash() {
         return;
       }
       setExiting(true);
-      sessionStorage.setItem("kesari-intro", "1");
       exitTimer = window.setTimeout(() => setVisible(false), 480);
     };
 

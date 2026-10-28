@@ -86,6 +86,25 @@ export const CRAFTS: Craft[] = [
     ],
   },
   {
+    slug: "vasundhara-lehenga",
+    label: "Pink",
+    title: "Vasundhara Lehenga",
+    subtitle: "Net lehenga with velvet blouse",
+    description:
+      "The Vasundhara Lehenga brings together the delicate fluidity of net and the richness of velvet. Featuring a net lehenga paired with a luxurious velvet blouse and a coordinating net dupatta, the ensemble embodies romantic elegance with a contemporary couture sensibility.",
+    image: "/images/PINK/DSC05812.jpg",
+    gallery: [
+      { src: "/images/PINK/DSC05946.jpg", adjective: "Romantic" },
+      { src: "/images/PINK/DSC06005.jpg", adjective: "Luminous" },
+      { src: "/images/PINK/DSC06031.jpg", adjective: "Opulent" },
+    ],
+    insights: [
+      "Net lehenga with velvet blouse",
+      "Coordinating net dupatta",
+      "Finished by the atelier, Ahmedabad",
+    ],
+  },
+  {
     slug: "blush-court",
     label: "Menswear",
     title: "Blush Court",
@@ -482,6 +501,15 @@ export const WORLD_INTRO =
 
 export const HOME_SHOWCASE = [
   {
+    eyebrow: "Wedding",
+    title: "Soft Bridal",
+    href: "/crafts/soft-bridal",
+    image: "/images/hero-wedding.jpg",
+    video: "/videos/soft-bridal.mp4",
+    videoPoster: "/images/soft-bridal-poster.jpg",
+    dim: false,
+  },
+  {
     eyebrow: "Orange",
     title: "Warm Saffron",
     href: "/crafts/warm-saffron",
@@ -491,12 +519,12 @@ export const HOME_SHOWCASE = [
     dim: false,
   },
   {
-    eyebrow: "Wedding",
-    title: "Soft Bridal",
-    href: "/crafts/soft-bridal",
-    image: "/images/hero-wedding.jpg",
-    video: "/videos/soft-bridal.mp4",
-    videoPoster: "/images/soft-bridal-poster.jpg",
+    eyebrow: "Off White",
+    title: "Soft Ivory",
+    href: "/crafts/soft-ivory",
+    image: "/images/hero-soft-ivory.jpg",
+    video: "/videos/soft-ivory.mp4",
+    videoPoster: "/images/soft-ivory-poster.jpg",
     dim: false,
   },
   {
@@ -535,6 +563,7 @@ export function getCraft(slug: string) {
 export const EXPLORE_LOOK_SLUGS = [
   "soft-ivory",
   "blush-veranda",
+  "vasundhara-lehenga",
   "blush-court",
   "moss-courtyard",
   "warm-saffron",

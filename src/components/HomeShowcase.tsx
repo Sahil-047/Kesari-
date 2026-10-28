@@ -87,7 +87,7 @@ export default function HomeShowcase() {
 
   return (
     <>
-      {HOME_SHOWCASE.map((item) => (
+      {HOME_SHOWCASE.slice(1).map((item) => (
         <FullBleedCraft
           key={item.href}
           eyebrow={item.eyebrow}

@@ -2,17 +2,20 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { HOME_SHOWCASE } from "@/lib/data";
 import AutoLoopVideo from "./AutoLoopVideo";
 import Header from "./Header";
+
+const hero = HOME_SHOWCASE[0];
 
 export default function HomeHero() {
   return (
     <section className="relative aspect-video w-full overflow-hidden md:min-h-[56dvh]">
       <AutoLoopVideo
         className="absolute inset-0 h-full w-full object-cover"
-        src="/videos/soft-ivory.mp4"
-        poster="/images/soft-ivory-poster.jpg"
-        aria-label="Soft Ivory"
+        src={hero.video}
+        poster={hero.videoPoster}
+        aria-label={hero.title}
       />
       <Header variant="overlay" />
 
@@ -24,13 +27,13 @@ export default function HomeHero() {
           transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-white/90">
-            Off White
+            {hero.eyebrow}
           </p>
           <h1 className="display mt-3 text-[clamp(1.75rem,4.5vw,3rem)] uppercase tracking-[0.18em]">
-            Soft Ivory
+            {hero.title}
           </h1>
           <Link
-            href="/crafts/soft-ivory"
+            href={hero.href}
             className="ghost-btn mt-8 px-14 py-4.5 text-[0.95rem] tracking-[0.34em] md:px-16 md:py-5 md:text-[1.05rem]"
           >
             Explore
