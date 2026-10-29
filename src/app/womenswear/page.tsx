@@ -2,8 +2,27 @@ import AutoLoopVideo from "@/components/AutoLoopVideo";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import WomenswearBrowse from "@/components/WomenswearBrowse";
+import { WOMENS_CATEGORIES } from "@/lib/color-collections";
+import { Suspense } from "react";
 
-export default function WomenswearPage() {
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+/** Reads ?category= so links like /womenswear?category=saree open filtered. */
+async function BrowseForCategory({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const { category } = await searchParams;
+  const initialCategory = WOMENS_CATEGORIES.find((c) => c.id === category)?.id;
+  return <WomenswearBrowse initialCategory={initialCategory} />;
+}
+
+export default function WomenswearPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   return (
     <div className="site-shell page-grain">
       <main className="site-main relative z-10">
@@ -35,7 +54,9 @@ export default function WomenswearPage() {
           </h1>
         </section>
 
-        <WomenswearBrowse />
+        <Suspense fallback={<WomenswearBrowse />}>
+          <BrowseForCategory searchParams={searchParams} />
+        </Suspense>
       </main>
       <Footer />
     </div>

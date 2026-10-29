@@ -33,16 +33,3 @@ export const SEASON_ARRIVALS: SeasonArrival[] = COVERS.map((cover, i) => {
     index: String(i + 1).padStart(2, "0"),
   };
 });
-
-/** Bento span classes — irregular magazine board */
-export const ARRIVAL_SPANS = [
-  "md:col-span-7 md:row-span-2",
-  "md:col-span-5",
-  "md:col-span-5",
-  "md:col-span-4",
-  "md:col-span-8 md:row-span-2",
-  "md:col-span-4",
-  "md:col-span-6",
-  "md:col-span-6",
-  "md:col-span-12 md:min-h-[52vh]",
-] as const;
