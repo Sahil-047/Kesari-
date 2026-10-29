@@ -1,0 +1,274 @@
+[
+  {
+    "slug": "radhika-saree",
+    "title": "Radhika Saree",
+    "label": "Light Pink",
+    "department": "womenswear",
+    "category": "saree",
+    "accent": "#e8c4c0",
+    "story": "The Radhika Saree brings together the richness of velvet with the delicate allure of silk and net. Featuring a luxurious velvet blouse paired with a silk and net saree, the ensemble creates a striking balance of texture, sophistication, and contemporary elegance.",
+    "href": "/crafts/blush-veranda",
+    "images": [
+      {
+        "src": "/images/LIGHT PINK/DSC07146.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/LIGHT PINK/DSC07151.jpg",
+        "width": 4092,
+        "height": 6138
+      },
+      {
+        "src": "/images/LIGHT PINK/DSC07168.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/LIGHT PINK/DSC07203.jpg",
+        "width": 4396,
+        "height": 6594
+      },
+      {
+        "src": "/images/LIGHT PINK/DSC07207.jpg",
+        "width": 4672,
+        "height": 7008
+      }
+    ],
+    "sortOrder": 0,
+    "status": "published"
+  },
+  {
+    "slug": "vasundhara-lehenga",
+    "title": "Vasundhara Lehenga",
+    "label": "Pink",
+    "department": "womenswear",
+    "category": "lehenga",
+    "accent": "#c9567a",
+    "story": "The Vasundhara Lehenga brings together the delicate fluidity of net and the richness of velvet. Featuring a net lehenga paired with a luxurious velvet blouse and a coordinating net dupatta, the ensemble embodies romantic elegance with a contemporary couture sensibility.",
+    "href": "/crafts/vasundhara-lehenga",
+    "images": [
+      {
+        "src": "/images/PINK/DSC05812.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/PINK/DSC05946.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/PINK/DSC06005.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/PINK/DSC06031.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/PINK/DSC06196.jpg",
+        "width": 4449,
+        "height": 6673
+      }
+    ],
+    "sortOrder": 1,
+    "status": "published"
+  },
+  {
+    "slug": "rajsi-lehenga",
+    "title": "Rajsi Lehenga",
+    "label": "Orange",
+    "department": "womenswear",
+    "category": "lehenga",
+    "accent": "#d9822b",
+    "story": "The Rajsi Lehenga is crafted in raw silk, featuring a graceful 12-panel silhouette paired with a matching raw silk blouse. A pure organza silk dupatta lends an ethereal finish to this elegant ensemble, bringing together traditional craftsmanship and understated opulence.",
+    "href": "/crafts/warm-saffron",
+    "images": [
+      {
+        "src": "/images/ORANGE/DSC05458.jpg",
+        "width": 3553,
+        "height": 5329
+      },
+      {
+        "src": "/images/ORANGE/DSC05466.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/ORANGE/DSC05475.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/ORANGE/DSC05476.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/ORANGE/DSC05516.jpg",
+        "width": 4672,
+        "height": 7008
+      }
+    ],
+    "sortOrder": 2,
+    "status": "published"
+  },
+  {
+    "slug": "rajnandini-lehenga",
+    "title": "Rajnandini Lehenga",
+    "label": "Violet",
+    "department": "womenswear",
+    "category": "lehenga",
+    "accent": "#4b2a5e",
+    "story": "Rooted in the richness of Indian textiles, the Rajnandini Lehenga features a 12-panel raw silk skirt paired with an exquisite pure Banarasi brocade blouse. A pure raw organza silk dupatta completes the ensemble, offering a sophisticated interplay of heritage textiles and timeless elegance.",
+    "href": "/crafts/deep-plum",
+    "images": [
+      {
+        "src": "/images/VIOLET/DSC06377.jpg",
+        "width": 4667,
+        "height": 7001
+      },
+      {
+        "src": "/images/VIOLET/DSC06423.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/VIOLET/DSC06468.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/VIOLET/DSC06731.jpg",
+        "width": 4551,
+        "height": 6827
+      },
+      {
+        "src": "/images/VIOLET/DSC06828.jpg",
+        "width": 4672,
+        "height": 7008
+      }
+    ],
+    "sortOrder": 3,
+    "status": "published"
+  },
+  {
+    "slug": "blush-court",
+    "title": "Blush Court",
+    "label": "Sherwani",
+    "department": "menswear",
+    "category": "sherwani",
+    "accent": "#c4a090",
+    "story": "Cut for the courtyard and the room that gathers. Soft blush tones, composed silhouettes, and heritage menswear finished by the atelier for evening light.",
+    "href": "/crafts/blush-court",
+    "images": [
+      {
+        "src": "/images/Wedding/DSC06237.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/Wedding/DSC06308.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/Wedding/DSC06322.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/blush-court/insight-1.jpg",
+        "width": 2400,
+        "height": 3600
+      },
+      {
+        "src": "/images/blush-court/insight-2.jpg",
+        "width": 2400,
+        "height": 3600
+      }
+    ],
+    "sortOrder": 0,
+    "status": "published"
+  },
+  {
+    "slug": "moss-courtyard",
+    "title": "Moss Courtyard",
+    "label": "Kurta",
+    "department": "menswear",
+    "category": "kurta",
+    "accent": "#5c6b4a",
+    "story": "Menswear in moss and deep green, cut for open ground and evening. Quiet stitchwork, composed length, finished by the atelier for the photograph and the walk beyond.",
+    "href": "/crafts/moss-courtyard",
+    "images": [
+      {
+        "src": "/images/Wedding/DSC05573.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/Wedding/DSC05728.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/moss-courtyard/insight-1.jpg",
+        "width": 2400,
+        "height": 3600
+      },
+      {
+        "src": "/images/moss-courtyard/insight-2.jpg",
+        "width": 2400,
+        "height": 3600
+      },
+      {
+        "src": "/images/moss-courtyard/insight-3.jpg",
+        "width": 2400,
+        "height": 3600
+      }
+    ],
+    "sortOrder": 1,
+    "status": "published"
+  },
+  {
+    "slug": "pearl-threshold",
+    "title": "Pearl Threshold",
+    "label": "Bandhgala",
+    "department": "menswear",
+    "category": "bandhgala",
+    "accent": "#d4cfc6",
+    "story": "A quieter formality at the threshold — ivory calm, structured line, and the restraint of pearl light. Heritage menswear held for the hour before the room fills.",
+    "images": [
+      {
+        "src": "/images/Wedding/DSC05170.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/Wedding/DSC05171.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/Wedding/DSC05186.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/Wedding/DSC05215.jpg",
+        "width": 4672,
+        "height": 7008
+      },
+      {
+        "src": "/images/Wedding/DSC05269.jpg",
+        "width": 7008,
+        "height": 4672
+      }
+    ],
+    "sortOrder": 2,
+    "status": "published"
+  }
+]

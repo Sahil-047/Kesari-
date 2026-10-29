@@ -1,5 +1,6 @@
 "use client";
 
+import { api, ApiRequestError } from "@/lib/api/client";
 import { EASE_FLUENT, useReducedMotionSafe } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
@@ -19,13 +20,39 @@ export default function AtelierEnquiry() {
   const reduce = useReducedMotionSafe();
   const [started, setStarted] = useState(false);
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Steps light up as the visitor moves through the enquiry.
   const stage = sent ? 1 : 0;
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSent(true);
+    const form = new FormData(e.currentTarget);
+    setSending(true);
+    setError(null);
+    try {
+      await api.post(
+        "/enquiries",
+        {
+          name: form.get("name"),
+          email: form.get("email"),
+          weddingDate: form.get("date") || undefined,
+          note: form.get("note"),
+          website: form.get("website") || undefined,
+        },
+        false,
+      );
+      setSent(true);
+    } catch (err) {
+      setError(
+        err instanceof ApiRequestError && err.details?.[0]
+          ? err.details[0].message
+          : "The note could not be sent. Please try again in a moment.",
+      );
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -187,11 +214,28 @@ export default function AtelierEnquiry() {
                     />
                   </label>
 
+                  {/* Honeypot: hidden from people, filled in by bots */}
+                  <input
+                    type="text"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden
+                    className="absolute -left-[9999px] h-px w-px opacity-0"
+                  />
+
+                  {error && (
+                    <p role="alert" className="text-sm text-[#e8a598]">
+                      {error}
+                    </p>
+                  )}
+
                   <button
                     type="submit"
-                    className="solid-btn group w-full cursor-pointer gap-3 bg-cream text-ink hover:bg-parchment-light"
+                    disabled={sending}
+                    className="solid-btn group w-full cursor-pointer gap-3 bg-cream text-ink hover:bg-parchment-light disabled:cursor-wait disabled:opacity-70"
                   >
-                    Write to the House
+                    {sending ? "Sending…" : "Write to the House"}
                     <span
                       aria-hidden
                       className="transition-transform duration-300 group-hover:translate-x-1"
