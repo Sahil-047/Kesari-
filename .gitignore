@@ -1,8 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Patterns are unanchored so they apply inside frontend/ and backend/.
 
 # dependencies
-/node_modules
-/.pnp
+node_modules/
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -11,15 +12,16 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
 .cursor/
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build/
+dist/
 
 # misc
 .DS_Store
@@ -31,8 +33,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (commit only the .env.example templates)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -42,4 +45,3 @@ yarn-error.log*
 next-env.d.ts
 
 .ref-frames/
-
