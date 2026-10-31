@@ -59,3 +59,55 @@ export type ApiMedia = {
   alt: string;
   createdAt: string;
 };
+
+export type OrderStatus = "pending" | "confirmed" | "in_production" | "ready" | "delivered" | "cancelled";
+export type PaymentStatus = "unpaid" | "partial" | "paid" | "refunded";
+export type OrderSource = "website" | "whatsapp" | "manual" | "store";
+
+export type ApiOrderItem = {
+  product?: string;
+  slug?: string;
+  name: string;
+  image?: string;
+  priceInr: number;
+  quantity: number;
+};
+
+export type ApiOrder = {
+  id: string;
+  orderNumber: string;
+  source: OrderSource;
+  customer: { name: string; phone: string; email?: string; city?: string; address?: string };
+  items: ApiOrderItem[];
+  subtotalInr: number;
+  discountInr: number;
+  totalInr: number;
+  amountPaidInr: number;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  paymentMethod?: string;
+  note?: string;
+  internalNote?: string;
+  placedAt: string;
+};
+
+export type SalesRange = "7d" | "30d" | "90d" | "12m";
+
+export type SalesReport = {
+  range: SalesRange;
+  summary: {
+    revenue: number;
+    collected: number;
+    orders: number;
+    units: number;
+    averageOrder: number;
+    revenueChange: number | null;
+    ordersChange: number | null;
+  };
+  outstanding: { amount: number; orders: number };
+  series: { key: string; revenue: number; orders: number }[];
+  topProducts: { name: string; image?: string; units: number; revenue: number }[];
+  byStatus: { status: OrderStatus; count: number }[];
+  bySource: { source: OrderSource; count: number; revenue: number }[];
+  recentOrders: ApiOrder[];
+};

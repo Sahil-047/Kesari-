@@ -13,6 +13,10 @@
   --charcoal: #14110f;
   --footer: #12100e;
   --header-h: 7.5rem;
+
+  /* Motion vocabulary (strong curves; UI motion stays under 300ms) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 @theme inline {
@@ -174,7 +178,10 @@ button {
   text-transform: uppercase;
   background: transparent;
   color: inherit;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 160ms var(--ease-out);
 }
 
 .ghost-btn:hover {
@@ -290,11 +297,19 @@ button {
   font-size: 0.625rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  transition: background 0.25s ease;
+  transition:
+    background 0.2s ease,
+    transform 160ms var(--ease-out);
 }
 
 .solid-btn:hover {
   background: var(--ink-soft);
+}
+
+/* Press feedback: the button acknowledges the tap before anything else happens. */
+.ghost-btn:active,
+.solid-btn:active {
+  transform: scale(0.97);
 }
 
 .eyebrow {
@@ -404,3 +419,98 @@ button {
   }
 }
 
+
+/* ------------------------------------------------------------------ */
+/* Mughal bento                                                        */
+/* ------------------------------------------------------------------ */
+
+/* An arched tile: the top is a full semicircle, like a jharokha or iwan. */
+.mughal-arch {
+  border-radius: 999px 999px 0 0;
+}
+
+/* Gold inner frame, set a few pixels inside the tile. */
+.mughal-frame {
+  position: relative;
+}
+.mughal-frame::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(197, 160, 89, 0.55);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Eight-point star (khatam): two squares, one turned 45°. */
+.khatam {
+  position: relative;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+}
+.khatam::before,
+.khatam::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid currentColor;
+}
+.khatam::after {
+  transform: rotate(45deg);
+}
+
+/* Photo inside a bento tile: a slow, small push-in on hover with a precise pointer. */
+.bento-photo {
+  transition: transform 700ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .bento-tile:hover .bento-photo {
+    transform: scale(1.04);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bento-photo {
+    transition: none;
+  }
+  .ghost-btn:active,
+  .solid-btn:active {
+    transform: none;
+  }
+}
+
+/* Header bag count: a short tick when the number changes. */
+.bag-count {
+  display: inline-block;
+  transition:
+    opacity 220ms var(--ease-out),
+    transform 220ms var(--ease-out);
+}
+@starting-style {
+  .bag-count {
+    opacity: 0;
+    transform: translateY(-40%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bag-count {
+    transition: opacity 150ms ease;
+  }
+  @starting-style {
+    .bag-count {
+      transform: none;
+    }
+  }
+}
+
+/* What's New arcade: a stone floor receding to the lamp-lit end of the corridor. */
+.arcade-floor {
+  background:
+    repeating-linear-gradient(90deg, rgba(197, 160, 89, 0.12) 0 1px, transparent 1px 12.5%),
+    repeating-linear-gradient(0deg, rgba(197, 160, 89, 0.1) 0 1px, transparent 1px 18%),
+    linear-gradient(to top, #1d150d, #120d08);
+  transform: perspective(600px) rotateX(62deg);
+  transform-origin: 50% 100%;
+  mask-image: linear-gradient(to top, black 30%, transparent);
+  opacity: 0.85;
+}

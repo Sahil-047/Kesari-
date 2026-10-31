@@ -1,6 +1,7 @@
 import Link from "next/link";
 import BackToTop from "./BackToTop";
 import Logo from "./Logo";
+import { getPageContent } from "@/lib/content/getPageContent";
 
 const columns = [
   {
@@ -29,7 +30,9 @@ const columns = [
   },
 ];
 
-export default function Footer() {
+export default async function Footer() {
+  const { brand, invitation, bottom } = await getPageContent("footer");
+
   return (
     <footer className="relative overflow-hidden bg-footer text-parchment-light">
       <div className="section-pad mx-auto max-w-[1680px] pt-14 md:pt-20">
@@ -38,23 +41,23 @@ export default function Footer() {
           <div>
             <Logo tone="gold" size="md" />
             <p className="mt-4 text-sm italic text-parchment-light/70">
-              Same traditions. New stories.
+              {brand.tagline}
             </p>
           </div>
 
           <Link
-            href="/atelier"
+            href={invitation.link || "/atelier"}
             className="group flex items-end justify-between gap-6 md:max-w-[34rem] md:flex-1"
           >
             <span>
-              <span className="eyebrow block text-gold">The atelier</span>
+              <span className="eyebrow block text-gold">{invitation.eyebrow}</span>
               <span className="display mt-2 block text-[clamp(1.6rem,3.2vw,2.75rem)] uppercase leading-[0.95] tracking-[0.1em] text-white transition-colors group-hover:text-gold">
-                Write to the house
+                {invitation.title}
               </span>
             </span>
             <span
               aria-hidden
-              className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/25 text-lg text-white transition-all duration-300 group-hover:border-gold group-hover:bg-gold group-hover:text-footer md:h-14 md:w-14"
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/25 text-lg text-white transition-colors duration-200 group-hover:border-gold group-hover:bg-gold group-hover:text-footer md:h-14 md:w-14"
             >
               →
             </span>
@@ -79,11 +82,11 @@ export default function Footer() {
                       {link.label}
                       <span
                         aria-hidden
-                        className="-translate-x-1 text-gold opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+                        className="-translate-x-1 text-gold opacity-0 transition-[opacity,transform] duration-200 ease-[var(--ease-out)] group-hover:translate-x-0 group-hover:opacity-100"
                       >
                         →
                       </span>
-                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-gold transition-all duration-300 group-hover:w-[calc(100%-1.25rem)]" />
+                      <span className="absolute -bottom-0.5 left-0 h-px w-[calc(100%-1.25rem)] origin-left scale-x-0 bg-gold transition-transform duration-200 ease-[var(--ease-out)] group-hover:scale-x-100" />
                     </Link>
                   </li>
                 ))}
@@ -103,8 +106,8 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="section-pad mx-auto flex max-w-[1680px] flex-wrap items-center justify-between gap-x-6 gap-y-2 py-4 font-sans text-[0.58rem] uppercase tracking-[0.22em] text-white/55">
-          <span>Ship to: India · INR</span>
-          <span className="hidden sm:inline">Craft in every detail · 2026</span>
+          <span>{bottom.left}</span>
+          <span className="hidden sm:inline">{bottom.middle}</span>
           <BackToTop />
         </div>
       </div>

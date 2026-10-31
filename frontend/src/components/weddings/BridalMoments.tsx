@@ -1,7 +1,7 @@
 "use client";
 
 import ScrollWriteText from "@/components/ScrollWriteText";
-import { WEDDING_MOMENTS } from "@/lib/bridal-collections";
+import type { WeddingsContent } from "@/lib/content/pages";
 import { EASE_FLUENT, useReducedMotionSafe } from "@/lib/motion";
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import Image from "next/image";
@@ -9,7 +9,9 @@ import { useEffect, useRef, useState } from "react";
 
 const CYCLE_MS = 6000;
 
-export default function BridalMoments() {
+export default function BridalMoments({ content }: { content: WeddingsContent["moments"] }) {
+  const moments = content.items;
+  const total = moments.length;
   const reduce = useReducedMotionSafe();
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { amount: 0.4 });
@@ -20,11 +22,11 @@ export default function BridalMoments() {
   useEffect(() => {
     if (reduce || paused || !inView) return;
     const t = setTimeout(
-      () => setActive((a) => (a + 1) % WEDDING_MOMENTS.length),
+      () => setActive((a) => (a + 1) % Math.max(total, 1)),
       CYCLE_MS,
     );
     return () => clearTimeout(t);
-  }, [active, paused, inView, reduce]);
+  }, [active, paused, inView, reduce, total]);
 
   return (
     <section
@@ -35,11 +37,11 @@ export default function BridalMoments() {
       <div className="section-pad mx-auto max-w-[1680px]">
         <div className="mb-5 md:mb-7">
           <p className="font-sans text-[0.58rem] uppercase tracking-[0.32em] text-ink/45">
-            The evening, in four moments
+            {content.eyebrow}
           </p>
           <ScrollWriteText
             as="h2"
-            text="Bridal Moments"
+            text={content.title}
             className="display mt-2 text-[clamp(1.9rem,4vw,3.5rem)] uppercase leading-[0.95] tracking-[0.1em] text-ink"
           />
         </div>
@@ -51,21 +53,19 @@ export default function BridalMoments() {
           onFocus={() => setPaused(true)}
           onBlur={() => setPaused(false)}
         >
-          {WEDDING_MOMENTS.map((moment, i) => {
-            const lead = moment.images[0];
-            const focal = lead.focal
-              ? `${lead.focal.x}% ${lead.focal.y}%`
-              : "50% 35%";
+          {moments.map((moment, i) => {
+            const index = String(i + 1).padStart(2, "0");
+            const focal = "50% 35%";
             const isActive = i === active;
 
             return (
               <motion.button
-                key={moment.id}
+                key={`${moment.title}-${i}`}
                 type="button"
                 onClick={() => setActive(i)}
                 onMouseEnter={() => setActive(i)}
                 aria-pressed={isActive}
-                aria-label={`${moment.index} ${moment.title}`}
+                aria-label={`${index} ${moment.title}`}
                 className="group relative min-h-[64px] min-w-0 overflow-hidden text-left outline-none focus-visible:ring-2 focus-visible:ring-gold md:min-h-0 md:min-w-[72px]"
                 style={{
                   flexGrow: isActive ? 6 : 1,
@@ -84,8 +84,8 @@ export default function BridalMoments() {
                 }}
               >
                 <Image
-                  src={lead.src}
-                  alt={lead.alt}
+                  src={moment.image}
+                  alt={moment.title}
                   fill
                   quality={90}
                   sizes="(max-width:768px) 100vw, 70vw"
@@ -101,8 +101,8 @@ export default function BridalMoments() {
                 {moment.video && isActive && !reduce && (
                   <video
                     className="absolute inset-0 h-full w-full object-cover"
-                    src={moment.video.src}
-                    poster={moment.video.poster}
+                    src={moment.video}
+                    poster={moment.image}
                     autoPlay
                     muted
                     loop
@@ -129,7 +129,7 @@ export default function BridalMoments() {
                   }`}
                 >
                   <span className="font-sans text-[0.6rem] tracking-[0.3em] text-cream/80">
-                    {moment.index}
+                    {index}
                   </span>
                   <span className="display text-[0.95rem] uppercase tracking-[0.22em] text-cream md:[writing-mode:vertical-rl] md:rotate-180">
                     {moment.title}
@@ -147,7 +147,7 @@ export default function BridalMoments() {
                       transition={{ duration: 0.7, delay: 0.25, ease: EASE_FLUENT }}
                     >
                       <p className="font-sans text-[0.6rem] uppercase tracking-[0.32em] text-cream/70">
-                        {moment.index} / 0{WEDDING_MOMENTS.length}
+                        {index} / {String(total).padStart(2, "0")}
                       </p>
                       <h3 className="display mt-2 text-[clamp(1.8rem,4vw,3.75rem)] uppercase leading-[0.95] tracking-[0.1em] text-cream">
                         {moment.title}

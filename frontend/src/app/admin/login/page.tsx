@@ -1,13 +1,9 @@
 "use client";
 
 import { useAuth } from "@/components/admin/AuthProvider";
-import Logo from "@/components/Logo";
+import { StudioMark } from "@/components/admin/Iso";
 import Image from "next/image";
 import { useState, type FormEvent } from "react";
-
-const inputClass =
-  "mt-2 h-12 w-full rounded-md border border-ink/15 bg-white px-4 font-sans text-[0.95rem] text-ink outline-none transition placeholder:text-ink/30 focus:border-ink/60 focus:ring-4 focus:ring-gold/15";
-const labelClass = "block font-sans text-[0.68rem] font-medium uppercase tracking-[0.18em] text-ink/60";
 
 export default function AdminLoginPage() {
   const { login } = useAuth();
@@ -30,109 +26,97 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="grid min-h-screen bg-[#f4efe6] lg:grid-cols-[1.1fr_1fr]">
+    <div className="grid min-h-screen lg:grid-cols-[1fr_minmax(460px,0.9fr)]">
       {/* Brand side */}
-      <div className="relative hidden overflow-hidden bg-[#14100b] lg:block">
+      <div className="relative hidden overflow-hidden bg-[#1a1714] lg:block">
         <Image
           src="/images/hero-wedding.jpg"
           alt=""
           fill
           priority
           sizes="55vw"
-          className="object-cover object-[50%_25%] opacity-80"
+          className="object-cover object-[50%_25%] opacity-85"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#14100b] via-[#14100b]/30 to-[#14100b]/50" />
-        <div className="relative flex h-full flex-col justify-between p-12">
-          <Logo tone="light" size="md" />
-          <div>
-            <p className="font-sans text-[0.62rem] uppercase tracking-[0.36em] text-gold-soft">
-              Content studio
-            </p>
-            <p className="display mt-3 max-w-md text-[2.6rem] uppercase leading-[0.95] tracking-[0.08em] text-cream">
-              Same traditions. New stories.
-            </p>
-            <p className="mt-4 max-w-sm font-sans text-sm leading-relaxed text-cream/65">
-              Publish pieces, arrange The Edit, and answer every note written to the house.
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1a1714] via-[#1a1714]/20 to-[#1a1714]/40" />
+        <div className="relative flex h-full flex-col justify-between p-12 text-white">
+          <div className="flex items-center gap-3">
+            <StudioMark size={40} />
+            <span className="cms-display text-[19px]">Kesari Studio</span>
+          </div>
+          <div className="max-w-md">
+            <p className="cms-display text-[40px] leading-[1.1]">Same traditions.<br />New stories.</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-white/70">
+              Change the site&apos;s words, photos and films, add pieces to the catalogue, and answer every note written to the house.
             </p>
           </div>
         </div>
       </div>
 
       {/* Form side */}
-      <div className="flex flex-col px-6 py-10 sm:px-12">
-        <div className="lg:hidden">
-          <Logo tone="dark" size="sm" />
+      <div className="cms-iso-grid flex flex-col border-l border-[var(--cms-line)] px-6 py-10 sm:px-14">
+        <div className="flex items-center gap-3 lg:hidden">
+          <StudioMark />
+          <span className="cms-display text-[17px]">Kesari Studio</span>
         </div>
 
         <div className="flex flex-1 items-center justify-center">
-          <form onSubmit={onSubmit} className="w-full max-w-[380px]">
-            <p className="font-sans text-[0.62rem] uppercase tracking-[0.32em] text-ink/50">
-              Kesari CMS
-            </p>
-            <h1 className="display mt-3 text-[2.2rem] uppercase leading-none tracking-[0.08em] text-ink">
-              Welcome back
-            </h1>
-            <p className="mt-3 font-sans text-sm text-ink/60">
-              Sign in with your CMS account to manage the site.
-            </p>
+          <form onSubmit={onSubmit} className="cms-card w-full max-w-[420px] p-8">
+            <h1 className="cms-display text-[32px] leading-tight">Welcome back</h1>
+            <p className="mt-2 text-[15px] text-[var(--cms-muted)]">Sign in to manage the Kesari website.</p>
 
-            <div className="mt-10 space-y-6">
-              <label className={labelClass}>
-                Email
+            <div className="mt-9 space-y-5">
+              <div className="space-y-1.5">
+                <label htmlFor="email" className="cms-label">
+                  Email
+                </label>
                 <input
+                  id="email"
                   name="email"
                   type="email"
                   required
                   autoComplete="username"
                   placeholder="you@kesari.in"
-                  className={inputClass}
+                  className="cms-input h-11"
                 />
-              </label>
+              </div>
 
-              <label className={labelClass}>
-                Password
-                <span className="relative block">
+              <div className="space-y-1.5">
+                <label htmlFor="password" className="cms-label">
+                  Password
+                </label>
+                <div className="relative">
                   <input
+                    id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
                     autoComplete="current-password"
                     placeholder="Your password"
-                    className={`${inputClass} pr-20`}
+                    className="cms-input h-11 pr-20"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
                     aria-pressed={showPassword}
-                    className="absolute right-2 top-1/2 mt-1 -translate-y-1/2 rounded px-3 py-1.5 font-sans text-[0.68rem] normal-case tracking-normal text-ink/60 hover:bg-ink/5 hover:text-ink"
+                    className="cms-btn cms-btn-ghost cms-btn-sm absolute right-1.5 top-1/2 -translate-y-1/2"
                   >
                     {showPassword ? "Hide" : "Show"}
                   </button>
-                </span>
-              </label>
+                </div>
+              </div>
             </div>
 
             {error && (
-              <p
-                role="alert"
-                className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 font-sans text-sm text-red-800"
-              >
+              <p role="alert" className="mt-5 rounded-[10px] bg-[var(--cms-danger-soft)] px-4 py-3 text-[13.5px] font-semibold text-[var(--cms-danger)]">
                 {error}
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={busy}
-              className="mt-8 flex h-12 w-full items-center justify-center gap-3 rounded-md bg-[#14100b] font-sans text-xs uppercase tracking-[0.24em] text-cream transition hover:bg-[#2a2219] disabled:cursor-wait disabled:opacity-70"
-            >
+            <button type="submit" disabled={busy} className="cms-btn cms-btn-primary mt-7 h-11 w-full text-[15px]">
               {busy ? "Signing in…" : "Sign in"}
-              {!busy && <span aria-hidden>→</span>}
             </button>
 
-            <p className="mt-8 font-sans text-xs leading-relaxed text-ink/45">
-              No account? Ask an admin to add you under Users.
-            </p>
+            <p className="cms-help mt-6 text-center">No account yet? Ask an admin to add you under Team.</p>
           </form>
         </div>
       </div>

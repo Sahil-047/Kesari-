@@ -4,6 +4,8 @@ import { api, ApiRequestError, type PageMeta } from "@/lib/api/client";
 import type { Column, ResourceConfig } from "@/lib/admin/resources";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import FieldInput from "./FieldInput";
+import Icon from "./Icon";
+import ScreenHeader from "./ScreenHeader";
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -14,36 +16,41 @@ function getPath(obj: unknown, path: string): unknown {
   );
 }
 
+const CHIP: Record<string, string> = {
+  published: "cms-chip-success",
+  closed: "cms-chip-success",
+  new: "cms-chip-accent",
+  in_progress: "cms-chip-warning",
+  draft: "",
+};
+
 function Cell({ row, column }: { row: Row; column: Column }) {
   const value = getPath(row, column.key);
   switch (column.format) {
     case "image":
       return (
-        <div className="h-12 w-9 overflow-hidden rounded bg-ink/5">
+        <div className="h-12 w-10 overflow-hidden rounded-md bg-[var(--cms-sunken)]">
           {typeof value === "string" && value && (
-            // eslint-disable-next-line @next/next/no-img-element -- arbitrary CMS/S3 URLs
+            // eslint-disable-next-line @next/next/no-img-element -- S3 or /public URLs
             <img src={value} alt="" className="h-full w-full object-cover" />
           )}
         </div>
       );
     case "price":
-      return <>₹{Number(value ?? 0).toLocaleString("en-IN")}</>;
+      return <span className="tabular-nums">₹{Number(value ?? 0).toLocaleString("en-IN")}</span>;
     case "date":
-      return <>{typeof value === "string" ? new Date(value).toLocaleDateString("en-IN") : "—"}</>;
+      return <>{typeof value === "string" ? new Date(value).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}</>;
     case "product":
       return <>{(value as { name?: string } | null)?.name ?? "Missing product"}</>;
     case "status": {
       const s = String(value ?? "");
-      const tone =
-        s === "published" || s === "closed"
-          ? "bg-emerald-100 text-emerald-900"
-          : s === "new"
-            ? "bg-amber-100 text-amber-900"
-            : "bg-ink/10 text-ink/70";
-      return <span className={`rounded px-2 py-0.5 text-xs ${tone}`}>{s.replace("_", " ")}</span>;
+      return <span className={`cms-chip ${CHIP[s] ?? ""}`}>{s.replace("_", " ")}</span>;
     }
     default:
-      return <>{typeof value === "boolean" ? (value ? "Yes" : "No") : String(value ?? "—")}</>;
+      if (typeof value === "boolean") {
+        return <span className={`cms-chip ${value ? "cms-chip-success" : ""}`}>{value ? "Yes" : "No"}</span>;
+      }
+      return <>{String(value ?? "—")}</>;
   }
 }
 
@@ -71,7 +78,7 @@ function toPayload(config: ResourceConfig, values: Record<string, unknown>, isNe
   return payload;
 }
 
-export default function ResourceManager({ config }: { config: ResourceConfig }) {
+export default function ResourceManager({ config, description }: { config: ResourceConfig; description?: string }) {
   const base = `/admin${config.endpoint}`;
   const [rows, setRows] = useState<Row[]>([]);
   const [meta, setMeta] = useState<PageMeta | null>(null);
@@ -107,17 +114,28 @@ export default function ResourceManager({ config }: { config: ResourceConfig }) 
   }, [base, config.unpaged, page, search, filters]);
 
   useEffect(() => {
-    // Data fetching on mount and when the query changes.
+    // Data fetching on mount and whenever the query changes.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
-  const open = (row: Row | "new") => {
-    setEditing(row);
-    setValues(row === "new" ? { ...config.defaults } : { ...row });
-    setFieldErrors({});
-    setFormError(null);
-  };
+  const open = useCallback(
+    (row: Row | "new") => {
+      setEditing(row);
+      setValues(row === "new" ? { ...config.defaults } : { ...row });
+      setFieldErrors({});
+      setFormError(null);
+    },
+    [config.defaults],
+  );
+
+  // Dashboard shortcuts link here with ?new=1.
+  useEffect(() => {
+    if (config.canCreate && new URLSearchParams(window.location.search).get("new") === "1") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      open("new");
+    }
+  }, [config.canCreate, open]);
 
   const save = async (e: FormEvent) => {
     e.preventDefault();
@@ -134,9 +152,7 @@ export default function ResourceManager({ config }: { config: ResourceConfig }) 
       await load();
     } catch (err) {
       if (err instanceof ApiRequestError && err.details) {
-        setFieldErrors(
-          Object.fromEntries(err.details.map((d) => [d.path.split(".")[0] ?? d.path, d.message])),
-        );
+        setFieldErrors(Object.fromEntries(err.details.map((d) => [d.path.split(".")[0] ?? d.path, d.message])));
       }
       setFormError(err instanceof Error ? err.message : "Could not save");
     } finally {
@@ -156,204 +172,173 @@ export default function ResourceManager({ config }: { config: ResourceConfig }) 
     }
   };
 
-  const move = async (index: number, dir: -1 | 1) => {
-    const target = index + dir;
-    if (target < 0 || target >= rows.length) return;
-    const next = [...rows];
-    [next[index], next[target]] = [next[target]!, next[index]!];
-    setRows(next);
-    try {
-      setRows(await api.put<Row[]>(`${base}/order`, { ids: next.map((r) => r.id) }));
-    } catch (err) {
-      setListError(err instanceof Error ? err.message : "Could not reorder");
-      await load();
-    }
-  };
+  const wide = (type: string) => ["images", "image", "textarea", "list"].includes(type);
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="display text-3xl uppercase tracking-[0.1em]">{config.title}</h1>
-          {meta && <p className="mt-1 text-xs text-ink/50">{meta.total} in total</p>}
+      <ScreenHeader
+        title={config.title}
+        description={description ?? (meta ? `${meta.total} in total` : undefined)}
+        actions={
+          config.canCreate && (
+            <button type="button" onClick={() => open("new")} className="cms-btn cms-btn-primary">
+              <Icon name="plus" size={16} /> New {config.singular}
+            </button>
+          )
+        }
+      />
+
+      <div className="mx-auto max-w-[1240px] px-8 py-6">
+        {(config.searchable || config.filters) && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {config.searchable && (
+              <input
+                placeholder={`Search ${config.title.toLowerCase()}…`}
+                className="cms-input max-w-xs"
+                value={search}
+                onChange={(e) => {
+                  setPage(1);
+                  setSearch(e.target.value);
+                }}
+              />
+            )}
+            {config.filters?.map((f) => (
+              <select
+                key={f.name}
+                className="cms-select w-auto min-w-[150px]"
+                value={filters[f.name] ?? ""}
+                onChange={(e) => {
+                  setPage(1);
+                  setFilters((prev) => ({ ...prev, [f.name]: e.target.value }));
+                }}
+              >
+                <option value="">All {f.label.toLowerCase()}</option>
+                {f.options.map((o) => (
+                  <option key={o} value={o}>
+                    {o.replace("_", " ")}
+                  </option>
+                ))}
+              </select>
+            ))}
+          </div>
+        )}
+
+        {listError && (
+          <p className="mb-4 rounded-[10px] bg-[var(--cms-danger-soft)] px-4 py-3 font-semibold text-[var(--cms-danger)]">{listError}</p>
+        )}
+
+        <div className="cms-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="cms-table">
+              <thead>
+                <tr>
+                  {config.columns.map((c) => (
+                    <th key={c.key}>{c.label}</th>
+                  ))}
+                  <th className="w-10" />
+                </tr>
+              </thead>
+              <tbody>
+                {loading && rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={config.columns.length + 1} className="py-12 text-center text-[var(--cms-muted)]">
+                      Loading…
+                    </td>
+                  </tr>
+                ) : rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={config.columns.length + 1} className="py-14 text-center">
+                      <p className="cms-display text-[18px] text-[var(--cms-ink)]">No {config.title.toLowerCase()} yet</p>
+                      {config.canCreate && (
+                        <button type="button" onClick={() => open("new")} className="cms-btn cms-btn-primary mt-4">
+                          <Icon name="plus" size={16} /> Add the first {config.singular}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((row) => (
+                    <tr key={row.id} onClick={() => open(row)} className="cursor-pointer">
+                      {config.columns.map((c) => (
+                        <td key={c.key}>
+                          <Cell row={row} column={c} />
+                        </td>
+                      ))}
+                      <td className="text-right text-[var(--cms-muted)]">
+                        <Icon name="arrow" size={16} />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-        {config.canCreate && (
-          <button
-            type="button"
-            onClick={() => open("new")}
-            className="rounded bg-[#14100b] px-4 py-2 text-sm text-cream"
-          >
-            New {config.singular}
-          </button>
+
+        {meta && meta.pages > 1 && (
+          <div className="mt-4 flex items-center justify-end gap-2">
+            <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="cms-btn cms-btn-sm">
+              Previous
+            </button>
+            <span className="cms-help px-2">
+              Page {meta.page} of {meta.pages}
+            </span>
+            <button type="button" disabled={page >= meta.pages} onClick={() => setPage((p) => p + 1)} className="cms-btn cms-btn-sm">
+              Next
+            </button>
+          </div>
         )}
       </div>
 
-      {(config.searchable || config.filters) && (
-        <div className="mt-6 flex flex-wrap gap-3">
-          {config.searchable && (
-            <input
-              placeholder="Search…"
-              className="w-64 rounded border border-ink/15 bg-white px-3 py-2 text-sm outline-none focus:border-ink/50"
-              value={search}
-              onChange={(e) => {
-                setPage(1);
-                setSearch(e.target.value);
-              }}
-            />
-          )}
-          {config.filters?.map((f) => (
-            <select
-              key={f.name}
-              className="rounded border border-ink/15 bg-white px-3 py-2 text-sm"
-              value={filters[f.name] ?? ""}
-              onChange={(e) => {
-                setPage(1);
-                setFilters((prev) => ({ ...prev, [f.name]: e.target.value }));
-              }}
-            >
-              <option value="">All {f.label.toLowerCase()}</option>
-              {f.options.map((o) => (
-                <option key={o} value={o}>
-                  {o.replace("_", " ")}
-                </option>
-              ))}
-            </select>
-          ))}
-        </div>
-      )}
-
-      {listError && <p className="mt-4 text-sm text-red-700">{listError}</p>}
-
-      <div className="mt-6 overflow-x-auto rounded border border-ink/10 bg-white">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-ink/10 text-[0.65rem] uppercase tracking-[0.14em] text-ink/50">
-            <tr>
-              {config.orderable && <th className="w-20 px-4 py-3">Order</th>}
-              {config.columns.map((c) => (
-                <th key={c.key} className="px-4 py-3 font-medium">
-                  {c.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {loading && rows.length === 0 ? (
-              <tr>
-                <td className="px-4 py-8 text-ink/50" colSpan={config.columns.length + 1}>
-                  Loading…
-                </td>
-              </tr>
-            ) : rows.length === 0 ? (
-              <tr>
-                <td className="px-4 py-8 text-ink/50" colSpan={config.columns.length + 1}>
-                  Nothing here yet.
-                </td>
-              </tr>
-            ) : (
-              rows.map((row, i) => (
-                <tr
-                  key={row.id}
-                  onClick={() => open(row)}
-                  className="cursor-pointer border-b border-ink/5 last:border-0 hover:bg-ink/[0.03]"
-                >
-                  {config.orderable && (
-                    <td className="px-4 py-2" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex gap-1">
-                        {([-1, 1] as const).map((dir) => (
-                          <button
-                            key={dir}
-                            type="button"
-                            aria-label={dir === -1 ? "Move up" : "Move down"}
-                            disabled={i + dir < 0 || i + dir >= rows.length}
-                            onClick={() => move(i, dir)}
-                            className="grid h-7 w-7 place-items-center rounded border border-ink/15 text-xs disabled:opacity-30"
-                          >
-                            {dir === -1 ? "↑" : "↓"}
-                          </button>
-                        ))}
-                      </div>
-                    </td>
-                  )}
-                  {config.columns.map((c) => (
-                    <td key={c.key} className="px-4 py-2">
-                      <Cell row={row} column={c} />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {meta && meta.pages > 1 && (
-        <div className="mt-4 flex items-center gap-3 text-sm">
-          <button
-            type="button"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => p - 1)}
-            className="rounded border border-ink/15 px-3 py-1 disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <span className="text-ink/60">
-            Page {meta.page} of {meta.pages}
-          </span>
-          <button
-            type="button"
-            disabled={page >= meta.pages}
-            onClick={() => setPage((p) => p + 1)}
-            className="rounded border border-ink/15 px-3 py-1 disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
-      )}
-
       {editing && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/30" onClick={() => setEditing(null)}>
+        <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(26,23,20,0.35)]" onClick={() => setEditing(null)}>
           <form
             onSubmit={save}
             onClick={(e) => e.stopPropagation()}
-            className="flex h-full w-full max-w-xl flex-col bg-[#faf7f1] shadow-2xl"
+            className="flex h-full w-full max-w-[680px] flex-col bg-[var(--cms-canvas)] shadow-[var(--cms-shadow-lg)]"
           >
-            <div className="flex items-center justify-between border-b border-ink/10 px-6 py-4">
-              <h2 className="text-lg font-medium">
-                {editing === "new" ? `New ${config.singular}` : `Edit ${config.singular}`}
-              </h2>
-              <button type="button" onClick={() => setEditing(null)} className="text-sm text-ink/60">
+            <div className="flex items-center justify-between border-b border-[var(--cms-border)] bg-[var(--cms-surface)] px-6 py-4">
+              <div>
+                <p className="cms-eyebrow">{config.title}</p>
+                <h2 className="cms-display text-[22px]">
+                  {editing === "new" ? `New ${config.singular}` : String(editing.name ?? editing.title ?? `Edit ${config.singular}`)}
+                </h2>
+              </div>
+              <button type="button" onClick={() => setEditing(null)} className="cms-btn cms-btn-ghost">
                 Close
               </button>
             </div>
 
-            <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
-              {config.fields.map((field) => (
-                <FieldInput
-                  key={field.name}
-                  field={field}
-                  value={values[field.name]}
-                  error={fieldErrors[field.name]}
-                  onChange={(v) => setValues((prev) => ({ ...prev, [field.name]: v }))}
-                />
-              ))}
+            <div className="cms-scroll flex-1 overflow-y-auto p-6">
+              <div className="cms-card grid gap-5 p-5 md:grid-cols-2">
+                {config.fields.map((field) => (
+                  <div key={field.name} className={wide(field.type) ? "md:col-span-2" : ""}>
+                    <FieldInput
+                      field={field}
+                      value={values[field.name]}
+                      error={fieldErrors[field.name]}
+                      onChange={(v) => setValues((prev) => ({ ...prev, [field.name]: v }))}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-t border-ink/10 px-6 py-4">
+            <div className="flex items-center justify-between gap-3 border-t border-[var(--cms-border)] bg-[var(--cms-surface)] px-6 py-4">
               {editing !== "new" ? (
-                <button type="button" onClick={remove} className="text-sm text-red-700">
-                  Delete
+                <button type="button" onClick={remove} className="cms-btn cms-btn-danger">
+                  <Icon name="trash" size={16} /> Delete
                 </button>
               ) : (
                 <span />
               )}
               <div className="flex items-center gap-3">
-                {formError && <p className="max-w-56 text-xs text-red-700">{formError}</p>}
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded bg-[#14100b] px-5 py-2 text-sm text-cream disabled:opacity-60"
-                >
-                  {saving ? "Saving…" : "Save"}
+                {formError && <p className="max-w-64 text-[12.5px] font-semibold text-[var(--cms-danger)]">{formError}</p>}
+                <button type="button" onClick={() => setEditing(null)} className="cms-btn">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="cms-btn cms-btn-primary">
+                  {saving ? "Saving…" : editing === "new" ? `Create ${config.singular}` : "Save changes"}
                 </button>
               </div>
             </div>

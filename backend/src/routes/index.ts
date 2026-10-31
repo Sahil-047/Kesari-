@@ -7,6 +7,8 @@ import { craftAdminRoutes, craftPublicRoutes } from "./craft.routes.js";
 import { editEntryAdminRoutes, editEntryPublicRoutes } from "./editEntry.routes.js";
 import { enquiryAdminRoutes, enquiryPublicRoutes } from "./enquiry.routes.js";
 import { mediaAdminRoutes } from "./media.routes.js";
+import { analyticsAdminRoutes, orderAdminRoutes, orderPublicRoutes } from "./order.routes.js";
+import { pageAdminRoutes, pagePublicRoutes } from "./page.routes.js";
 import { productAdminRoutes, productPublicRoutes } from "./product.routes.js";
 import { userAdminRoutes } from "./user.routes.js";
 
@@ -19,6 +21,9 @@ const adminRoutes = Router()
   .use("/edit", editEntryAdminRoutes)
   .use("/enquiries", enquiryAdminRoutes)
   .use("/media", mediaAdminRoutes)
+  .use("/pages", pageAdminRoutes)
+  .use("/orders", orderAdminRoutes)
+  .use("/analytics", analyticsAdminRoutes)
   .use("/users", authorize("admin"), userAdminRoutes);
 
 /** Mounted at /api/v1. */
@@ -29,4 +34,6 @@ export const apiRoutes = Router()
   .use("/collections", collectionPublicRoutes)
   .use("/edit", editEntryPublicRoutes)
   .use("/enquiries", enquiryPublicRoutes)
+  .use("/pages", pagePublicRoutes)
+  .use("/orders", orderPublicRoutes)
   .use("/admin", adminRoutes);

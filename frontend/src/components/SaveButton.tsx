@@ -15,7 +15,7 @@ export default function SaveButton({
     <button
       type="button"
       onClick={onClick}
-      className={`absolute right-3 top-3 z-10 border border-ink/10 bg-parchment-light/95 px-2.5 py-1 font-sans text-[0.58rem] uppercase tracking-[0.2em] text-ink transition hover:bg-white ${className}`}
+      className={`absolute right-3 top-3 z-10 border border-ink/10 bg-parchment-light/95 px-2.5 py-1 font-sans text-[0.58rem] uppercase tracking-[0.2em] text-ink transition-[background-color,transform] duration-150 ease-[var(--ease-out)] hover:bg-white active:scale-[0.97] ${className}`}
       aria-pressed={active}
     >
       {active ? "Saved" : "Save"}

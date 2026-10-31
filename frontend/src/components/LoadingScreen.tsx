@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { toSanskritNumeral } from "@/lib/sanskrit";
 
-const DURATION_MS = 3000;
+const DURATION_MS = 1800;
 
 type LoadingScreenProps = {
-  /** When true, runs its own 0→100 / 3s cycle. */
+  /** When true, runs its own 0→100 cycle over DURATION_MS. */
   autoPlay?: boolean;
   /** Controlled progress 0–100. */
   progress?: number;

@@ -191,8 +191,8 @@ export const enquiriesResource: ResourceConfig = {
 };
 
 export const usersResource: ResourceConfig = {
-  title: "Users",
-  singular: "user",
+  title: "Team",
+  singular: "member",
   endpoint: "/users",
   canCreate: true,
   columns: [

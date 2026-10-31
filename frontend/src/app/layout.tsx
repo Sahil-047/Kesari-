@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Great_Vibes, Jost } from "next/font/google";
 import IntroSplash from "@/components/IntroSplash";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import { BagWishlistProvider } from "@/context/BagWishlistContext";
 import "./globals.css";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
         <BagWishlistProvider>
           <IntroSplash />
           {children}
+          <WhatsAppButton />
         </BagWishlistProvider>
       </body>
     </html>

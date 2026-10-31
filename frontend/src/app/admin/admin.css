@@ -1,0 +1,406 @@
+/*
+ * Kesari Studio — isometric design system.
+ * Paper canvas on a 30° isometric grid, blocks that extrude down-right,
+ * technical mono labels, Kesari saffron for action. Scoped to .cms.
+ */
+
+.cms {
+  --cms-canvas: #f3efe7;
+  --cms-surface: #fffdf9;
+  --cms-sunken: #f0ebe1;
+  --cms-face-left: #e9e1d2; /* side faces of isometric blocks */
+  --cms-face-right: #ddd2bf;
+  --cms-border: #ddd4c4;
+  --cms-border-strong: #c7bba6;
+  --cms-line: #2a2622; /* diagram strokes */
+  --cms-ink: #1f1c19;
+  --cms-ink-2: #4a443d;
+  --cms-muted: #8b8276;
+  --cms-accent: #dc7426; /* kesari saffron */
+  --cms-accent-hover: #c4621a;
+  --cms-accent-soft: #fbe9d8;
+  --cms-accent-ink: #8a4410;
+  --cms-accent-side: #b85d18;
+  --cms-teal: #2f6f6a; /* secondary, for diagrams only */
+  --cms-success: #2f7d55;
+  --cms-success-soft: #e3f2e9;
+  --cms-warning: #9a6200;
+  --cms-warning-soft: #fcf0d4;
+  --cms-danger: #b42318;
+  --cms-danger-soft: #fce8e6;
+  --cms-radius: 4px;
+  --cms-extrude: 5px 5px 0 0 var(--cms-face-right);
+  --cms-extrude-strong: 6px 6px 0 0 var(--cms-line);
+  --cms-shadow-lg: 14px 14px 0 0 rgba(31, 28, 25, 0.12);
+
+  min-height: 100vh;
+  font-family: var(--font-cms), system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--cms-ink);
+  background-color: var(--cms-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+.cms ::selection {
+  background: var(--cms-accent-soft);
+  color: var(--cms-ink);
+}
+
+/* The isometric grid: lines at 30° and 150°. */
+.cms-iso-grid {
+  background-color: var(--cms-canvas);
+  background-image:
+    repeating-linear-gradient(30deg, rgba(42, 38, 34, 0.055) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(150deg, rgba(42, 38, 34, 0.055) 0 1px, transparent 1px 28px);
+}
+
+.cms-display {
+  font-family: var(--font-cms), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.cms-mono {
+  font-family: var(--font-cms-mono), ui-monospace, monospace;
+  font-feature-settings: "zero" 1;
+}
+
+.cms-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cms-ink-2);
+}
+
+.cms-help {
+  font-size: 12px;
+  color: var(--cms-muted);
+}
+
+.cms-eyebrow {
+  font-family: var(--font-cms-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cms-muted);
+}
+
+/* Blocks: flat face with an extruded edge, like an isometric slab. */
+.cms-card {
+  border: 1px solid var(--cms-line);
+  border-radius: var(--cms-radius);
+  background: var(--cms-surface);
+  box-shadow: var(--cms-extrude);
+}
+.cms-card-quiet {
+  border: 1px solid var(--cms-border);
+  border-radius: var(--cms-radius);
+  background: var(--cms-surface);
+}
+a.cms-card,
+button.cms-card {
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+a.cms-card:hover,
+button.cms-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 0 var(--cms-face-right);
+}
+
+/* Inputs */
+.cms-input,
+.cms-textarea,
+.cms-select {
+  width: 100%;
+  border: 1px solid var(--cms-border-strong);
+  border-radius: var(--cms-radius);
+  background: #fff;
+  padding: 0 12px;
+  font: inherit;
+  color: var(--cms-ink);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.cms-input,
+.cms-select {
+  height: 40px;
+}
+.cms-textarea {
+  min-height: 96px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+.cms-input::placeholder,
+.cms-textarea::placeholder {
+  color: #b3a99a;
+}
+.cms-input:focus,
+.cms-textarea:focus,
+.cms-select:focus {
+  border-color: var(--cms-line);
+  box-shadow: 3px 3px 0 0 var(--cms-accent);
+}
+.cms-input:disabled,
+.cms-textarea:disabled,
+.cms-select:disabled {
+  background: var(--cms-sunken);
+  color: var(--cms-ink-2);
+}
+
+/* Buttons: small extruded keys that press in. */
+.cms-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  border: 1px solid var(--cms-line);
+  border-radius: var(--cms-radius);
+  background: var(--cms-surface);
+  padding: 0 14px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--cms-ink);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 0 var(--cms-line);
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    background 0.15s ease;
+}
+.cms-btn:hover {
+  background: var(--cms-sunken);
+}
+.cms-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 0 var(--cms-line);
+}
+.cms-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+.cms-btn-primary {
+  background: var(--cms-accent);
+  color: #fff;
+}
+.cms-btn-primary:hover {
+  background: var(--cms-accent-hover);
+}
+.cms-btn-dark {
+  background: var(--cms-ink);
+  color: #fff;
+}
+.cms-btn-dark:hover {
+  background: #000;
+}
+.cms-btn-ghost,
+.cms-btn-danger {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--cms-ink-2);
+}
+.cms-btn-ghost:hover {
+  background: var(--cms-sunken);
+}
+.cms-btn-danger {
+  color: var(--cms-danger);
+}
+.cms-btn-danger:hover {
+  background: var(--cms-danger-soft);
+}
+.cms-btn-ghost:active,
+.cms-btn-danger:active {
+  transform: none;
+}
+.cms-btn-sm {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12.5px;
+}
+
+/* Status chips: squared tags with a mono label. */
+.cms-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  padding: 0 7px;
+  font-family: var(--font-cms-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: var(--cms-surface);
+  color: var(--cms-ink-2);
+}
+.cms-chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+.cms-chip-success {
+  background: var(--cms-success-soft);
+  color: var(--cms-success);
+}
+.cms-chip-warning {
+  background: var(--cms-warning-soft);
+  color: var(--cms-warning);
+}
+.cms-chip-accent {
+  background: var(--cms-accent-soft);
+  color: var(--cms-accent-ink);
+}
+
+/* Tables */
+.cms-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.cms-table th {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--cms-line);
+  font-family: var(--font-cms-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cms-muted);
+  background: var(--cms-sunken);
+}
+.cms-table td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--cms-border);
+  color: var(--cms-ink-2);
+}
+.cms-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.cms-table tbody tr {
+  transition: background 0.12s ease;
+}
+.cms-table tbody tr:hover {
+  background: #fbf6ee;
+}
+
+/* Upload drop zone */
+.cms-drop {
+  border: 1.5px dashed var(--cms-border-strong);
+  border-radius: var(--cms-radius);
+  background: repeating-linear-gradient(135deg, #fbf8f2 0 8px, #f7f2e9 8px 16px);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.cms-drop:hover,
+.cms-drop[data-dragging="true"] {
+  border-color: var(--cms-accent);
+  background: var(--cms-accent-soft);
+}
+
+.cms-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.cms-scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: #d3c8b5 padding-box;
+}
+
+/* ------------------------------------------------------------------ */
+/* Isometric primitives                                                */
+/* ------------------------------------------------------------------ */
+
+/* A flat plane laid into isometric space; children stack along Z. */
+.iso-plane {
+  transform: rotateX(55deg) rotateZ(-45deg);
+  transform-style: preserve-3d;
+}
+
+/* A slab: the face plus two visible sides drawn with pseudo-elements. */
+.iso-slab {
+  position: relative;
+  background: var(--slab-top, var(--cms-surface));
+  border: 1px solid var(--cms-line);
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.iso-slab::before,
+.iso-slab::after {
+  content: "";
+  position: absolute;
+  border: 1px solid var(--cms-line);
+}
+.iso-slab::before {
+  /* front-left side */
+  left: -1px;
+  right: -1px;
+  top: 100%;
+  height: var(--slab-depth, 10px);
+  background: var(--slab-left, var(--cms-face-left));
+  transform-origin: top;
+  transform: rotateX(-90deg);
+}
+.iso-slab::after {
+  /* front-right side */
+  top: -1px;
+  bottom: -1px;
+  left: 100%;
+  width: var(--slab-depth, 10px);
+  background: var(--slab-right, var(--cms-face-right));
+  transform-origin: left;
+  transform: rotateY(90deg);
+}
+.iso-slab[data-active="true"] {
+  --slab-top: var(--cms-accent);
+  --slab-left: var(--cms-accent-side);
+  --slab-right: #9e4f13;
+}
+
+/* Small isometric cube used as an icon tile. */
+.iso-cube {
+  position: relative;
+  width: 34px;
+  height: 34px;
+}
+.iso-cube > i {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--cms-line);
+}
+.iso-cube > i:nth-child(1) {
+  /* top */
+  background: var(--cube-top, var(--cms-accent-soft));
+  clip-path: polygon(50% 0, 100% 25%, 50% 50%, 0 25%);
+  border: 0;
+}
+.iso-cube > i:nth-child(2) {
+  /* left */
+  background: var(--cube-left, var(--cms-face-left));
+  clip-path: polygon(0 25%, 50% 50%, 50% 100%, 0 75%);
+  border: 0;
+}
+.iso-cube > i:nth-child(3) {
+  /* right */
+  background: var(--cube-right, var(--cms-face-right));
+  clip-path: polygon(50% 50%, 100% 25%, 100% 75%, 50% 100%);
+  border: 0;
+}
+.iso-cube > svg {
+  position: absolute;
+  inset: 0;
+}

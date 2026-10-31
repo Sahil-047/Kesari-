@@ -215,7 +215,7 @@ function Plate({
         />
       </motion.span>
       <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/45 via-ink/0 to-ink/0 opacity-40 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100" />
-      <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4 text-cream opacity-90 transition-all duration-300 md:translate-y-2 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100">
+      <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4 text-cream opacity-90 transition-[opacity,transform] duration-200 ease-[var(--ease-out)] md:translate-y-2 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100">
         <span className="font-sans text-[0.6rem] uppercase tracking-[0.3em]">
           View
         </span>

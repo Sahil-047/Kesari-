@@ -1,14 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useReducedMotion } from "framer-motion";
 import {
   MENS_COLLECTIONS,
   MENS_CATEGORIES,
   type MensCategory,
 } from "@/lib/mens-collections";
-
-const EASE = [0.22, 1, 0.36, 1] as const;
 
 type Props = {
   active: MensCategory | "all";
@@ -16,8 +13,6 @@ type Props = {
 };
 
 export default function MenswearCategories({ active, onChange }: Props) {
-  const reduce = useReducedMotion();
-
   const count = (id: MensCategory) =>
     MENS_COLLECTIONS.filter((c) => c.category === id).length;
 
@@ -50,23 +45,15 @@ export default function MenswearCategories({ active, onChange }: Props) {
       </div>
 
       <ul className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5">
-        {MENS_CATEGORIES.map((cat, i) => {
+        {MENS_CATEGORIES.map((cat) => {
           const on = active === cat.id;
           const n = count(cat.id);
           return (
             <li key={cat.id}>
-              <motion.button
+              <button
                 type="button"
                 onClick={() => onChange(on ? "all" : cat.id)}
                 aria-pressed={on}
-                initial={reduce ? false : { opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{
-                  duration: 0.7,
-                  delay: reduce ? 0 : i * 0.1,
-                  ease: EASE,
-                }}
                 className={`group relative block aspect-[2/3] w-full cursor-pointer overflow-hidden text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-ink sm:aspect-[3/4] ${
                   on ? "ring-1 ring-ink" : ""
                 }`}
@@ -98,7 +85,7 @@ export default function MenswearCategories({ active, onChange }: Props) {
                   <span className="hidden max-w-[16rem] text-[0.9rem] leading-snug text-cream/85 sm:block md:text-[0.92rem]">
                     {cat.line}
                   </span>
-                  <span className="mt-1 hidden items-center gap-2 font-sans text-[0.58rem] uppercase tracking-[0.28em] text-cream/90 sm:mt-2 sm:inline-flex md:opacity-0 md:transition-all md:duration-300 md:group-hover:opacity-100">
+                  <span className="mt-1 hidden items-center gap-2 font-sans text-[0.58rem] uppercase tracking-[0.28em] text-cream/90 sm:mt-2 sm:inline-flex md:opacity-0 md:transition-opacity md:duration-200 md:group-hover:opacity-100">
                     {on ? "Selected" : "Explore"}
                     <span
                       className="inline-block h-px w-6 bg-current"
@@ -106,7 +93,7 @@ export default function MenswearCategories({ active, onChange }: Props) {
                     />
                   </span>
                 </span>
-              </motion.button>
+              </button>
             </li>
           );
         })}

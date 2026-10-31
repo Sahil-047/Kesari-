@@ -1,7 +1,8 @@
 "use client";
 
 import AutoLoopVideo from "@/components/AutoLoopVideo";
-import TheEdit from "@/components/whats-new/TheEdit";
+import ArchArcade from "@/components/whats-new/ArchArcade";
+import type { WhatsNewContent } from "@/lib/content/pages";
 import { EASE_FLUENT, useReducedMotionSafe } from "@/lib/motion";
 import {
   motion,
@@ -17,7 +18,7 @@ import { useRef, type ReactNode } from "react";
 /* Hero — video sinks and swells while the title lifts away            */
 /* ------------------------------------------------------------------ */
 
-function Hero({ header }: { header: ReactNode }) {
+function Hero({ header, hero }: { header: ReactNode; hero: WhatsNewContent["hero"] }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotionSafe();
   const { scrollYProgress } = useScroll({
@@ -41,7 +42,7 @@ function Hero({ header }: { header: ReactNode }) {
   );
   const fade = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
-  const title = "What's New";
+  const title = hero.title;
 
   return (
     <section
@@ -55,9 +56,9 @@ function Hero({ header }: { header: ReactNode }) {
       >
         <AutoLoopVideo
           className="h-full w-full object-cover"
-          src="/videos/whats-new.mp4"
-          poster="/images/whats-new-poster.jpg"
-          aria-label="What's New"
+          src={hero.video}
+          poster={hero.poster}
+          aria-label={hero.title}
         />
       </motion.div>
       <div className="absolute inset-0 z-[1] bg-gradient-to-t from-ink/75 via-ink/15 to-ink/25" />
@@ -74,7 +75,7 @@ function Hero({ header }: { header: ReactNode }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: EASE_FLUENT }}
             >
-              The Season
+              {hero.eyebrow}
             </motion.p>
             <h1
               aria-label={title}
@@ -130,36 +131,17 @@ function Hero({ header }: { header: ReactNode }) {
 /* Closing — a full-screen panel slides up over The Edit                */
 /* ------------------------------------------------------------------ */
 
-const SILHOUETTES = [
-  {
-    href: "/womenswear?category=saree",
-    label: "Sarees",
-    line: "Drape, border, and hand stitch",
-    image: "/images/LIGHT PINK/DSC07146.jpg",
-    drift: ["-14%", "0%"],
-  },
-  {
-    href: "/womenswear?category=lehenga",
-    label: "Lehengas",
-    line: "Panelled skirts for evening light",
-    image: "/images/PINK/DSC05812.jpg",
-    drift: ["-26%", "0%"],
-  },
-  {
-    href: "/womenswear?category=dress",
-    label: "Dresses",
-    line: "Quiet silhouettes, cut for day",
-    image: "/images/soft-ivory/insight-1.jpg",
-    drift: ["-8%", "0%"],
-  },
-] as const;
+type Silhouette = WhatsNewContent["silhouettes"]["items"][number];
+
+/** Each panel's photo drifts at its own speed as the cover slides up. */
+const DRIFTS = ["-14%", "-26%", "-8%", "-18%"];
 
 function SilhouettePanel({
   item,
   index,
   progress,
 }: {
-  item: (typeof SILHOUETTES)[number];
+  item: Silhouette;
   index: number;
   progress: MotionValue<number>;
 }) {
@@ -167,12 +149,12 @@ function SilhouettePanel({
   const y = useTransform(
     progress,
     [0, 1],
-    reduce ? ["0%", "0%"] : [...item.drift],
+    reduce ? ["0%", "0%"] : [DRIFTS[index % DRIFTS.length]!, "0%"],
   );
 
   return (
     <Link
-      href={item.href}
+      href={item.link || "#"}
       className="group relative min-h-0 flex-1 overflow-hidden outline-none transition-[flex-grow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold md:hover:flex-[1.6] md:focus-visible:flex-[1.6]"
     >
       <motion.div
@@ -205,7 +187,7 @@ function SilhouettePanel({
         </span>
         <span
           aria-hidden
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cream/50 text-cream transition-all duration-300 group-hover:border-gold group-hover:bg-gold group-hover:text-ink"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cream/50 text-cream transition-colors duration-200 group-hover:border-gold group-hover:bg-gold group-hover:text-ink"
         >
           →
         </span>
@@ -214,7 +196,7 @@ function SilhouettePanel({
   );
 }
 
-function Closing() {
+function Closing({ content }: { content: WhatsNewContent["silhouettes"] }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -228,9 +210,9 @@ function Closing() {
       className="relative z-20 -mt-[100svh] h-[100svh] overflow-hidden bg-[#0b0907] shadow-[0_-40px_80px_rgba(20,12,4,0.45)]"
     >
       <div className="flex h-full flex-col gap-px md:flex-row">
-        {SILHOUETTES.map((item, i) => (
+        {content.items.map((item, i) => (
           <SilhouettePanel
-            key={item.href}
+            key={`${item.label}-${i}`}
             item={item}
             index={i}
             progress={scrollYProgress}
@@ -240,19 +222,25 @@ function Closing() {
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-6 md:pt-10">
         <p className="bg-[#0b0907]/70 px-4 py-2 font-sans text-[0.6rem] uppercase tracking-[0.36em] text-cream/85 backdrop-blur-sm">
-          Shop by silhouette
+          {content.label}
         </p>
       </div>
     </section>
   );
 }
 
-export default function WhatsNewExperience({ header }: { header: ReactNode }) {
+export default function WhatsNewExperience({
+  header,
+  content,
+}: {
+  header: ReactNode;
+  content: WhatsNewContent;
+}) {
   return (
     <>
-      <Hero header={header} />
-      <TheEdit />
-      <Closing />
+      <Hero header={header} hero={content.hero} />
+      <ArchArcade content={content.edit} />
+      <Closing content={content.silhouettes} />
     </>
   );
 }

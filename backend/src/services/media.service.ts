@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { env } from "../config/env.js";
-import { publicUrlFor, s3 } from "../config/s3.js";
+import { getStorage, publicUrlFor } from "../config/s3.js";
 import { mediaRepository } from "../repositories/media.repository.js";
 import { ApiError } from "../utils/ApiError.js";
 import { searchFilter } from "../utils/regex.js";
@@ -32,10 +31,11 @@ export const mediaService = {
   async upload(file: Express.Multer.File | undefined, { alt }: UploadMediaInput, userId: string) {
     if (!file) throw ApiError.badRequest('Attach a file in the "file" field');
 
+    const { client, bucket } = getStorage();
     const key = objectKey(file.originalname);
-    await s3.send(
+    await client.send(
       new PutObjectCommand({
-        Bucket: env.AWS_S3_BUCKET,
+        Bucket: bucket,
         Key: key,
         Body: file.buffer,
         ContentType: file.mimetype,
@@ -72,7 +72,8 @@ export const mediaService = {
   /** Removes the file from S3 first, then the library record. */
   async remove(id: string) {
     const media = await getOrThrow(id);
-    await s3.send(new DeleteObjectCommand({ Bucket: env.AWS_S3_BUCKET, Key: media.key }));
+    const { client, bucket } = getStorage();
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: media.key }));
     await mediaRepository.deleteById(id);
   },
 };

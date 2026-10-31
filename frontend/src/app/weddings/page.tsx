@@ -2,6 +2,7 @@ import Footer from "@/components/Footer";
 import BridalMoments from "@/components/weddings/BridalMoments";
 import LookManifest from "@/components/weddings/LookManifest";
 import WeddingsHero from "@/components/weddings/WeddingsHero";
+import { getPageContent } from "@/lib/content/getPageContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,12 +11,14 @@ export const metadata: Metadata = {
     "Bridal cloth for a long evening and a longer photograph. Soft Bridal at Kesari.",
 };
 
-export default function WeddingsPage() {
+export default async function WeddingsPage() {
+  const content = await getPageContent("weddings");
+
   return (
     <div className="site-shell page-grain">
       <main className="site-main relative z-10">
-        <WeddingsHero />
-        <BridalMoments />
+        <WeddingsHero hero={content.hero} />
+        <BridalMoments content={content.moments} />
         <LookManifest />
       </main>
       <Footer />

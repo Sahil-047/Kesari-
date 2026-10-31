@@ -1,22 +1,18 @@
 "use client";
 
 import { api, ApiRequestError } from "@/lib/api/client";
+import type { AtelierContent } from "@/lib/content/pages";
 import { EASE_FLUENT, useReducedMotionSafe } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
-
-const STEPS = [
-  { title: "You write", line: "A few lines about the occasion and the piece." },
-  { title: "A note comes back", line: "The atelier answers personally." },
-  { title: "The sitting", line: "A fitting or appointment at the house." },
-];
 
 const fieldClass =
   "mt-2 w-full border-0 border-b border-white/20 bg-transparent px-0 py-2.5 font-serif text-[1.02rem] text-white outline-none transition placeholder:text-white/25 focus:border-gold/70 [color-scheme:dark]";
 const labelClass =
   "font-sans text-[0.58rem] uppercase tracking-[0.24em] text-white/50";
 
-export default function AtelierEnquiry() {
+export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro"] }) {
+  const titleWords = intro.title.split(" ");
   const reduce = useReducedMotionSafe();
   const [started, setStarted] = useState(false);
   const [sent, setSent] = useState(false);
@@ -67,17 +63,17 @@ export default function AtelierEnquiry() {
         {/* Intro + steps */}
         <div className="md:col-span-6">
           <p className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-gold-soft">
-            The House
+            {intro.eyebrow}
           </p>
           <h1 className="display mt-3 text-[clamp(2.6rem,7vw,6rem)] uppercase leading-[0.9] tracking-[0.12em] text-white">
-            The
-            <br />
-            Atelier
+            {titleWords.map((word, i) => (
+              <span key={i} className="block">
+                {word}
+              </span>
+            ))}
           </h1>
           <p className="mt-6 max-w-md text-[1.02rem] leading-relaxed text-white/65">
-            Write to the house for fittings, commissions, and bridal
-            appointments. The atelier replies with a note, never a catalogue
-            blast.
+            {intro.text}
           </p>
 
           <ol className="relative mt-10 max-w-md">
@@ -85,7 +81,7 @@ export default function AtelierEnquiry() {
               aria-hidden
               className="absolute bottom-3 left-[0.9rem] top-3 w-px bg-white/12"
             />
-            {STEPS.map((s, i) => {
+            {intro.steps.map((s, i) => {
               const lit = i < stage || (i === stage && (started || sent));
               const current = i === stage;
               return (

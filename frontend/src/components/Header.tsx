@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useBagWishlist } from "@/context/BagWishlistContext";
 import { NAV_LINKS } from "@/lib/data";
 import Logo from "./Logo";
 
@@ -13,6 +14,8 @@ export default function Header({ variant = "solid" }: HeaderProps) {
   const pathname = usePathname();
   const overlay = variant === "overlay";
   const tone = overlay ? "text-white" : "text-ink";
+  const { bag } = useBagWishlist();
+  const count = bag.length;
 
   return (
     <header
@@ -51,8 +54,14 @@ export default function Header({ variant = "solid" }: HeaderProps) {
           <Link href="/wishlist" className="nav-link">
             Wishlist
           </Link>
-          <Link href="/bag" className="nav-link">
+          <Link href="/bag" className="nav-link inline-flex items-baseline gap-1.5" aria-label={`Bag, ${count} item${count === 1 ? "" : "s"}`}>
             Bag
+            {count > 0 && (
+              // A new key replays the tick, so each addition registers without a toast.
+              <span key={count} className="bag-count tabular-nums">
+                ({count})
+              </span>
+            )}
           </Link>
         </div>
       </div>

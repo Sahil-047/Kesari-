@@ -2,19 +2,17 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { HOME_SHOWCASE } from "@/lib/data";
+import type { HomeContent } from "@/lib/content/pages";
 import AutoLoopVideo from "./AutoLoopVideo";
 import Header from "./Header";
 
-const hero = HOME_SHOWCASE[0];
-
-export default function HomeHero() {
+export default function HomeHero({ hero }: { hero: HomeContent["hero"] }) {
   return (
     <section className="relative aspect-video w-full overflow-hidden md:min-h-[56dvh]">
       <AutoLoopVideo
         className="absolute inset-0 h-full w-full object-cover"
         src={hero.video}
-        poster={hero.videoPoster}
+        poster={hero.poster}
         aria-label={hero.title}
       />
       <Header variant="overlay" />
@@ -33,7 +31,7 @@ export default function HomeHero() {
             {hero.title}
           </h1>
           <Link
-            href={hero.href}
+            href={hero.link || "/whats-new"}
             className="ghost-btn mt-8 px-14 py-4.5 text-[0.95rem] tracking-[0.34em] md:px-16 md:py-5 md:text-[1.05rem]"
           >
             Explore

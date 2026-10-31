@@ -10,8 +10,9 @@ const EnvSchema = z.object({
   JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
   JWT_EXPIRES_IN: z.string().default("7d"),
   CORS_ORIGINS: z.string().default("http://localhost:3000"),
-  AWS_REGION: z.string().min(1, "AWS_REGION is required"),
-  AWS_S3_BUCKET: z.string().min(1, "AWS_S3_BUCKET is required"),
+  // S3 is only needed for media uploads; without it the rest of the API still runs.
+  AWS_REGION: optional(z.string()),
+  AWS_S3_BUCKET: optional(z.string()),
   AWS_ACCESS_KEY_ID: optional(z.string()),
   AWS_SECRET_ACCESS_KEY: optional(z.string()),
   AWS_S3_PUBLIC_URL: optional(z.url()),

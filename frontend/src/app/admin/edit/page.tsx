@@ -1,7 +1,6 @@
+import { redirect } from "next/navigation";
 
-import ResourceManager from "@/components/admin/ResourceManager";
-import { editResource } from "@/lib/admin/resources";
-
-export default function AdminEditPage() {
-  return <ResourceManager config={editResource} />;
+/** The Edit is now edited as a section of the What's New page. */
+export default function AdminEditRedirect() {
+  redirect("/admin/content#whats-new.edit");
 }
