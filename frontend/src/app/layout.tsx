@@ -45,7 +45,7 @@ export default function RootLayout({
       className={`${casOlgans.variable} ${sans.variable} ${script.variable} h-full antialiased`}
     >
       <body
-        className={`${casOlgans.className} min-h-full flex flex-col bg-parchment-light text-ink`}
+        className={`${casOlgans.className} min-h-full flex flex-col text-ink`}
       >
         <BagWishlistProvider>
           <SmoothScroll />

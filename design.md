@@ -37,7 +37,7 @@ These variables are defined in `globals.css` and exposed through Tailwind v4 `@t
 | CSS variable / utility name | Value | Intended role |
 | --- | --- | --- |
 | `--parchment` / `parchment` | `#b8a686` | Core warm paper tone |
-| `--parchment-light` / `parchment-light` | `#d9cdb8` | Base body background, light foreground on dark surfaces |
+| `--parchment-light` / `parchment-light` | `#d9cdb8` | Light paper surfaces, light foreground on dark surfaces |
 | `--parchment-mid` / `parchment-mid` | `#c4b496` | Intermediate paper tone |
 | `--parchment-deep` / `parchment-deep` | `#a89476` | Deeper paper tone |
 | `--cream` / `cream` | `#ebe3d4` | Approved footer background, warm light text, inverse controls |
@@ -75,11 +75,13 @@ The public footer uses a **light warm cream background**, not a dark closing ban
 
 ## 4. Surfaces and texture
 
+The default site background is the parchment gradient established by the home page's **The House** section. It is centralized as `--site-background` in `globals.css` and applied to the body. Use `.default-surface` on a shared wrapper for adjacent sections that should blend together: restarting the radial gradient on each section creates visible color seams. In `HomeShowcase`, one positioned, isolated wrapper supplies the gradient and paper noise behind the catalogue, House section, and contact CTA; their section backgrounds stay transparent and their content sits above the grain. The contact banner panel itself remains `bg-cream`, as do the approved footer and What's New arcade.
+
 ### Shared classes
 
 | Class | Behavior / use |
 | --- | --- |
-| `parchment-surface` | Radial paper wash: `ellipse 90% 70% at 50% 35%`, `#d4c4a8` → `#b8a484` at 52% → `#9a8668` |
+| `default-surface` / `parchment-surface` | Shared `--site-background` radial paper wash: `ellipse 90% 70% at 50% 35%`, `#d4c4a8` → `#b8a484` at 52% → `#9a8668` |
 | `parchment-noise` | Procedural grain through `::before`, opacity `0.07`, multiply blending |
 | `page-grain` | Same radial wash plus fine paper grain and coarser fibre; establishes `position: relative` and `isolation: isolate` |
 

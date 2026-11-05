@@ -13,6 +13,12 @@
   --charcoal: #14110f;
   --footer: #12100e;
   --header-h: 7.5rem;
+  --site-background: radial-gradient(
+    ellipse 90% 70% at 50% 35%,
+    #d4c4a8 0%,
+    #b8a484 52%,
+    #9a8668 100%
+  );
 
   /* Motion vocabulary (strong curves; UI motion stays under 300ms) */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -58,7 +64,7 @@ html.lenis {
 
 body {
   margin: 0;
-  background: var(--parchment-light);
+  background: var(--site-background);
   color: var(--ink);
   font-family: var(--font-serif), "Cas Olgans", Georgia, serif;
   -webkit-font-smoothing: antialiased;
@@ -84,13 +90,9 @@ button {
   cursor: pointer;
 }
 
+.default-surface,
 .parchment-surface {
-  background: radial-gradient(
-    ellipse 90% 70% at 50% 35%,
-    #d4c4a8 0%,
-    #b8a484 52%,
-    #9a8668 100%
-  );
+  background: var(--site-background);
 }
 
 /*
@@ -111,16 +113,19 @@ button {
   mix-blend-mode: multiply;
 }
 
+/* Keep the tall home surface free of procedural filters and blend groups. */
+.home-showcase.parchment-noise::before,
+.home-showcase .parchment-noise::before {
+  background-image: url("/textures/paper-grain-fine.png");
+  background-size: 260px 260px;
+  background-repeat: repeat;
+  mix-blend-mode: normal;
+}
+
 .page-grain {
   position: relative;
   isolation: isolate;
-  /* Same wash as loading screen (.parchment-surface) */
-  background: radial-gradient(
-    ellipse 90% 70% at 50% 35%,
-    #d4c4a8 0%,
-    #b8a484 52%,
-    #9a8668 100%
-  );
+  background: var(--site-background);
 }
 
 /* Fine film grain — kept soft so base colour matches the loading screen */

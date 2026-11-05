@@ -106,9 +106,9 @@ const catalogueCards = [
 
 export default function HomeShowcase() {
   return (
-    <>
+    <div className="home-showcase relative isolate default-surface parchment-noise">
       <section
-        className="relative parchment-surface parchment-noise section-pad py-16 md:py-24"
+        className="relative z-10 section-pad py-16 md:py-24"
         aria-label="Catalogue"
       >
         <div className="relative z-10 mx-auto max-w-[1680px]">
@@ -167,7 +167,7 @@ export default function HomeShowcase() {
       ))}*/}
 
       {/* The House, as a bento of the house's stories around its statement */}
-      <section className="relative parchment-surface parchment-noise section-pad py-20 md:py-28" aria-label="The House">
+      <section className="relative z-10 section-pad py-20 md:py-28" aria-label="The House">
         <div className="relative z-10 mx-auto max-w-[1280px]">
           <BentoHeading eyebrow="Kesari" title="The House" />
 
@@ -248,7 +248,7 @@ export default function HomeShowcase() {
       </section>
 
       <section
-        className="section-pad parchment-surface py-10 md:py-14"
+        className="relative z-10 section-pad py-10 md:py-14"
         aria-labelledby="home-contact-title"
       >
         <div className="relative mx-auto max-w-[1680px] overflow-hidden rounded-[1.5rem] border border-gold/30 bg-cream px-6 py-10 sm:px-10 md:px-12 md:py-12 lg:px-16">
@@ -265,7 +265,7 @@ export default function HomeShowcase() {
             <div className="max-w-xl">
               <span
                 aria-hidden
-                className="mb-5 grid h-12 w-12 place-items-center rounded-xl border border-gold/40 bg-cream"
+                className="mb-5 grid h-12 w-12 place-items-center rounded-xl border border-gold/40 bg-transparent"
               >
                 <JaaliMark className="h-9 w-8 text-gold" />
               </span>
@@ -299,6 +299,6 @@ export default function HomeShowcase() {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
