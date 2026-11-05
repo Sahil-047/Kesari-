@@ -207,7 +207,7 @@ function Closing({ content }: { content: WhatsNewContent["silhouettes"] }) {
     <section
       ref={ref}
       aria-label="Shop by silhouette"
-      className="relative z-20 -mt-[100svh] h-[100svh] overflow-hidden bg-[#0b0907] shadow-[0_-40px_80px_rgba(20,12,4,0.45)]"
+      className="relative z-20 -mt-[100svh] h-[100svh] overflow-hidden bg-cream shadow-[0_-20px_60px_rgba(74,63,53,0.12)]"
     >
       <div className="flex h-full flex-col gap-px md:flex-row">
         {content.items.map((item, i) => (
@@ -221,7 +221,7 @@ function Closing({ content }: { content: WhatsNewContent["silhouettes"] }) {
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-6 md:pt-10">
-        <p className="bg-[#0b0907]/70 px-4 py-2 font-sans text-[0.6rem] uppercase tracking-[0.36em] text-cream/85 backdrop-blur-sm">
+        <p className="border border-gold/40 bg-cream/95 px-4 py-2 font-sans text-[0.6rem] uppercase tracking-[0.36em] text-ink backdrop-blur-sm">
           {content.label}
         </p>
       </div>

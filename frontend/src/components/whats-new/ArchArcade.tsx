@@ -1,5 +1,6 @@
 "use client";
 
+import JharokhaWindow from "@/components/illustrations/JharokhaWindow";
 import type { WhatsNewContent } from "@/lib/content/pages";
 import { useReducedMotionSafe } from "@/lib/motion";
 import {
@@ -84,24 +85,24 @@ function Arch({
         tabIndex={active ? 0 : -1}
         onPointerEnter={() => active && onHover(true)}
         onPointerLeave={() => onHover(false)}
-        className={`group block outline-none ${active ? "" : "pointer-events-none"}`}
+        className={`group block outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-ink ${active ? "" : "pointer-events-none"}`}
         aria-label={`View ${piece.name}`}
       >
         {/* Double gold frame */}
         <span className="arcade-arch relative block h-[62svh] max-h-[640px] w-[min(72vw,440px)]">
-          <span className="absolute -inset-5 border border-gold/45 md:-inset-7" />
-          <span className="absolute -inset-2 border border-gold/25 md:-inset-3" />
-          <span className="relative block h-full w-full overflow-hidden bg-[#1a120a]">
+          <span className="absolute -inset-5 border border-gold/70 md:-inset-7" />
+          <span className="absolute -inset-2 border border-gold/45 md:-inset-3" />
+          <span className="relative block h-full w-full overflow-hidden bg-parchment-light shadow-[0_12px_40px_rgba(74,63,53,0.12)]">
             <Image
               src={piece.image}
               alt={piece.name}
               fill
               sizes="(max-width:768px) 72vw, 440px"
-              quality={85}
+              quality={95}
               priority={i < 2}
-              className="object-cover object-[50%_25%] transition-transform duration-700 ease-[var(--ease-out)] group-hover:scale-[1.03]"
+              className="object-cover object-[50%_25%] transition-transform duration-700 ease-[var(--ease-out)] motion-safe:group-hover:scale-[1.03] motion-reduce:transition-none"
             />
-            <span className="absolute inset-0 bg-gradient-to-t from-[#120d08]/55 via-transparent to-transparent" />
+
           </span>
           {/* Plinth */}
           <span className="absolute -bottom-7 left-1/2 h-px w-[130%] -translate-x-1/2 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
@@ -116,7 +117,7 @@ function SplitName({ name, reduce }: { name: string; reduce: boolean }) {
   return (
     <h3
       aria-label={name}
-      className="display flex flex-wrap text-[clamp(1.9rem,4.4vw,4.2rem)] uppercase leading-[0.95] tracking-[0.06em] text-cream"
+      className="display flex flex-wrap text-[clamp(1.9rem,4.4vw,4.2rem)] uppercase leading-[0.95] tracking-[0.06em] text-ink"
     >
       {name.split(" ").map((word, w) => (
         <span key={w} aria-hidden className="mr-[0.3em] inline-flex overflow-hidden">
@@ -161,11 +162,11 @@ function MagneticLink({ href, reduce }: { href: string; reduce: boolean }) {
         y.set(0);
       }}
       style={{ transform }}
-      className="mt-6 inline-flex min-h-12 items-center gap-3 rounded-full border border-gold/60 px-6 transition-colors duration-200 hover:bg-gold active:scale-[0.97]"
+      className="group mt-6 inline-flex min-h-12 items-center gap-3 rounded-full border border-gold px-6 transition-colors duration-200 hover:bg-gold/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink motion-safe:active:scale-[0.97]"
     >
       {/* Colour sits on the span: the site's global `a { color: inherit }` overrides utilities on links */}
-      <span className="font-sans text-[0.62rem] uppercase tracking-[0.28em] text-cream">View piece</span>
-      <span aria-hidden className="text-gold-soft">
+      <span className="font-sans text-[0.62rem] uppercase tracking-[0.28em] text-ink">View piece</span>
+      <span aria-hidden className="text-ink-soft transition-transform duration-200 motion-safe:group-hover:translate-x-1 motion-reduce:transition-none">
         →
       </span>
     </motion.a>
@@ -211,7 +212,7 @@ export default function ArchArcade({ content }: { content: EditContent }) {
   if (!piece) return null;
 
   return (
-    <section aria-label="Season arrivals" className="relative z-10 bg-[#120d08]" style={{ height: `${travel + 100}svh` }}>
+    <section aria-label="Season arrivals" className="relative z-10 bg-cream text-ink" style={{ height: `${travel + 100}svh` }}>
       <div ref={measureRef} aria-hidden className="pointer-events-none absolute left-0 top-0 w-px" style={{ height: `${travel}svh` }} />
 
       <div
@@ -227,8 +228,14 @@ export default function ArchArcade({ content }: { content: EditContent }) {
         }}
         onPointerLeave={() => setRingOn(false)}
       >
-        {/* Lamp-light at the far end of the corridor, and a stone floor */}
-        <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_50%_44%,rgba(197,160,89,0.22),transparent_70%)]" />
+        {/* Gold architectural prints on the same cream surface as the footer. */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden text-gold">
+          <JharokhaWindow className="absolute -left-36 top-[14%] h-[66%] w-auto opacity-25 sm:-left-28 lg:-left-12" />
+          <JharokhaWindow className="absolute -right-36 top-[14%] h-[66%] w-auto opacity-25 sm:-right-28 lg:-right-12" />
+          <div className="absolute inset-5 border border-gold/20 md:inset-8" />
+          <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-gold/25 via-transparent to-gold/25" />
+        </div>
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_50%_44%,rgba(197,160,89,0.12),transparent_70%)]" />
         <div aria-hidden className="arcade-floor absolute inset-x-0 bottom-0 h-[42%]" />
 
         {/* The corridor */}
@@ -242,21 +249,21 @@ export default function ArchArcade({ content }: { content: EditContent }) {
 
         {/* Heading */}
         <div className="section-pad pointer-events-none absolute inset-x-0 top-0 pt-8 md:pt-10">
-          <p className="font-sans text-[0.62rem] uppercase tracking-[0.32em] text-gold-soft">{content.eyebrow}</p>
-          <h2 className="display mt-2 text-[clamp(1.8rem,4vw,3.4rem)] uppercase leading-[0.95] tracking-[0.12em] text-cream">
+          <p className="font-sans text-[0.62rem] uppercase tracking-[0.32em] text-ink-soft">{content.eyebrow}</p>
+          <h2 className="display mt-2 text-[clamp(1.8rem,4vw,3.4rem)] uppercase leading-[0.95] tracking-[0.12em] text-ink">
             {content.title}
           </h2>
         </div>
 
         {/* The piece you are facing */}
-        <div className="section-pad absolute inset-x-0 bottom-0 flex items-end justify-between gap-6 pb-8 md:pb-12">
+        <div className="section-pad absolute inset-x-0 bottom-0 flex items-end justify-between gap-6 bg-gradient-to-t from-cream via-cream/95 to-transparent pb-8 pt-14 md:pb-12 md:pt-20">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={active}
               className="min-w-0 max-w-[min(90vw,46rem)]"
               exit={{ opacity: 0, transition: { duration: 0.12 } }}
             >
-              <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-gold-soft">{piece.craft}</p>
+              <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-ink-soft">{piece.craft}</p>
               <div className="mt-2">
                 <SplitName name={piece.name} reduce={reduce} />
               </div>
@@ -287,7 +294,7 @@ export default function ArchArcade({ content }: { content: EditContent }) {
               }`}
             >
               <span
-                className={`font-sans text-[0.55rem] uppercase tracking-[0.28em] text-[#120d08] transition-opacity duration-150 ${
+                className={`font-sans text-[0.55rem] uppercase tracking-[0.28em] text-ink transition-opacity duration-150 ${
                   overArch ? "opacity-100" : "opacity-0"
                 }`}
               >

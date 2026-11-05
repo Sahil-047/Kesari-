@@ -513,12 +513,12 @@ button {
   }
 }
 
-/* What's New arcade: a stone floor receding to the lamp-lit end of the corridor. */
+/* What's New arcade: gold floor inlay on a light cream corridor. */
 .arcade-floor {
   background:
-    repeating-linear-gradient(90deg, rgba(197, 160, 89, 0.12) 0 1px, transparent 1px 12.5%),
-    repeating-linear-gradient(0deg, rgba(197, 160, 89, 0.1) 0 1px, transparent 1px 18%),
-    linear-gradient(to top, #1d150d, #120d08);
+    repeating-linear-gradient(90deg, rgba(197, 160, 89, 0.3) 0 1px, transparent 1px 12.5%),
+    repeating-linear-gradient(0deg, rgba(197, 160, 89, 0.25) 0 1px, transparent 1px 18%),
+    linear-gradient(to top, var(--parchment-light), var(--cream));
   transform: perspective(600px) rotateX(62deg);
   transform-origin: 50% 100%;
   mask-image: linear-gradient(to top, black 30%, transparent);
