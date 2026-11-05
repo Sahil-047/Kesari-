@@ -40,13 +40,13 @@ These variables are defined in `globals.css` and exposed through Tailwind v4 `@t
 | `--parchment-light` / `parchment-light` | `#d9cdb8` | Base body background, light foreground on dark surfaces |
 | `--parchment-mid` / `parchment-mid` | `#c4b496` | Intermediate paper tone |
 | `--parchment-deep` / `parchment-deep` | `#a89476` | Deeper paper tone |
-| `--cream` / `cream` | `#ebe3d4` | Warm light text, inverse controls |
+| `--cream` / `cream` | `#ebe3d4` | Approved footer background, warm light text, inverse controls |
 | `--gold` / `gold` | `#c5a059` | Rules, frames, motifs, restrained emphasis |
 | `--gold-soft` / `gold-soft` | `#b8a070` | Eyebrows and subdued gold details |
 | `--ink` / `ink` | `#2c241c` | Primary text and solid buttons |
 | `--ink-soft` / `ink-soft` | `#4a3f35` | Secondary text and button hover |
 | `--charcoal` / `charcoal` | `#14110f` | Deep warm dark surface |
-| `--footer` / `footer` | `#12100e` | Footer background |
+| `--footer` / `footer` | `#12100e` | Legacy dark token; still defined in CSS, but no longer used for the footer |
 
 ### Pairing and hierarchy
 
@@ -58,6 +58,20 @@ These variables are defined in `globals.css` and exposed through Tailwind v4 `@t
 - Gold is primarily ornamental. Do not assume small gold text on paper meets contrast requirements.
 - Media fallback tones such as wine, violet, forest, and saffron in `MediaFrame.tsx` are not additional primary UI colors.
 - Some bespoke sections use literal dark browns such as `#1a140e`. Match those when extending that exact composition; prefer existing named tokens for new generic sections.
+
+### Approved footer treatment
+
+The public footer uses a **light warm cream background**, not a dark closing band. This is the approved direction; preserve it when extending or redesigning the footer.
+
+- **Surface:** `bg-cream` (`#ebe3d4`), with `text-ink` (`#2c241c`) as the primary foreground.
+- **Logo:** `Logo tone="dark"`; do not use the light/gold logo on this surface.
+- **Supporting text:** `text-ink-soft` (`#4a3f35`) for the tagline, column labels, links, and bottom metadata. Footer labels keep the small uppercase Jost treatment but do not use the gold-colored `.eyebrow` class.
+- **Dividers:** `border-ink/15`; the circular invitation arrow uses `border-ink/30` and ink text, filling ink with cream text on hover.
+- **Invitation heading:** ink, transitioning to ink-soft on hover.
+- **Link ornament:** retain the subtle gold hover arrows and underlines.
+- **Oversized decorative wordmark:** `text-ink/[0.07]`, not translucent white.
+- **Back to top:** inherits the footer's text color, with ink on hover.
+- Keep the existing layout, typography, spacing, and interactions. Do not restore `bg-footer`, white functional text, or white dividers here. Dark surfaces elsewhere remain valid where their existing compositions call for them.
 
 ## 4. Surfaces and texture
 
@@ -245,7 +259,7 @@ All paths below are relative to the repository root.
 | Font registration / root providers | `frontend/src/app/layout.tsx` |
 | Centered page introduction | `frontend/src/components/PageHero.tsx` (`compact`, `bare`) |
 | Header and logo | `frontend/src/components/Header.tsx`, `frontend/src/components/Logo.tsx` |
-| Footer / dark invitation band | `frontend/src/components/Footer.tsx` |
+| Cream footer / invitation band | `frontend/src/components/Footer.tsx` |
 | House bento composition | `frontend/src/components/HomeShowcase.tsx` |
 | Photo tile / text tile / ornamental heading | `frontend/src/components/bento/BentoTile.tsx`: `BentoPhoto`, `BentoPanel`, `BentoHeading` |
 | Alternating image + editorial copy | `frontend/src/components/CraftFeature.tsx` (`reverse`) |

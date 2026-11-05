@@ -10,7 +10,7 @@ export default function BackToTop() {
         ).matches;
         window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
       }}
-      className="group inline-flex items-center gap-2 uppercase tracking-[0.22em] text-white/55 transition hover:text-gold"
+      className="group inline-flex items-center gap-2 uppercase tracking-[0.22em] text-inherit transition hover:text-ink"
     >
       Back to top
       <span

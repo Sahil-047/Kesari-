@@ -34,13 +34,13 @@ export default async function Footer() {
   const { brand, invitation, bottom } = await getPageContent("footer");
 
   return (
-    <footer className="relative overflow-hidden bg-footer text-parchment-light">
+    <footer className="relative overflow-hidden bg-cream text-ink">
       <div className="section-pad mx-auto max-w-[1680px] pt-14 md:pt-20">
         {/* Top band: brand + invitation */}
-        <div className="flex flex-col gap-8 border-b border-white/10 pb-10 md:flex-row md:items-end md:justify-between md:pb-14">
+        <div className="flex flex-col gap-8 border-b border-ink/15 pb-10 md:flex-row md:items-end md:justify-between md:pb-14">
           <div>
-            <Logo tone="gold" size="md" />
-            <p className="mt-4 text-sm italic text-parchment-light/70">
+            <Logo tone="dark" size="md" />
+            <p className="mt-4 text-sm italic text-ink-soft">
               {brand.tagline}
             </p>
           </div>
@@ -50,14 +50,14 @@ export default async function Footer() {
             className="group flex items-end justify-between gap-6 md:max-w-[34rem] md:flex-1"
           >
             <span>
-              <span className="eyebrow block text-gold">{invitation.eyebrow}</span>
-              <span className="display mt-2 block text-[clamp(1.6rem,3.2vw,2.75rem)] uppercase leading-[0.95] tracking-[0.1em] text-white transition-colors group-hover:text-gold">
+              <span className="block font-sans text-[0.6rem] uppercase leading-[1.2] tracking-[0.32em] text-ink-soft">{invitation.eyebrow}</span>
+              <span className="display mt-2 block text-[clamp(1.6rem,3.2vw,2.75rem)] uppercase leading-[0.95] tracking-[0.1em] text-ink transition-colors group-hover:text-ink-soft">
                 {invitation.title}
               </span>
             </span>
             <span
               aria-hidden
-              className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/25 text-lg text-white transition-colors duration-200 group-hover:border-gold group-hover:bg-gold group-hover:text-footer md:h-14 md:w-14"
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-ink/30 text-lg text-ink transition-colors duration-200 group-hover:border-ink group-hover:bg-ink group-hover:text-cream md:h-14 md:w-14"
             >
               →
             </span>
@@ -71,13 +71,13 @@ export default async function Footer() {
         >
           {columns.map((col) => (
             <div key={col.title}>
-              <h3 className="eyebrow text-gold">{col.title}</h3>
+              <h3 className="font-sans text-[0.6rem] uppercase leading-[1.2] tracking-[0.32em] text-ink-soft">{col.title}</h3>
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="group relative inline-flex items-center gap-2 font-sans text-[0.9rem] text-white/75 transition-colors hover:text-white"
+                      className="group relative inline-flex items-center gap-2 font-sans text-[0.9rem] text-ink-soft transition-colors hover:text-ink"
                     >
                       {link.label}
                       <span
@@ -99,13 +99,13 @@ export default async function Footer() {
       {/* Oversized wordmark */}
       <p
         aria-hidden
-        className="display pointer-events-none select-none whitespace-nowrap text-center text-[clamp(4.5rem,21vw,22rem)] uppercase leading-[0.78] tracking-[0.08em] text-white/[0.045]"
+        className="display pointer-events-none select-none whitespace-nowrap text-center text-[clamp(4.5rem,21vw,22rem)] uppercase leading-[0.78] tracking-[0.08em] text-ink/[0.07]"
       >
         Kesari
       </p>
 
-      <div className="border-t border-white/10">
-        <div className="section-pad mx-auto flex max-w-[1680px] flex-wrap items-center justify-between gap-x-6 gap-y-2 py-4 font-sans text-[0.58rem] uppercase tracking-[0.22em] text-white/55">
+      <div className="border-t border-ink/15">
+        <div className="section-pad mx-auto flex max-w-[1680px] flex-wrap items-center justify-between gap-x-6 gap-y-2 py-4 font-sans text-[0.58rem] uppercase tracking-[0.22em] text-ink-soft">
           <span>{bottom.left}</span>
           <span className="hidden sm:inline">{bottom.middle}</span>
           <BackToTop />
