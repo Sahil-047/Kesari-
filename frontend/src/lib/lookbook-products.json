@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "fileName": "LOOKBOOK KESARI pricing FINAL.pdf",
+    "pageCount": 19
+  },
+  "currency": "INR",
+  "priceUnit": "rupees",
+  "categories": ["saree", "dress", "lehenga", "menswear"],
+  "notes": [
+    "Names, descriptions, and prices come from the PDF. Extraction-related spacing has been corrected; source spellings such as Vasundhra and Mugha are retained.",
+    "Categories and garment types are inferred from the product names, descriptions, and photographs. Dress includes womenswear sets that are neither sarees nor conventional lehengas; Devyani is a skirt-and-jacket set.",
+    "Image paths are public website paths relative to frontend/public and reference existing photographs of the matching garments. They do not include the /public prefix.",
+    "Each product price is the base price printed in the PDF, in whole Indian rupees, not paise. Saree priceOptions are alternative total prices, not extra charges to add to the base price.",
+    "For Yamuna, Radhika, and Vasudha, the base option is labelled Saree because only the higher price explicitly says With blouse. Dhara explicitly labels the base price Without blouse.",
+    "The separately priced Trail Veil is recorded as an optional add-on to Maharani Lehenga, with its own ID. The PDF provides no standalone veil description or standalone veil photograph; its image shows the veil worn with the ensemble.",
+    "IDs are assigned catalogue identifiers, not manufacturer SKUs. Source pages are one-based PDF page numbers."
+  ],
+  "products": [
+    {
+      "id": "KES-001",
+      "slug": "maharani-lehenga",
+      "name": "Maharani Lehenga",
+      "category": "lehenga",
+      "garmentType": "bridal-lehenga-set",
+      "price": 130000,
+      "description": "Crafted in luxurious raw silk, the Maharani Lehenga features a voluminous 12-panel silhouette paired with a matching raw silk blouse. A delicate net dupatta completes the ensemble, creating a timeless expression of Indian bridal grandeur.",
+      "image": "/images/Wedding/DSC05215.jpg",
+      "sourcePage": 2,
+      "priceOptions": [],
+      "addOns": [
+        {
+          "id": "KES-001-ADD-01",
+          "name": "Trail Veil",
+          "price": 10000,
+          "description": null,
+          "image": "/images/Wedding/DSC05215.jpg",
+          "imageShows": "Veil worn with the Maharani Lehenga, not an isolated accessory photograph",
+          "sourcePage": 2
+        }
+      ]
+    },
+    {
+      "id": "KES-002",
+      "slug": "rajsi-lehenga",
+      "name": "Rajsi Lehenga",
+      "category": "lehenga",
+      "garmentType": "lehenga-set",
+      "price": 110000,
+      "description": "The Rajsi Lehenga is crafted in raw silk, featuring a graceful 12-panel silhouette paired with a matching raw silk blouse. A pure organza silk dupatta lends an ethereal finish to this elegant ensemble, bringing together traditional craftsmanship and understated opulence.",
+      "image": "/images/ORANGE/DSC05458.jpg",
+      "sourcePage": 3,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-003",
+      "slug": "rajnandini-lehenga",
+      "name": "Rajnandini Lehenga",
+      "category": "lehenga",
+      "garmentType": "lehenga-set",
+      "price": 109000,
+      "description": "Rooted in the richness of Indian textiles, the Rajnandini Lehenga features a 12-panel raw silk skirt paired with an exquisite pure Banarasi brocade blouse. A pure raw organza silk dupatta completes the ensemble, offering a sophisticated interplay of heritage textiles and timeless elegance.",
+      "image": "/images/VIOLET/DSC06377.jpg",
+      "sourcePage": 4,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-004",
+      "slug": "vasundhra-lehenga",
+      "name": "Vasundhra Lehenga",
+      "category": "lehenga",
+      "garmentType": "lehenga-set",
+      "price": 107000,
+      "description": "The Vasundhra Lehenga brings together the delicate fluidity of net and the richness of velvet. Featuring a net lehenga paired with a luxurious velvet blouse and a coordinating net dupatta, the ensemble embodies romantic elegance with a contemporary couture sensibility.",
+      "image": "/images/PINK/DSC06005.jpg",
+      "sourcePage": 5,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-005",
+      "slug": "suvarna-dress",
+      "name": "Suvarna Dress",
+      "category": "dress",
+      "garmentType": "dress-with-dupatta-and-churidaar",
+      "price": 36000,
+      "description": "Crafted in lustrous Tussar silk, the Suvarna Dress celebrates the natural richness and understated sheen of this timeless textile. Paired with a matching Tussar silk dupatta and a lycra net churidaar, the ensemble balances traditional elegance with a refined, graceful silhouette.",
+      "image": "/images/OFF WHITE/DSC07271.jpg",
+      "sourcePage": 6,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-006",
+      "slug": "devika-set",
+      "name": "Devika Set",
+      "category": "dress",
+      "garmentType": "womenswear-set",
+      "price": 36000,
+      "description": "Crafted entirely in Tussar silk, the Devika Set celebrates the natural texture and understated lustre of this exquisite textile. Its cohesive fabric story and refined appeal make it a timeless choice for elegant celebrations and special occasions.",
+      "image": "/images/Wedding/DSC07460.jpg",
+      "sourcePage": 7,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-007",
+      "slug": "yamuna-saree",
+      "name": "Yamuna Saree",
+      "category": "saree",
+      "garmentType": "saree",
+      "price": 31000,
+      "description": "The Yamuna Saree is crafted in pure organza silk, offering a delicate, fluid drape with an ethereal finish. Paired with a net blouse featuring raw silk detailing, this ensemble captures the effortless elegance of Indian occasionwear through refined textures and timeless design.",
+      "image": "/images/VIOLET/DSC06731.jpg",
+      "sourcePage": 8,
+      "priceOptions": [
+        { "id": "KES-007-OPT-01", "label": "Saree", "price": 31000 },
+        { "id": "KES-007-OPT-02", "label": "With blouse", "price": 41000 }
+      ],
+      "addOns": []
+    },
+    {
+      "id": "KES-008",
+      "slug": "dhara-saree",
+      "name": "Dhara Saree",
+      "category": "saree",
+      "garmentType": "saree",
+      "price": 49000,
+      "description": "A timeless grey tissue saree paired with a refined dupion silk blouse. Its subtle sheen and elegant drape create a sophisticated look, celebrating understated luxury and the beauty of fine fabrics.",
+      "image": "/images/Wedding/DSC06856.jpg",
+      "sourcePage": 9,
+      "priceOptions": [
+        { "id": "KES-008-OPT-01", "label": "Without blouse", "price": 49000 },
+        { "id": "KES-008-OPT-02", "label": "With blouse", "price": 59000 }
+      ],
+      "addOns": []
+    },
+    {
+      "id": "KES-009",
+      "slug": "radhika-saree",
+      "name": "Radhika Saree",
+      "category": "saree",
+      "garmentType": "saree",
+      "price": 59000,
+      "description": "The Radhika Saree brings together the richness of velvet with the delicate allure of silk and net. Featuring a luxurious velvet blouse paired with a silk and net saree, the ensemble creates a striking balance of texture, sophistication, and contemporary elegance.",
+      "image": "/images/LIGHT PINK/DSC07151.jpg",
+      "sourcePage": 10,
+      "priceOptions": [
+        { "id": "KES-009-OPT-01", "label": "Saree", "price": 59000 },
+        { "id": "KES-009-OPT-02", "label": "With blouse", "price": 67000 }
+      ],
+      "addOns": []
+    },
+    {
+      "id": "KES-010",
+      "slug": "vasudha-saree",
+      "name": "Vasudha Saree",
+      "category": "saree",
+      "garmentType": "saree",
+      "price": 41999,
+      "description": "A deep forest-green saree featuring an ornate embroidered border in antique gold and muted rose, paired with a statement gold embellished blouse. A timeless expression of Indian craftsmanship and understated grandeur.",
+      "image": "/images/Wedding/DSC06974.jpg",
+      "sourcePage": 11,
+      "priceOptions": [
+        { "id": "KES-010-OPT-01", "label": "Saree", "price": 41999 },
+        { "id": "KES-010-OPT-02", "label": "With blouse", "price": 51999 }
+      ],
+      "addOns": []
+    },
+    {
+      "id": "KES-011",
+      "slug": "devyani-set",
+      "name": "Devyani Set",
+      "category": "dress",
+      "garmentType": "skirt-jacket-and-bustier-set",
+      "price": 85000,
+      "description": "The Devyani Set combines the ethereal lightness of net with the richness of Mugha silk. Featuring a flowing net skirt and a coordinating net jacket, paired with a Mugha silk bustier, the ensemble offers a distinctive expression of contemporary Indian luxury.",
+      "image": "/images/Wedding/DSC07493.jpg",
+      "sourcePage": 12,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-012",
+      "slug": "pariniti-set",
+      "name": "Pariniti Set",
+      "category": "dress",
+      "garmentType": "cowl-dress-and-cape-set",
+      "price": 36000,
+      "description": "Defined by fluid movement and modern sophistication, the Pariniti Set features a gracefully draped satin cowl dress paired with a georgette silk cape. The interplay of soft structure and flowing layers creates an elegant statement for contemporary occasionwear.",
+      "image": "/images/Wedding/DSC07617.jpg",
+      "sourcePage": 13,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-013",
+      "slug": "parvat-sherwani",
+      "name": "Parvat Sherwani",
+      "category": "menswear",
+      "garmentType": "sherwani-set",
+      "price": 98000,
+      "description": "A regal raw silk sherwani paired with a coordinated silk set and a tussar silk khes. Rich textures and timeless craftsmanship come together in an elegant expression of traditional Indian menswear.",
+      "image": "/images/Wedding/DSC05269.jpg",
+      "sourcePage": 14,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-014",
+      "slug": "aranya-indo-western-set",
+      "name": "Aranya Indo-Western Set",
+      "category": "menswear",
+      "garmentType": "indo-western-set",
+      "price": 85000,
+      "description": "A contemporary Indo-Western ensemble crafted in raw silk and dupion. The structured raw silk jacket is paired with a long dupion shirt featuring refined cufflink detailing, complemented by tailored raw silk trousers.",
+      "image": "/images/Wedding/DSC05573.jpg",
+      "sourcePage": 15,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-015",
+      "slug": "gulal-bundi-set",
+      "name": "Gulal Bundi Set",
+      "category": "menswear",
+      "garmentType": "bundi-kurta-and-trousers-set",
+      "price": 40000,
+      "description": "A raw silk bundi layered over a dupion kurta and paired with tailored raw silk trousers. The interplay of luxurious textures and refined tailoring creates an elegant ensemble for festive celebrations and special occasions.",
+      "image": "/images/Wedding/DSC06237.jpg",
+      "sourcePage": 16,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-016",
+      "slug": "neer-kurta-set",
+      "name": "Neer Kurta Set",
+      "category": "menswear",
+      "garmentType": "kurta-and-trousers-set",
+      "price": 12500,
+      "description": "A mint dupion kurta paired with comfortable cotton-lycra trousers. Defined by its clean silhouette and understated elegance, this ensemble offers a contemporary take on traditional Indian menswear, ideal for daytime celebrations and festive gatherings.",
+      "image": "/images/Wedding/DSC07090.jpg",
+      "sourcePage": 17,
+      "priceOptions": [],
+      "addOns": []
+    },
+    {
+      "id": "KES-017",
+      "slug": "tamra-kurta-set",
+      "name": "Tamra Kurta Set",
+      "category": "menswear",
+      "garmentType": "kurta-and-trousers-set",
+      "price": 12500,
+      "description": "A rust dupion kurta paired with comfortable cotton-lycra trousers. With its earthy colour palette and clean silhouette, this ensemble brings together effortless comfort and understated sophistication, making it a versatile choice for festive occasions.",
+      "image": "/images/ORANGE/DSC07568.jpg",
+      "sourcePage": 18,
+      "priceOptions": [],
+      "addOns": []
+    }
+  ]
+}
