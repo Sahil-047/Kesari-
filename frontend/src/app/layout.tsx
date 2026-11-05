@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Great_Vibes, Jost } from "next/font/google";
 import IntroSplash from "@/components/IntroSplash";
+import SmoothScroll from "@/components/SmoothScroll";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { BagWishlistProvider } from "@/context/BagWishlistContext";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 
 const casOlgans = localFont({
@@ -46,6 +48,7 @@ export default function RootLayout({
         className={`${casOlgans.className} min-h-full flex flex-col bg-parchment-light text-ink`}
       >
         <BagWishlistProvider>
+          <SmoothScroll />
           <IntroSplash />
           {children}
           <WhatsAppButton />
