@@ -81,13 +81,13 @@ const catalogueCards = [
     title: "Lahenga",
     image: "/images/PINK/DSC05812.jpg",
     alt: "Pink embroidered lehenga with a flowing panelled skirt",
-    href: "/womenswear",
+    href: "/crafts/vasundhara-lehenga",
   },
   {
     title: "Saree",
     image: "/images/LIGHT PINK/DSC07146.jpg",
     alt: "Light pink saree with delicate floral embroidery",
-    href: "/womenswear?category=saree",
+    href: "/crafts/blush-veranda",
   },
   {
     title: "Dress",
