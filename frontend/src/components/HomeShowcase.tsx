@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { HOUSE_COPY, HOME_SHOWCASE } from "@/lib/data";
 import AutoLoopVideo from "./AutoLoopVideo";
@@ -75,10 +76,81 @@ function FullBleedCraft({
   );
 }
 
+const catalogueCards = [
+  {
+    title: "Lahenga",
+    image: "/images/PINK/DSC05812.jpg",
+    alt: "Pink embroidered lehenga with a flowing panelled skirt",
+    href: "/womenswear",
+  },
+  {
+    title: "Saree",
+    image: "/images/LIGHT PINK/DSC07146.jpg",
+    alt: "Light pink saree with delicate floral embroidery",
+    href: "/womenswear?category=saree",
+  },
+  {
+    title: "Dress",
+    image: "/images/soft-ivory/insight-1.jpg",
+    alt: "Ivory dress with embroidered neckline and cuffs",
+    href: "/womenswear?category=dress",
+  },
+  {
+    title: "Menswear",
+    image: "/images/Wedding/DSC06237.jpg",
+    alt: "Blush pink menswear ensemble with an embroidered waistcoat",
+    href: "/menswear",
+  },
+];
+
 export default function HomeShowcase() {
   return (
     <>
-      {HOME_SHOWCASE.slice(1).map((item) => (
+      <section
+        className="relative parchment-surface parchment-noise section-pad py-16 md:py-24"
+        aria-label="Catalogue"
+      >
+        <div className="relative z-10 mx-auto max-w-[1680px]">
+          <BentoHeading eyebrow="Shop by form" title="The Catalogue" />
+          <ul className="grid grid-cols-2 gap-3 md:gap-5 lg:grid-cols-4">
+            {catalogueCards.map((card) => (
+              <li key={card.title}>
+                <Link
+                  href={card.href}
+                  className="mughal-frame group relative block aspect-[2/3] overflow-hidden bg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
+                >
+                  <Image
+                    src={card.image}
+                    alt={card.alt}
+                    fill
+                    quality={95}
+                    sizes="(min-width: 1776px) 405px, (min-width: 1024px) 25vw, 50vw"
+                    className="object-cover transition-transform duration-300 ease-in motion-safe:group-hover:scale-[1.04] motion-safe:group-focus-visible:scale-[1.04] motion-reduce:transition-none"
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6">
+                    <h3 className="display text-[clamp(1.1rem,2.3vw,2rem)] uppercase leading-tight text-cream">
+                      {card.title}
+                    </h3>
+                    <span className="mt-3 flex items-center gap-3 font-sans text-[0.6rem] uppercase tracking-[0.24em] text-cream">
+                      Explore
+                      <span
+                        aria-hidden
+                        className="relative inline-block h-px w-5 shrink-0 bg-current transition-[width] duration-300 ease-in after:absolute after:right-0 after:top-1/2 after:h-1.5 after:w-1.5 after:-translate-y-1/2 after:rotate-45 after:border-r after:border-t after:border-current motion-safe:group-hover:w-9 motion-safe:group-focus-visible:w-9 motion-reduce:transition-none"
+                      />
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/*{HOME_SHOWCASE.slice(1).map((item) => (
         <FullBleedCraft
           key={item.href}
           eyebrow={item.eyebrow}
@@ -90,7 +162,7 @@ export default function HomeShowcase() {
           video={"video" in item ? item.video : undefined}
           videoPoster={"videoPoster" in item ? item.videoPoster : undefined}
         />
-      ))}
+      ))}*/}
 
       {/* The House, as a bento of the house's stories around its statement */}
       <section className="relative parchment-surface parchment-noise section-pad py-20 md:py-28" aria-label="The House">
