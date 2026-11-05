@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { filterCatalogue, garmentLabel, type CatalogueFilters, type CatalogueProduct, type CatalogueSort } from "@/lib/catalogue";
+import { parseCatalogueQuery, writeCatalogueQuery } from "@/lib/catalogue-url";
 import styles from "./ProductCatalogue.module.css";
 
 const CATEGORIES = [
@@ -18,8 +20,10 @@ const money = (amount: number) => new Intl.NumberFormat("en-IN", { style: "curre
 export default function ProductCatalogue({ products }: { products: CatalogueProduct[] }) {
   const ceiling = Math.max(0, ...products.map((product) => product.price));
   const emptyFilters: CatalogueFilters = { categories: [], garmentTypes: [], minPrice: 0, maxPrice: ceiling, query: "" };
-  const [filters, setFilters] = useState<CatalogueFilters>(emptyFilters);
-  const [sort, setSort] = useState<CatalogueSort>("featured");
+  const searchParams = useSearchParams();
+  const { filters, sort } = useMemo(() => parseCatalogueQuery(searchParams, products), [searchParams, products]);
+  const [searchDraft, setSearchDraft] = useState({ text: filters.query, urlQuery: filters.query });
+  const searchValue = searchDraft.urlQuery === filters.query ? searchDraft.text : filters.query;
   const [filterOpen, setFilterOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -46,6 +50,25 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
     dialogRef.current?.close();
   }
 
+  function writeUrl(nextFilters: CatalogueFilters, nextSort: CatalogueSort, replace = false) {
+    const params = writeCatalogueQuery(new URLSearchParams(window.location.search), nextFilters, nextSort, products);
+    const query = params.toString();
+    const url = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+    if (url === `${window.location.pathname}${window.location.search}${window.location.hash}`) return;
+    // Next.js observes native history updates without refetching the product list.
+    window.history[replace ? "replaceState" : "pushState"](null, "", url);
+  }
+
+  function setFilters(update: CatalogueFilters | ((current: CatalogueFilters) => CatalogueFilters), replace = false) {
+    const current = parseCatalogueQuery(new URLSearchParams(window.location.search), products);
+    writeUrl(typeof update === "function" ? update(current.filters) : update, current.sort, replace);
+  }
+
+  function setSort(nextSort: CatalogueSort) {
+    const current = parseCatalogueQuery(new URLSearchParams(window.location.search), products);
+    writeUrl(current.filters, nextSort);
+  }
+
   function toggle(group: "categories" | "garmentTypes", value: string) {
     setFilters((current) => ({
       ...current,
@@ -62,7 +85,7 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
       [key]: amount,
       ...(key === "minPrice" && amount > current.maxPrice ? { maxPrice: amount } : {}),
       ...(key === "maxPrice" && amount < current.minPrice ? { minPrice: amount } : {}),
-    }));
+    }), true);
   }
 
   return (
@@ -75,7 +98,11 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
         <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-ink-soft sm:mr-auto">{visible.length} of {products.length} pieces</p>
         <label className="relative order-last w-full sm:order-none sm:w-56">
           <span className="sr-only">Search products</span>
-          <input type="search" value={filters.query} onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))} placeholder="Search the collection" className={`min-h-11 w-full border border-ink/25 bg-transparent px-3 text-sm text-ink placeholder:text-ink-soft ${focus}`} />
+          <input type="search" value={searchValue} maxLength={200} onChange={(event) => {
+                      const text = event.target.value;
+                      setSearchDraft({ text, urlQuery: text.trim() });
+                      setFilters((current) => ({ ...current, query: text }), true);
+                    }} placeholder="Search the collection" className={`min-h-11 w-full border border-ink/25 bg-transparent px-3 text-sm text-ink placeholder:text-ink-soft ${focus}`} />
         </label>
         <label>
           <span className="sr-only">Sort products</span>

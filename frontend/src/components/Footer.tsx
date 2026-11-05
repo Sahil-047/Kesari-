@@ -15,6 +15,7 @@ const columns = [
   {
     title: "Collections",
     links: [
+      { href: "/products", label: "Shop all pieces" },
       { href: "/womenswear", label: "Womenswear" },
       { href: "/menswear", label: "Menswear" },
       { href: "/weddings", label: "Weddings" },

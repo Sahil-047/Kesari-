@@ -31,7 +31,7 @@ export default function HomeHero({ hero }: { hero: HomeContent["hero"] }) {
             {hero.title}
           </h1>
           <Link
-            href={hero.link || "/whats-new"}
+            href="/products"
             className="ghost-btn mt-8 px-14 py-4.5 text-[0.95rem] tracking-[0.34em] md:px-16 md:py-5 md:text-[1.05rem]"
           >
             Explore

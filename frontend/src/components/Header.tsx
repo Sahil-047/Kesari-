@@ -31,17 +31,19 @@ export default function Header({ variant = "solid" }: HeaderProps) {
 
         {/* Nav — center */}
         <nav
-          className="hidden items-center justify-center gap-x-5 pt-2 lg:gap-x-7 md:flex"
+          className="hidden items-center justify-center gap-x-4 pt-2 xl:flex 2xl:gap-x-7"
           aria-label="Primary"
         >
           {NAV_LINKS.map((link) => {
             const active =
-              pathname === link.href || pathname.startsWith(`${link.href}/`);
+              pathname === link.href || pathname.startsWith(`${link.href}/`) ||
+                            (link.href === "/products" && (pathname.startsWith("/product_detail/") || pathname.startsWith("/product/")));
             return (
               <Link
                 key={link.href}
                 href={link.href}
                 className={`nav-link ${active ? "opacity-100" : "opacity-75"}`}
+                                aria-current={active ? "page" : undefined}
               >
                 {link.label}
               </Link>
@@ -50,7 +52,7 @@ export default function Header({ variant = "solid" }: HeaderProps) {
         </nav>
 
         {/* Utilities — top right */}
-        <div className="flex items-center justify-end gap-5 justify-self-end pt-2">
+        <div className="col-start-3 flex items-center justify-end gap-5 justify-self-end pt-2">
           <Link href="/wishlist" className="nav-link">
             Wishlist
           </Link>
@@ -67,7 +69,7 @@ export default function Header({ variant = "solid" }: HeaderProps) {
       </div>
 
       <nav
-        className="section-pad flex gap-5 overflow-x-auto pb-3 md:hidden"
+        className="section-pad flex gap-5 overflow-x-auto pb-3 xl:hidden"
         aria-label="Mobile"
       >
         {NAV_LINKS.map((link) => (

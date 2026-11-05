@@ -27,7 +27,7 @@ export default function LookbookProductDetail({ product, photos }: { product: Lo
   const addOns = product.addOns.filter((item) => addOnIds.includes(item.id));
   const total = (option?.price ?? product.price) + addOns.reduce((sum, item) => sum + item.price, 0);
   const needsSize = product.category !== "saree" || option?.label === "With blouse";
-  const collectionHref = product.category === "menswear" ? "/menswear" : `/womenswear?category=${product.category}`;
+  const collectionHref = `/products?category=${product.category}`;
   const hasWhatsapp = Boolean(houseWhatsappLink(contact.whatsapp, ""));
 
   function enquire(event: FormEvent<HTMLFormElement>) {
@@ -69,6 +69,8 @@ export default function LookbookProductDetail({ product, photos }: { product: Lo
     <div className="mx-auto max-w-[1280px] font-sans">
       <nav aria-label="Breadcrumb" className="mb-7 flex flex-wrap items-center gap-x-3 gap-y-2 font-sans text-[0.65rem] uppercase tracking-[0.18em] text-ink-soft md:mb-10">
         <Link href="/" className={`hover:underline ${focus}`}>Home</Link>
+        <span aria-hidden className="text-gold">/</span>
+        <Link href="/products" className={`hover:underline ${focus}`}>All pieces</Link>
         <span aria-hidden className="text-gold">/</span>
         <Link href={collectionHref} className={`hover:underline ${focus}`}>{product.category}</Link>
         <span aria-hidden className="text-gold">/</span>

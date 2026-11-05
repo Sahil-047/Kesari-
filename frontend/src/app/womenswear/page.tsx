@@ -5,6 +5,7 @@ import { getPageContent } from "@/lib/content/getPageContent";
 import WomenswearBrowse from "@/components/WomenswearBrowse";
 import { WOMENS_CATEGORIES } from "@/lib/color-collections";
 import { Suspense } from "react";
+import Link from "next/link";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -56,6 +57,12 @@ export default async function WomenswearPage({
             {hero.title}
           </h1>
         </section>
+
+        <div className="section-pad relative z-10 flex justify-center py-7 md:pb-8 md:pt-0">
+          <Link href="/products?category=womenswear" className="ww-explore">
+            Shop the collection <span className="ww-explore__arrow" aria-hidden />
+          </Link>
+        </div>
 
         <Suspense fallback={<WomenswearBrowse />}>
           <BrowseForCategory searchParams={searchParams} />

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import ProductCatalogue from "@/components/ProductCatalogue";
@@ -24,7 +25,9 @@ export default function ProductsPage() {
             <h1 className="display mt-4 text-[clamp(2rem,4vw,3.25rem)] uppercase text-ink">All Pieces</h1>
             <p className="mx-auto mt-4 max-w-lg font-sans text-sm leading-relaxed text-ink-soft">Sarees, lehengas, dresses, and menswear. A world of craft, in every silhouette.</p>
           </div>
-          <ProductCatalogue products={products} />
+          <Suspense fallback={<p role="status" className="py-16 text-center font-sans text-sm text-ink-soft">Opening the collection…</p>}>
+            <ProductCatalogue products={products} />
+          </Suspense>
         </div>
       </main>
       <Footer />

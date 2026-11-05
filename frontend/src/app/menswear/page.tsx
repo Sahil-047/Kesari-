@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { getPageContent } from "@/lib/content/getPageContent";
 import MenswearBrowse from "@/components/MenswearBrowse";
+import Link from "next/link";
 
 export default async function MenswearPage() {
   const { hero } = await getPageContent("menswear");
@@ -37,6 +38,12 @@ export default async function MenswearPage() {
             {hero.title}
           </h1>
         </section>
+
+        <div className="section-pad relative z-10 flex justify-center py-7 md:pb-8 md:pt-0">
+          <Link href="/products?category=menswear" className="ww-explore">
+            Shop the collection <span className="ww-explore__arrow" aria-hidden />
+          </Link>
+        </div>
 
         <MenswearBrowse />
       </main>

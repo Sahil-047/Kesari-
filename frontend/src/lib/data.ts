@@ -30,6 +30,7 @@ export type Product = {
 };
 
 export const NAV_LINKS = [
+  { href: "/products", label: "Shop" },
   { href: "/whats-new", label: "What's New" },
   { href: "/womenswear", label: "Womenswear" },
   { href: "/menswear", label: "Menswear" },

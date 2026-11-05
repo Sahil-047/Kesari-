@@ -4,6 +4,7 @@ import AutoLoopVideo from "@/components/AutoLoopVideo";
 import ArchArcade from "@/components/whats-new/ArchArcade";
 import type { WhatsNewContent } from "@/lib/content/pages";
 import { EASE_FLUENT, useReducedMotionSafe } from "@/lib/motion";
+import { resolveWhatsNewSilhouetteLink } from "@/lib/lookbook-links";
 import {
   motion,
   useScroll,
@@ -154,7 +155,7 @@ function SilhouettePanel({
 
   return (
     <Link
-      href={item.link || "#"}
+      href={resolveWhatsNewSilhouetteLink(item)}
       className="group relative min-h-0 flex-1 overflow-hidden outline-none transition-[flex-grow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold md:hover:flex-[1.6] md:focus-visible:flex-[1.6]"
     >
       <motion.div

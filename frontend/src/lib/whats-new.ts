@@ -1,6 +1,5 @@
-import { PRODUCTS } from "@/lib/data";
-
 export type SeasonArrival = {
+  /** Catalogue ID (or catalogue fallback), retained for the CMS defaults' legacy URL shape. */
   slug: string;
   name: string;
   category: string;
@@ -9,27 +8,21 @@ export type SeasonArrival = {
   index: string;
 };
 
-/** Nine season releases — portrait covers for the arrivals board */
-const COVERS: { slug: string; image: string }[] = [
-  { slug: PRODUCTS[0].slug, image: "/images/deep-plum/insight-1.jpg" },
-  { slug: PRODUCTS[1].slug, image: "/images/LIGHT PINK/DSC07213.jpg" },
-  { slug: PRODUCTS[2].slug, image: "/images/OFF WHITE/DSC07237.jpg" },
-  { slug: PRODUCTS[3].slug, image: "/images/ORANGE/DSC05475.jpg" },
-  { slug: PRODUCTS[4].slug, image: "/images/ORANGE/DSC07568.jpg" },
-  { slug: PRODUCTS[5].slug, image: "/images/PINK/DSC06150.jpg" },
-  { slug: PRODUCTS[6].slug, image: "/images/soft-bridal/insight-3.jpg" },
-  { slug: PRODUCTS[7].slug, image: "/images/Wedding/DSC05328.jpg" },
-  { slug: PRODUCTS[8].slug, image: "/images/VIOLET/DSC06468.jpg" },
+// Names and fabrics follow the lookbook, not the unrelated legacy PRODUCTS order.
+// Multi-garment photographs intentionally represent the catalogue, not one piece.
+const ARRIVALS: Omit<SeasonArrival, "index">[] = [
+  { slug: "KES-003", name: "Rajnandini Lehenga", category: "lehenga", craft: "Raw silk · Banarasi brocade · Organza", image: "/images/deep-plum/insight-1.jpg" },
+  { slug: "KES-009", name: "Radhika Saree", category: "saree", craft: "Velvet · Silk · Net", image: "/images/LIGHT PINK/DSC07213.jpg" },
+  { slug: "KES-005", name: "Suvarna Dress", category: "dress", craft: "Tussar silk", image: "/images/OFF WHITE/DSC07237.jpg" },
+  { slug: "KES-002", name: "Rajsi Lehenga", category: "lehenga", craft: "Raw silk · Organza", image: "/images/ORANGE/DSC05475.jpg" },
+  { slug: "KES-017", name: "Tamra Kurta Set", category: "menswear", craft: "Dupion · Cotton-lycra", image: "/images/ORANGE/DSC07568.jpg" },
+  { slug: "catalogue", name: "Celebration Ensembles", category: "", craft: "Explore the collection", image: "/images/PINK/DSC06150.jpg" },
+  { slug: "catalogue", name: "Wedding Ensembles", category: "", craft: "Explore the collection", image: "/images/soft-bridal/insight-3.jpg" },
+  { slug: "catalogue", name: "Wedding Ensembles", category: "", craft: "Explore the collection", image: "/images/Wedding/DSC05328.jpg" },
+  { slug: "KES-003", name: "Rajnandini Lehenga", category: "lehenga", craft: "Raw silk · Banarasi brocade · Organza", image: "/images/VIOLET/DSC06468.jpg" },
 ];
 
-export const SEASON_ARRIVALS: SeasonArrival[] = COVERS.map((cover, i) => {
-  const product = PRODUCTS.find((p) => p.slug === cover.slug)!;
-  return {
-    slug: product.slug,
-    name: product.name,
-    category: product.category,
-    craft: product.craft,
-    image: cover.image,
-    index: String(i + 1).padStart(2, "0"),
-  };
-});
+export const SEASON_ARRIVALS: SeasonArrival[] = ARRIVALS.map((arrival, i) => ({
+  ...arrival,
+  index: String(i + 1).padStart(2, "0"),
+}));

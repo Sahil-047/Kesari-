@@ -82,25 +82,25 @@ const catalogueCards = [
     title: "Lahenga",
     image: "/images/PINK/DSC05812.jpg",
     alt: "Pink embroidered lehenga with a flowing panelled skirt",
-    href: "/crafts/vasundhara-lehenga",
+    href: "/products?category=lehenga",
   },
   {
     title: "Saree",
     image: "/images/LIGHT PINK/DSC07146.jpg",
     alt: "Light pink saree with delicate floral embroidery",
-    href: "/crafts/blush-veranda",
+    href: "/products?category=saree",
   },
   {
     title: "Dress",
     image: "/images/soft-ivory/insight-1.jpg",
     alt: "Ivory dress with embroidered neckline and cuffs",
-    href: "/womenswear?category=dress",
+    href: "/products?category=dress",
   },
   {
     title: "Menswear",
     image: "/images/Wedding/DSC06237.jpg",
     alt: "Blush pink menswear ensemble with an embroidered waistcoat",
-    href: "/menswear",
+    href: "/products?category=menswear",
   },
 ];
 
@@ -113,6 +113,11 @@ export default function HomeShowcase() {
       >
         <div className="relative z-10 mx-auto max-w-[1680px]">
           <BentoHeading eyebrow="Shop by form" title="The Catalogue" />
+          <div className="-mt-4 mb-8 flex justify-center md:-mt-6 md:mb-10">
+            <Link href="/products" className="ww-explore">
+              Explore all pieces <span className="ww-explore__arrow" aria-hidden />
+            </Link>
+          </div>
           <ul className="grid grid-cols-2 gap-3 md:gap-5 lg:grid-cols-4">
             {catalogueCards.map((card) => (
               <li key={card.title}>
