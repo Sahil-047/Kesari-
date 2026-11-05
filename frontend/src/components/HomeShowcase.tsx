@@ -6,6 +6,7 @@ import { HOUSE_COPY, HOME_SHOWCASE } from "@/lib/data";
 import AutoLoopVideo from "./AutoLoopVideo";
 import { BentoHeading, BentoPanel, BentoPhoto } from "./bento/BentoTile";
 import MediaFrame, { toneForSlug } from "./MediaFrame";
+import { JaaliMark } from "./Logo";
 
 function FullBleedCraft({
   eyebrow,
@@ -150,6 +151,7 @@ export default function HomeShowcase() {
         </div>
       </section>
 
+
       {/*{HOME_SHOWCASE.slice(1).map((item) => (
         <FullBleedCraft
           key={item.href}
@@ -239,6 +241,59 @@ export default function HomeShowcase() {
                 <span className="font-sans text-[0.6rem] uppercase tracking-[0.28em] text-ink/70">
                   See every craft <span aria-hidden>→</span>
                 </span>
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="section-pad parchment-surface py-10 md:py-14"
+        aria-labelledby="home-contact-title"
+      >
+        <div className="relative mx-auto max-w-[1680px] overflow-hidden rounded-[1.5rem] border border-gold/30 bg-cream px-6 py-10 sm:px-10 md:px-12 md:py-12 lg:px-16">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-20 -top-20 grid w-[26rem] rotate-12 grid-cols-3 gap-4 text-gold opacity-20 md:-right-8 md:-top-24 md:w-[34rem]"
+          >
+            {Array.from({ length: 9 }, (_, index) => (
+              <JaaliMark key={index} className="h-auto w-full" />
+            ))}
+          </div>
+
+          <div className="relative z-10 flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between md:gap-12">
+            <div className="max-w-xl">
+              <span
+                aria-hidden
+                className="mb-5 grid h-12 w-12 place-items-center rounded-xl border border-gold/40 bg-cream"
+              >
+                <JaaliMark className="h-9 w-8 text-gold" />
+              </span>
+              <p className="font-sans text-[0.6rem] uppercase tracking-[0.32em] text-ink-soft">
+                A conversation with Kesari
+              </p>
+              <h2
+                id="home-contact-title"
+                className="display mt-3 text-[clamp(1.75rem,3.5vw,3rem)] leading-tight text-ink"
+              >
+                Your next story<br />begins here.
+              </h2>
+              <p className="mt-4 max-w-md text-[1.05rem] leading-relaxed text-ink-soft">
+                A special occasion, a favourite silhouette, or a question about
+                our craft. We would love to hear from you.
+              </p>
+            </div>
+
+            <Link
+              href="/atelier"
+              className="solid-btn group min-h-12 w-full shrink-0 gap-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink sm:w-auto"
+            >
+              <span className="text-cream">Contact Us</span>
+              <span
+                aria-hidden
+                className="text-cream transition-transform duration-200 ease-in motion-safe:group-hover:translate-x-1 motion-safe:group-focus-visible:translate-x-1 motion-reduce:transition-none"
+              >
+                →
               </span>
             </Link>
           </div>
