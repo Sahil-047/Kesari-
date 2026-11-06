@@ -3,7 +3,6 @@
 import JharokhaWindow from "@/components/illustrations/JharokhaWindow";
 import type { WhatsNewContent } from "@/lib/content/pages";
 import { useReducedMotionSafe } from "@/lib/motion";
-import { resolveWhatsNewPieceLink } from "@/lib/lookbook-links";
 import {
   AnimatePresence,
   motion,
@@ -183,10 +182,8 @@ export default function ArchArcade({ content }: { content: EditContent }) {
   const reduce = Boolean(useReducedMotionSafe());
   const measureRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const pieces = content.items.map((piece) => ({
-    ...piece,
-    link: resolveWhatsNewPieceLink(piece),
-  }));
+  // Links are resolved on the server (whats-new/page.tsx); keep them as passed.
+  const pieces = content.items;
   const total = pieces.length;
   const travel = Math.max(total - 1, 0) * STEP_SVH + 100;
 

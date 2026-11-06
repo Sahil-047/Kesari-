@@ -14,9 +14,63 @@ export type ColorCollection = {
   /** Replaces the notes and atelier line in the centre block */
   story?: string;
   images: RailImage[];
-  /** When set, each image links here */
+  /** When set, Explore opens this product / look page */
   href?: string;
 };
+
+/** Editable chapter shape stored on the Womenswear page in the CMS. */
+export type WomenswearChapter = {
+  title: string;
+  label: string;
+  category: string;
+  accent: string;
+  story: string;
+  images: string[];
+  link: string;
+};
+
+const CATEGORIES = new Set<WomensCategory>(["lehenga", "dress", "saree"]);
+
+/** Normalise free-text CMS category to a filter id. */
+export function asWomensCategory(value: string): WomensCategory {
+  const c = value.trim().toLowerCase();
+  if (CATEGORIES.has(c as WomensCategory)) return c as WomensCategory;
+  if (/(lehenga|lahenga)/.test(c)) return "lehenga";
+  if (/saree|sari/.test(c)) return "saree";
+  return "dress";
+}
+
+/**
+ * CMS chapter items → the shape WomenswearChapters already renders.
+ * `resolveLink` turns an authored product path into the final href.
+ */
+export function chaptersToCollections(
+  items: readonly WomenswearChapter[],
+  resolveLink: (chapter: WomenswearChapter) => string,
+): ColorCollection[] {
+  const out: ColorCollection[] = [];
+  for (const item of items) {
+    const photos = (item.images ?? []).map((src) => src?.trim()).filter(Boolean);
+    if (!item.title?.trim() || photos.length === 0) continue;
+    const href = resolveLink(item).trim();
+    // Layout assumes five plates; pad with the cover so sparse chapters still compose.
+    const images = Array.from({ length: Math.max(photos.length, 5) }, (_, i) => ({
+      src: photos[Math.min(i, photos.length - 1)]!,
+      width: 1600,
+      height: 2400,
+    })).slice(0, Math.max(5, photos.length));
+    out.push({
+      title: item.title.trim(),
+      label: (item.label || item.category || "Look").trim(),
+      category: asWomensCategory(item.category || "dress"),
+      accent: item.accent?.trim() || "#c9a227",
+      story: item.story?.trim() || undefined,
+      href: href && href !== "#" ? href : undefined,
+      images,
+    });
+  }
+  return out;
+}
 
 export const WOMENS_CATEGORIES: {
   id: WomensCategory;

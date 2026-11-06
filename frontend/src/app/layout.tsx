@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Great_Vibes, Jost } from "next/font/google";
+import { Suspense } from "react";
 import IntroSplash from "@/components/IntroSplash";
+import SiteWhatsApp from "@/components/SiteWhatsApp";
 import SmoothScroll from "@/components/SmoothScroll";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import StorefrontOnly from "@/components/StorefrontOnly";
 import { BagWishlistProvider } from "@/context/BagWishlistContext";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -51,7 +53,11 @@ export default function RootLayout({
           <SmoothScroll />
           <IntroSplash />
           {children}
-          <WhatsAppButton />
+          <StorefrontOnly>
+            <Suspense fallback={null}>
+              <SiteWhatsApp />
+            </Suspense>
+          </StorefrontOnly>
         </BagWishlistProvider>
       </body>
     </html>

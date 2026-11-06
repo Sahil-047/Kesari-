@@ -1,12 +1,16 @@
 "use client";
 
-import { houseWhatsappLink, useSiteContact } from "@/lib/content/useSiteContact";
+import {
+  houseWhatsappLink,
+  useSiteContact,
+  type Contact,
+} from "@/lib/content/useSiteContact";
 import { usePathname } from "next/navigation";
 
 /** Floating chat button to the house's WhatsApp; hidden until a number is set in the CMS. */
-export default function WhatsAppButton() {
+export default function WhatsAppButton({ initialContact }: { initialContact?: Contact }) {
   const pathname = usePathname();
-  const { whatsapp, whatsappGreeting } = useSiteContact();
+  const { whatsapp, whatsappGreeting } = useSiteContact(initialContact);
   const href = houseWhatsappLink(whatsapp, whatsappGreeting);
 
   if (!href || pathname?.startsWith("/admin")) return null;

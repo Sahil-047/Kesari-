@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useBagWishlist } from "@/context/BagWishlistContext";
 import { api, ApiRequestError } from "@/lib/api/client";
-import { houseWhatsappLink, useSiteContact } from "@/lib/content/useSiteContact";
-import { formatPrice, getProduct } from "@/lib/data";
+import { houseWhatsappLink, useSiteContact, type Contact } from "@/lib/content/useSiteContact";
+import { formatPrice } from "@/lib/data";
+import { productHref } from "@/lib/productLinks";
 
 type Placed = { orderNumber: string; totalInr: number };
 
@@ -13,10 +14,10 @@ const fieldClass =
   "mt-1.5 w-full border-0 border-b border-ink/25 bg-transparent px-0 py-2 font-serif text-[1rem] text-ink outline-none focus:border-ink";
 const labelClass = "block font-sans text-[0.58rem] uppercase tracking-[0.22em] text-ink/60";
 
-export default function BagClient() {
-  const { bag, removeFromBag } = useBagWishlist();
-  const { whatsapp } = useSiteContact();
-  const items = bag.map(getProduct).filter(Boolean);
+export default function BagClient({ initialContact }: { initialContact?: Contact }) {
+  const { bag, removeFromBag, productFor } = useBagWishlist();
+  const { whatsapp } = useSiteContact(initialContact);
+  const items = bag.map(productFor).filter(Boolean);
   const total = items.reduce((sum, p) => sum + (p?.price ?? 0), 0);
 
   const [requesting, setRequesting] = useState(false);
@@ -122,7 +123,7 @@ export default function BagClient() {
                   <li key={p.slug} className="flex items-start justify-between gap-4 border-b border-ink/10 pb-6">
                     <div>
                       <p className="eyebrow">{p.category}</p>
-                      <Link href={`/product/${p.slug}`} className="display mt-1 block text-xl">
+                      <Link href={productHref(p)} className="display mt-1 block text-xl">
                         {p.name}
                       </Link>
                       <p className="mt-1 text-sm text-ink-soft">{p.craft}</p>

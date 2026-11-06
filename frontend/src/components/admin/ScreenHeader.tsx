@@ -1,7 +1,13 @@
+"use client";
+
+import { Breadcrumb, Flex, Typography } from "antd";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-/** Top bar of every CMS screen: breadcrumb, title, summary and actions. */
+/** Full-bleed CMS canvas — uses the width beside the sider. */
+const PAGE_PAD = "28px 28px 40px";
+
+/** Page header for every CMS screen: breadcrumb, title, summary and actions, on the canvas. */
 export default function ScreenHeader({
   title,
   description,
@@ -10,35 +16,46 @@ export default function ScreenHeader({
   meta,
 }: {
   title: string;
-  description?: string;
+  description?: ReactNode;
   crumbs?: { href: string; label: string }[];
   actions?: ReactNode;
   meta?: ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--cms-line)] bg-[rgba(255,253,249,0.92)] backdrop-blur-md">
-      <div className="mx-auto flex max-w-[1240px] flex-wrap items-end justify-between gap-4 px-8 pb-5 pt-6">
-        <div className="min-w-0">
-          {crumbs && (
-            <p className="mb-1.5 flex items-center gap-1.5 text-[12.5px] text-[var(--cms-muted)]">
-              {crumbs.map((c) => (
-                <span key={c.href} className="flex items-center gap-1.5">
-                  <Link href={c.href} className="hover:text-[var(--cms-ink)]">
-                    {c.label}
-                  </Link>
-                  <span aria-hidden>/</span>
-                </span>
-              ))}
-            </p>
-          )}
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="cms-display text-[28px] leading-tight">{title}</h1>
+    <div style={{ padding: "28px 28px 4px", width: "100%" }}>
+      <Breadcrumb
+        style={{ marginBottom: 10, fontSize: 12 }}
+        items={[
+          { title: <Link href="/admin">Studio</Link> },
+          ...(crumbs ?? []).map((c) => ({ title: <Link href={c.href}>{c.label}</Link> })),
+          { title },
+        ]}
+      />
+      <Flex wrap justify="space-between" align="flex-end" gap={16}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <Flex align="center" gap={10} wrap>
+            <Typography.Title level={1} className="studio-display" style={{ margin: 0, fontSize: 28, lineHeight: 1.2 }}>
+              {title}
+            </Typography.Title>
             {meta}
-          </div>
-          {description && <p className="mt-1 text-[var(--cms-muted)]">{description}</p>}
+          </Flex>
+          {description && (
+            <Typography.Paragraph type="secondary" style={{ margin: "6px 0 0", maxWidth: 720 }}>
+              {description}
+            </Typography.Paragraph>
+          )}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-      </div>
-    </header>
+        {actions && (
+          <Flex wrap gap={8} align="center">
+            {actions}
+          </Flex>
+        )}
+      </Flex>
+    </div>
   );
+}
+
+/** Standard padded body below a ScreenHeader — fills the content column. */
+export function ScreenBody({ children }: { children: ReactNode }) {
+  return <div style={{ padding: PAGE_PAD, width: "100%" }}>{children}</div>;
 }

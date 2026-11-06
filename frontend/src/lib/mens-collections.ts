@@ -14,6 +14,82 @@ export type MensCollection = {
   href?: string;
 };
 
+/** Editable chapter shape stored on the Menswear page in the CMS. */
+export type MenswearChapter = {
+  title: string;
+  label: string;
+  category: string;
+  accent: string;
+  story: string;
+  images: string[];
+  link: string;
+};
+
+/** Map free-text product category onto a menswear filter bucket. */
+export function asMensCategory(value: string): MensCategory {
+  const c = value.trim().toLowerCase();
+  if (/sherwani/.test(c)) return "sherwani";
+  if (/bandhgala|bundi|indo/.test(c)) return "bandhgala";
+  return "kurta";
+}
+
+/**
+ * CMS chapter items → the shape MenswearChapters already renders.
+ * `resolveLink` turns an authored product path into the final href.
+ */
+export function chaptersToMensCollections(
+  items: readonly MenswearChapter[],
+  resolveLink: (chapter: MenswearChapter) => string,
+): MensCollection[] {
+  const out: MensCollection[] = [];
+  for (const item of items) {
+    const photos = (item.images ?? []).map((src) => src?.trim()).filter(Boolean);
+    if (!item.title?.trim() || photos.length === 0) continue;
+    const href = resolveLink(item).trim();
+    const images = Array.from({ length: Math.max(photos.length, 5) }, (_, i) => ({
+      src: photos[Math.min(i, photos.length - 1)]!,
+      width: 1600,
+      height: 2400,
+    })).slice(0, Math.max(5, photos.length));
+    out.push({
+      title: item.title.trim(),
+      label: (item.label || item.category || "Look").trim(),
+      category: asMensCategory(item.category || "kurta"),
+      accent: item.accent?.trim() || "#c9a227",
+      story: item.story?.trim() || undefined,
+      href: href && href !== "#" ? href : undefined,
+      images,
+    });
+  }
+  return out;
+}
+
+/** Build a menswear look chapter from a CMS product tagged for menswear.looks. */
+export function mensCollectionFromProduct(p: {
+  name: string;
+  category: string;
+  description: string;
+  image: string;
+  images?: string[];
+  href: string;
+}): MensCollection {
+  const photos = [...new Set([p.image, ...(p.images ?? [])].filter(Boolean))];
+  const images = Array.from({ length: Math.max(photos.length, 5) }, (_, i) => ({
+    src: photos[Math.min(i, photos.length - 1)]!,
+    width: 1600,
+    height: 2400,
+  })).slice(0, Math.max(5, photos.length));
+  return {
+    title: p.name,
+    label: p.category,
+    category: asMensCategory(p.category),
+    accent: "#c9a227",
+    story: p.description || undefined,
+    href: p.href,
+    images,
+  };
+}
+
 export const MENS_CATEGORIES: {
   id: MensCategory;
   title: string;

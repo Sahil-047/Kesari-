@@ -1,19 +1,23 @@
 "use client";
 
-import Icon from "@/components/admin/Icon";
+import { PlusOutlined } from "@ant-design/icons";
 import OrderForm from "@/components/admin/OrderForm";
-import ScreenHeader from "@/components/admin/ScreenHeader";
+import ScreenHeader, { ScreenBody } from "@/components/admin/ScreenHeader";
 import { api, type PageMeta } from "@/lib/api/client";
 import type { ApiOrder } from "@/lib/api/types";
 import {
   inr,
-  ORDER_CHIP,
+  ORDER_TONE,
   ORDER_STATUS_LABEL,
-  PAYMENT_CHIP,
+  optionsOf,
+  PAYMENT_TONE,
   PAYMENT_LABEL,
   shortDate,
   SOURCE_LABEL,
 } from "@/lib/admin/format";
+import { Alert, Button, Card, Empty, Flex, Input, Select, Table, Typography, type TableColumnsType } from "antd";
+import { STUDIO } from "@/components/admin/AdminProviders";
+import StatusTag from "@/components/admin/StatusTag";
 import { useCallback, useEffect, useState } from "react";
 
 const FILTERS = [
@@ -21,6 +25,34 @@ const FILTERS = [
   { name: "paymentStatus", label: "All payments", options: PAYMENT_LABEL },
   { name: "source", label: "All channels", options: SOURCE_LABEL },
 ] as const;
+
+const COLUMNS: TableColumnsType<ApiOrder> = [
+  { key: "no", title: "Order", render: (_, o) => <Typography.Text strong className="studio-num">{o.orderNumber}</Typography.Text> },
+  { key: "date", title: "Date", render: (_, o) => shortDate(o.placedAt) },
+  {
+    key: "customer",
+    title: "Customer",
+    render: (_, o) => (
+      <>
+        <Typography.Text strong>{o.customer.name}</Typography.Text>
+        <br />
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          {o.customer.phone}
+        </Typography.Text>
+      </>
+    ),
+  },
+  { key: "pieces", title: "Pieces", align: "right", render: (_, o) => o.items.reduce((n, i) => n + i.quantity, 0) },
+  { key: "total", title: "Total", align: "right", render: (_, o) => <Typography.Text strong>{inr(o.totalInr)}</Typography.Text> },
+  { key: "paid", title: "Paid", align: "right", render: (_, o) => inr(o.amountPaidInr) },
+  { key: "stage", title: "Stage", render: (_, o) => <StatusTag tone={ORDER_TONE[o.status]}>{ORDER_STATUS_LABEL[o.status]}</StatusTag> },
+  {
+    key: "payment",
+    title: "Payment",
+    render: (_, o) => <StatusTag tone={PAYMENT_TONE[o.paymentStatus]}>{PAYMENT_LABEL[o.paymentStatus]}</StatusTag>,
+  },
+  { key: "channel", title: "Channel", render: (_, o) => SOURCE_LABEL[o.source] },
+];
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<ApiOrder[]>([]);
@@ -47,7 +79,7 @@ export default function AdminOrdersPage() {
   }, [page, search, filters]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount and query change
     load();
   }, [load]);
 
@@ -58,127 +90,73 @@ export default function AdminOrdersPage() {
   }, []);
 
   return (
-    <div>
+    <>
       <ScreenHeader
         title="Orders"
-        description={meta ? `${meta.total} order${meta.total === 1 ? "" : "s"} from the website, WhatsApp and the store` : undefined}
+        description={
+          meta ? `${meta.total} order${meta.total === 1 ? "" : "s"} from the website, WhatsApp and the store` : undefined
+        }
         actions={
-          <button type="button" className="cms-btn cms-btn-primary" onClick={() => setEditing("new")}>
-            <Icon name="plus" size={16} /> Record a sale
-          </button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing("new")}>
+            Record a sale
+          </Button>
         }
       />
 
-      <div className="mx-auto max-w-[1240px] px-8 py-6">
-        <div className="mb-4 flex flex-wrap gap-2">
-          <input
-            className="cms-input max-w-xs"
-            placeholder="Search order no., name, phone…"
-            value={search}
-            onChange={(e) => {
-              setPage(1);
-              setSearch(e.target.value);
-            }}
-          />
-          {FILTERS.map((f) => (
-            <select
-              key={f.name}
-              className="cms-select w-auto min-w-[160px]"
-              value={filters[f.name] ?? ""}
-              onChange={(e) => {
+      <ScreenBody>
+        <Card styles={{ body: { padding: 0 } }}>
+          <Flex wrap gap={8} style={{ padding: "12px 16px", borderBottom: `1px solid ${STUDIO.hairline}` }}>
+            <Input.Search
+              allowClear
+              placeholder="Search order no., name, phone…"
+              style={{ maxWidth: 300 }}
+              onSearch={(v) => {
                 setPage(1);
-                setFilters((p) => ({ ...p, [f.name]: e.target.value }));
+                setSearch(v);
               }}
-            >
-              <option value="">{f.label}</option>
-              {Object.entries(f.options).map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
-            </select>
-          ))}
-        </div>
+            />
+            {FILTERS.map((f) => (
+              <Select
+                key={f.name}
+                allowClear
+                placeholder={f.label}
+                style={{ minWidth: 160 }}
+                value={filters[f.name] || undefined}
+                onChange={(v) => {
+                  setPage(1);
+                  setFilters((p) => ({ ...p, [f.name]: v ?? "" }));
+                }}
+                options={optionsOf(f.options)}
+              />
+            ))}
+          </Flex>
 
-        {error && (
-          <p className="mb-4 rounded-[4px] border border-[var(--cms-danger)] bg-[var(--cms-danger-soft)] px-4 py-3 font-semibold text-[var(--cms-danger)]">
-            {error}
-          </p>
-        )}
+          {error && <Alert type="error" showIcon message={error} style={{ margin: 16 }} />}
 
-        <div className="cms-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="cms-table">
-              <thead>
-                <tr>
-                  <th>Order</th>
-                  <th>Date</th>
-                  <th>Customer</th>
-                  <th>Pieces</th>
-                  <th>Total</th>
-                  <th>Paid</th>
-                  <th>Stage</th>
-                  <th>Payment</th>
-                  <th>Channel</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading && orders.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="py-12 text-center text-[var(--cms-muted)]">
-                      Loading…
-                    </td>
-                  </tr>
-                ) : orders.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="py-14 text-center">
-                      <p className="cms-display text-[18px] text-[var(--cms-ink)]">No orders here yet</p>
-                      <button type="button" onClick={() => setEditing("new")} className="cms-btn cms-btn-primary mt-4">
-                        <Icon name="plus" size={16} /> Record a sale
-                      </button>
-                    </td>
-                  </tr>
-                ) : (
-                  orders.map((o) => (
-                    <tr key={o.id} className="cursor-pointer" onClick={() => setEditing(o)}>
-                      <td className="cms-mono font-semibold text-[var(--cms-ink)]">{o.orderNumber}</td>
-                      <td>{shortDate(o.placedAt)}</td>
-                      <td>
-                        <span className="block font-semibold text-[var(--cms-ink)]">{o.customer.name}</span>
-                        <span className="cms-mono text-[11px] text-[var(--cms-muted)]">{o.customer.phone}</span>
-                      </td>
-                      <td className="cms-mono">{o.items.reduce((n, i) => n + i.quantity, 0)}</td>
-                      <td className="cms-mono font-semibold text-[var(--cms-ink)]">{inr(o.totalInr)}</td>
-                      <td className="cms-mono">{inr(o.amountPaidInr)}</td>
-                      <td>
-                        <span className={`cms-chip ${ORDER_CHIP[o.status] ?? ""}`}>{ORDER_STATUS_LABEL[o.status]}</span>
-                      </td>
-                      <td>
-                        <span className={`cms-chip ${PAYMENT_CHIP[o.paymentStatus] ?? ""}`}>{PAYMENT_LABEL[o.paymentStatus]}</span>
-                      </td>
-                      <td className="text-[12.5px]">{SOURCE_LABEL[o.source]}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {meta && meta.pages > 1 && (
-          <div className="mt-4 flex items-center justify-end gap-2">
-            <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="cms-btn cms-btn-sm">
-              Previous
-            </button>
-            <span className="cms-help px-2">
-              Page {meta.page} of {meta.pages}
-            </span>
-            <button type="button" disabled={page >= meta.pages} onClick={() => setPage((p) => p + 1)} className="cms-btn cms-btn-sm">
-              Next
-            </button>
-          </div>
-        )}
-      </div>
+          <Table<ApiOrder>
+            rowKey="id"
+            columns={COLUMNS}
+            dataSource={orders}
+            loading={loading}
+            scroll={{ x: "max-content" }}
+            onRow={(o) => ({ onClick: () => setEditing(o), style: { cursor: "pointer" } })}
+            locale={{
+              emptyText: (
+                <Empty description="No orders here yet">
+                  <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing("new")}>
+                    Record a sale
+                  </Button>
+                </Empty>
+              ),
+            }}
+            pagination={
+              meta && meta.pages > 1
+                ? { current: meta.page, pageSize: meta.limit, total: meta.total, showSizeChanger: false, onChange: setPage }
+                : false
+            }
+          />
+        </Card>
+      </ScreenBody>
 
       {editing && (
         <OrderForm
@@ -190,6 +168,6 @@ export default function AdminOrdersPage() {
           }}
         />
       )}
-    </div>
+    </>
   );
 }

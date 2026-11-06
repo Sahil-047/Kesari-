@@ -1,250 +1,270 @@
 "use client";
 
+import { DeleteOutlined, FolderOpenOutlined, InboxOutlined, LinkOutlined, ScissorOutlined } from "@ant-design/icons";
 import { api, type PageMeta } from "@/lib/api/client";
 import type { ApiMedia } from "@/lib/api/types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Button, Card, Empty, Flex, Input, Modal, Pagination, Space, Spin, Typography, Upload } from "antd";
+import { useEffect, useState } from "react";
+import ImageCropModal from "./ImageCropModal";
 
-type Kind = "image" | "video";
+export type MediaKind = "image" | "video";
 
-async function uploadFile(file: File): Promise<ApiMedia> {
+/** Uploads one file to the S3 media library; alt text defaults to the file name. */
+export async function uploadToLibrary(file: File, folder?: string): Promise<ApiMedia> {
   const form = new FormData();
   form.append("file", file);
   form.append("alt", file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " "));
+  if (folder) form.append("folder", folder);
   return api.post<ApiMedia>("/admin/media", form);
 }
 
-/** Pick an already-uploaded file. */
-function LibraryPicker({
+/** Thumbnail of an image or a silent looping video. */
+export function MediaPreview({ kind, url, className }: { kind: MediaKind; url: string; className?: string }) {
+  return kind === "image" ? (
+    // eslint-disable-next-line @next/next/no-img-element -- S3 proxy or /public URLs
+    <img src={url} alt="" className={className} />
+  ) : (
+    <video src={url} muted loop autoPlay playsInline className={className} />
+  );
+}
+
+/** Modal grid of already-uploaded files of one kind. */
+export function LibraryPicker({
   kind,
+  open,
   onPick,
   onClose,
 }: {
-  kind: Kind;
-  onPick: (url: string) => void;
+  kind: MediaKind;
+  open: boolean;
+  onPick: (media: ApiMedia) => void;
   onClose: () => void;
 }) {
   const [items, setItems] = useState<ApiMedia[]>([]);
   const [meta, setMeta] = useState<PageMeta | null>(null);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on open / page change
+    setLoading(true);
     api
       .list<ApiMedia>("/admin/media", { type: kind, page, limit: 24 })
       .then((r) => {
+        if (cancelled) return;
         setItems(r.items);
         setMeta(r.meta);
       })
-      .catch((e) => setError(e instanceof Error ? e.message : "Could not load the library"));
-  }, [kind, page]);
+      .catch((e) => !cancelled && setError(e instanceof Error ? e.message : "Could not load the library"))
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [open, kind, page]);
 
   return (
-    <div
-      className="fixed inset-0 z-[70] grid place-items-center bg-[rgba(26,23,20,0.45)] p-6"
-      onClick={onClose}
-    >
-      <div
-        className="cms-card flex max-h-[80vh] w-full max-w-3xl flex-col overflow-hidden shadow-[var(--cms-shadow-lg)]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-[var(--cms-border)] px-5 py-4">
-          <p className="cms-display text-lg">Choose from library</p>
-          <button type="button" className="cms-btn cms-btn-ghost cms-btn-sm" onClick={onClose}>
-            Close
-          </button>
-        </div>
-        <div className="cms-scroll flex-1 overflow-y-auto p-5">
-          {error && <p className="text-[var(--cms-danger)]">{error}</p>}
-          {!error && items.length === 0 && (
-            <p className="py-10 text-center text-[var(--cms-muted)]">
-              Nothing uploaded yet. Drop a file into the field instead.
-            </p>
-          )}
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+    <Modal title="Choose from library" open={open} onCancel={onClose} footer={null} width={860} destroyOnHidden>
+      <Spin spinning={loading}>
+        {error && <Typography.Text type="danger">{error}</Typography.Text>}
+        {!error && !loading && items.length === 0 ? (
+          <Empty description="Nothing uploaded yet. Drop a file into the field instead." />
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
             {items.map((m) => (
-              <button
+              <Card
                 key={m.id}
-                type="button"
-                onClick={() => onPick(m.url)}
-                className="group overflow-hidden rounded-lg border border-[var(--cms-border)] text-left transition hover:border-[var(--cms-accent)]"
+                hoverable
+                size="small"
+                onClick={() => onPick(m)}
+                cover={<MediaPreview kind={kind} url={m.url} className="studio-media-cover" />}
+                styles={{ body: { padding: "6px 8px" } }}
               >
-                <div className="aspect-[3/4] bg-[var(--cms-sunken)]">
-                  {kind === "image" ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- S3 URLs
-                    <img src={m.url} alt={m.alt} className="h-full w-full object-cover" />
-                  ) : (
-                    <video src={m.url} muted className="h-full w-full object-cover" />
-                  )}
-                </div>
-                <p className="truncate px-2 py-1.5 text-[12px] text-[var(--cms-ink-2)]">
+                <Typography.Text ellipsis style={{ fontSize: 12 }}>
                   {m.alt || m.originalName}
-                </p>
-              </button>
+                </Typography.Text>
+              </Card>
             ))}
           </div>
-        </div>
-        {meta && meta.pages > 1 && (
-          <div className="flex items-center justify-end gap-2 border-t border-[var(--cms-border)] px-5 py-3">
-            <button type="button" className="cms-btn cms-btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              Previous
-            </button>
-            <span className="cms-help">
-              {meta.page} / {meta.pages}
-            </span>
-            <button type="button" className="cms-btn cms-btn-sm" disabled={page >= meta.pages} onClick={() => setPage((p) => p + 1)}>
-              Next
-            </button>
-          </div>
         )}
-      </div>
-    </div>
+      </Spin>
+      {meta && meta.pages > 1 && (
+        <Flex justify="end" style={{ marginTop: 16 }}>
+          <Pagination current={page} pageSize={meta.limit} total={meta.total} onChange={setPage} showSizeChanger={false} />
+        </Flex>
+      )}
+    </Modal>
   );
 }
 
 /**
- * The one control for every image or video field: drop a file (uploaded to S3
- * straight away), pick from the library, or paste a link.
+ * The one control for every single image or video field: drop a file (uploaded
+ * to S3 straight away), pick from the library, or paste a link.
  */
 export default function MediaDrop({
   kind = "image",
   value,
   onChange,
-  compact = false,
+  folder,
 }: {
-  kind?: Kind;
+  kind?: MediaKind;
   value: string | undefined;
   onChange: (url: string) => void;
-  compact?: boolean;
+  /** Optional S3 folder (e.g. products/soft-ivory). */
+  folder?: string;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [library, setLibrary] = useState(false);
   const [linkMode, setLinkMode] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [cropName, setCropName] = useState("image.jpg");
 
-  const accept = kind === "image" ? "image/*" : "video/mp4,video/webm";
+  const uploadFile = async (file: File) => {
+    setBusy(true);
+    setError(null);
+    try {
+      onChange((await uploadToLibrary(file, folder)).url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
 
-  const handleFile = useCallback(
-    async (file: File | undefined) => {
-      if (!file) return;
-      if (!file.type.startsWith(`${kind}/`)) {
-        setError(kind === "image" ? "That isn't an image." : "That isn't a video.");
-        return;
-      }
-      setBusy(true);
-      setError(null);
-      try {
-        onChange((await uploadFile(file)).url);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Upload failed");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [kind, onChange],
-  );
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith(`${kind}/`)) {
+      setError(kind === "image" ? "That isn't an image." : "That isn't a video.");
+      return;
+    }
+    if (kind === "image") {
+      if (cropSrc?.startsWith("blob:")) URL.revokeObjectURL(cropSrc);
+      setCropName(file.name);
+      setCropSrc(URL.createObjectURL(file));
+      return;
+    }
+    await uploadFile(file);
+  };
 
-  const previewHeight = compact ? "h-28" : "h-40";
+  const closeCrop = () => {
+    if (cropSrc?.startsWith("blob:")) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+  };
 
   return (
     <div>
-      <div
-        role="button"
-        tabIndex={0}
-        data-dragging={dragging}
-        onClick={() => !busy && inputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            inputRef.current?.click();
-          }
+      <Upload.Dragger
+        accept={kind === "image" ? "image/*" : "video/mp4,video/webm"}
+        showUploadList={false}
+        multiple={false}
+        disabled={busy}
+        beforeUpload={(file) => {
+          handleFile(file);
+          return false;
         }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragging(false);
-          handleFile(e.dataTransfer.files?.[0]);
-        }}
-        className={`cms-drop relative flex cursor-pointer items-center gap-4 overflow-hidden p-2 outline-none focus-visible:border-[var(--cms-accent)] ${previewHeight}`}
+        style={{ padding: 0 }}
       >
-        <div className="relative h-full w-28 shrink-0 overflow-hidden rounded-md bg-[var(--cms-sunken)]">
-          {value ? (
-            kind === "image" ? (
-              // eslint-disable-next-line @next/next/no-img-element -- S3 or /public URLs
-              <img src={value} alt="" className="h-full w-full object-cover" />
+        <Flex align="center" gap={16} style={{ padding: "4px 12px", textAlign: "left" }}>
+          <div
+            style={{
+              width: 84,
+              height: 108,
+              flexShrink: 0,
+              borderRadius: 6,
+              overflow: "hidden",
+              background: "#f5f5f4",
+              display: "grid",
+              placeItems: "center",
+            }}
+          >
+            {busy ? (
+              <Spin />
+            ) : value ? (
+              <MediaPreview kind={kind} url={value} className="studio-media-cover" />
             ) : (
-              <video src={value} muted loop autoPlay playsInline className="h-full w-full object-cover" />
-            )
-          ) : (
-            <div className="grid h-full place-items-center text-[22px] text-[var(--cms-muted)]">
-              {kind === "image" ? "◫" : "▶"}
-            </div>
-          )}
-          {busy && (
-            <div className="absolute inset-0 grid place-items-center bg-white/75 text-[12px] font-semibold text-[var(--cms-accent-ink)]">
-              Uploading…
-            </div>
-          )}
-        </div>
-        <div className="min-w-0 pr-2">
-          <p className="font-semibold text-[var(--cms-ink)]">
-            {value ? `Replace ${kind}` : `Add ${kind === "image" ? "an image" : "a video"}`}
-          </p>
-          <p className="cms-help mt-0.5">Drop a file here or click to browse</p>
-          {value && <p className="cms-help mt-1 truncate font-mono text-[11px]">{value}</p>}
-        </div>
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept}
-          className="sr-only"
-          onChange={(e) => {
-            handleFile(e.target.files?.[0]);
-            e.target.value = "";
-          }}
-        />
-      </div>
+              <InboxOutlined style={{ fontSize: 24, color: "#57534e" }} />
+            )}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <Typography.Text strong>
+              {busy ? "Uploading…" : value ? `Replace ${kind}` : `Add ${kind === "image" ? "an image" : "a video"}`}
+            </Typography.Text>
+            <br />
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              Click or drag a file to this area
+            </Typography.Text>
+            {value && (
+              <Typography.Paragraph type="secondary" ellipsis style={{ fontSize: 11, margin: "4px 0 0", maxWidth: 360 }}>
+                {value}
+              </Typography.Paragraph>
+            )}
+          </div>
+        </Flex>
+      </Upload.Dragger>
 
-      <div className="mt-2 flex flex-wrap items-center gap-1">
-        <button type="button" className="cms-btn cms-btn-ghost cms-btn-sm" onClick={() => setLibrary(true)}>
+      <Space size={4} style={{ marginTop: 8 }} wrap>
+        <Button size="small" icon={<FolderOpenOutlined />} onClick={() => setLibrary(true)}>
           Choose from library
-        </button>
-        <button type="button" className="cms-btn cms-btn-ghost cms-btn-sm" onClick={() => setLinkMode((m) => !m)}>
-          {linkMode ? "Hide link" : "Use a link"}
-        </button>
-        {value && (
-          <button type="button" className="cms-btn cms-btn-danger cms-btn-sm" onClick={() => onChange("")}>
-            Remove
-          </button>
+        </Button>
+        {kind === "image" && value && (
+          <Button
+            size="small"
+            icon={<ScissorOutlined />}
+            onClick={() => {
+              setCropName("image.jpg");
+              setCropSrc(value);
+            }}
+          >
+            Crop
+          </Button>
         )}
-      </div>
+        <Button size="small" type={linkMode ? "primary" : "default"} ghost={linkMode} icon={<LinkOutlined />} onClick={() => setLinkMode((m) => !m)}>
+          {linkMode ? "Hide link" : "Use a link"}
+        </Button>
+        {value && (
+          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => onChange("")}>
+            Remove
+          </Button>
+        )}
+      </Space>
 
       {linkMode && (
-        <input
-          className="cms-input mt-2"
+        <Input
+          style={{ marginTop: 8 }}
           placeholder={kind === "image" ? "https://… or /images/…" : "https://… or /videos/…"}
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
         />
       )}
 
-      {error && <p className="mt-2 text-[12.5px] text-[var(--cms-danger)]">{error}</p>}
-
-      {library && (
-        <LibraryPicker
-          kind={kind}
-          onClose={() => setLibrary(false)}
-          onPick={(url) => {
-            onChange(url);
-            setLibrary(false);
-          }}
-        />
+      {error && (
+        <Typography.Text type="danger" style={{ display: "block", marginTop: 8 }}>
+          {error}
+        </Typography.Text>
       )}
+
+      <LibraryPicker
+        kind={kind}
+        open={library}
+        onClose={() => setLibrary(false)}
+        onPick={(m) => {
+          onChange(m.url);
+          setLibrary(false);
+        }}
+      />
+
+      <ImageCropModal
+        open={Boolean(cropSrc)}
+        src={cropSrc}
+        fileName={cropName}
+        onCancel={closeCrop}
+        onConfirm={async (file) => {
+          closeCrop();
+          await uploadFile(file);
+        }}
+      />
     </div>
   );
 }

@@ -5,8 +5,12 @@
  */
 
 import { WEDDING_MOMENTS, HERO as WEDDINGS_HERO } from "@/lib/bridal-collections";
+import { COLOR_COLLECTIONS, type WomenswearChapter } from "@/lib/color-collections";
 import { HOME_SHOWCASE, HOUSE_COPY, WORLD_INTRO } from "@/lib/data";
+import { MENS_COLLECTIONS, type MenswearChapter } from "@/lib/mens-collections";
 import { SEASON_ARRIVALS } from "@/lib/whats-new";
+
+export type { WomenswearChapter, MenswearChapter };
 
 export type Hero = { eyebrow: string; title: string; line?: string; video: string; poster: string };
 
@@ -36,6 +40,24 @@ export type WeddingsContent = {
 
 export type CollectionPageContent = { hero: Hero };
 
+export type WomenswearContent = {
+  hero: Hero;
+  chapters: {
+    eyebrow: string;
+    title: string;
+    items: WomenswearChapter[];
+  };
+};
+
+export type MenswearContent = {
+  hero: Hero;
+  chapters: {
+    eyebrow: string;
+    title: string;
+    items: MenswearChapter[];
+  };
+};
+
 export type AtelierContent = {
   intro: {
     eyebrow: string;
@@ -64,8 +86,8 @@ export type PageContentMap = {
   home: HomeContent;
   "whats-new": WhatsNewContent;
   weddings: WeddingsContent;
-  womenswear: CollectionPageContent;
-  menswear: CollectionPageContent;
+  womenswear: WomenswearContent;
+  menswear: MenswearContent;
   atelier: AtelierContent;
   "world-of-kesari": WorldContent;
   footer: FooterContent;
@@ -156,6 +178,19 @@ export const PAGE_DEFAULTS: PageContentMap = {
       video: "/videos/womenswear.mp4",
       poster: "/images/womenswear-poster.jpg",
     },
+    chapters: {
+      eyebrow: "By colour and silhouette",
+      title: "The Looks",
+      items: COLOR_COLLECTIONS.map((c) => ({
+        title: c.title,
+        label: c.label,
+        category: c.category,
+        accent: c.accent,
+        story: c.story ?? "",
+        images: c.images.map((img) => img.src),
+        link: c.href ?? "",
+      })),
+    },
   },
 
   menswear: {
@@ -164,6 +199,19 @@ export const PAGE_DEFAULTS: PageContentMap = {
       title: "Menswear",
       video: "/videos/menswear.mp4",
       poster: "/images/menswear-poster.jpg",
+    },
+    chapters: {
+      eyebrow: "By form and evening light",
+      title: "The Looks",
+      items: MENS_COLLECTIONS.map((c) => ({
+        title: c.title,
+        label: c.label,
+        category: c.category,
+        accent: c.accent,
+        story: c.story ?? "",
+        images: c.images.map((img) => img.src),
+        link: c.href ?? "",
+      })),
     },
   },
 

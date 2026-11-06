@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { formatPrice, type Product } from "@/lib/data";
 import { useBagWishlist } from "@/context/BagWishlistContext";
+import { productHref } from "@/lib/productLinks";
 import MediaFrame, { toneForSlug } from "./MediaFrame";
 import SaveButton from "./SaveButton";
 
@@ -26,7 +27,7 @@ export default function ProductCard({
     <article
       className={`group relative aspect-[3/4] w-full overflow-hidden ${className}`}
     >
-      <Link href={`/product/${product.slug}`} className="absolute inset-0 block overflow-hidden">
+      <Link href={productHref(product)} className="absolute inset-0 block overflow-hidden">
         <MediaFrame
           src={product.image || ""}
           alt={product.name}
@@ -38,7 +39,7 @@ export default function ProductCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
       </Link>
 
-      <SaveButton active={saved} onClick={() => toggleWishlist(product.slug)} />
+      <SaveButton active={saved} onClick={() => toggleWishlist(product)} />
 
       {overlay === "bottom" ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-white md:p-5">

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useBagWishlist } from "@/context/BagWishlistContext";
+import { houseWhatsappLink, useSiteContact } from "@/lib/content/useSiteContact";
 import { formatPrice, PRODUCTS, type Product } from "@/lib/data";
+import { productHref } from "@/lib/productLinks";
 import { craftFor, productPhotos } from "@/lib/productMedia";
 import AutoLoopVideo from "./AutoLoopVideo";
 import MediaFrame, { toneForSlug } from "./MediaFrame";
@@ -42,7 +44,7 @@ function PhotoTile({
   );
 }
 
-function AddToBagButton({ onAdd }: { onAdd: () => void }) {
+function BuyNowButton({ onAdd }: { onAdd: () => void }) {
   const [added, setAdded] = useState(false);
 
   // "Added" holds for a moment, then the button settles back.
@@ -80,11 +82,33 @@ function AddToBagButton({ onAdd }: { onAdd: () => void }) {
               Added to Bag
             </>
           ) : (
-            "Add to Bag"
+            "Buy now"
           )}
         </motion.span>
       </AnimatePresence>
     </button>
+  );
+}
+
+function ContactWhatsAppButton({ product, size }: { product: Product; size: string }) {
+  const { whatsapp } = useSiteContact();
+  const href = houseWhatsappLink(
+    whatsapp,
+    `Hello Kesari — I'd like to ask about ${product.name} (${size}).`,
+  );
+
+  if (!href) {
+    return (
+      <span className="solid-btn min-h-12 flex-1 cursor-not-allowed opacity-50" aria-disabled>
+        WhatsApp not set
+      </span>
+    );
+  }
+
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="solid-btn min-h-12 flex-1 text-center">
+      Contact us
+    </a>
   );
 }
 
@@ -96,7 +120,7 @@ function RelatedTile({ product, large = false }: { product: Product; large?: boo
         large ? "min-h-[460px] md:row-span-2" : "min-h-[220px]"
       }`}
     >
-      <Link href={`/product/${product.slug}`} className="absolute inset-0 block" aria-label={product.name}>
+      <Link href={productHref(product)} className="absolute inset-0 block" aria-label={product.name}>
         <span className="bento-photo absolute inset-0">
           <MediaFrame
             src={productPhotos(product)[0] ?? ""}
@@ -126,15 +150,22 @@ function RelatedTile({ product, large = false }: { product: Product; large?: boo
           </span>
         </span>
       </Link>
-      <SaveButton active={isSaved(product.slug)} onClick={() => toggleWishlist(product.slug)} />
+      <SaveButton active={isSaved(product.slug)} onClick={() => toggleWishlist(product)} />
     </article>
   );
 }
 
-export default function ProductDetail({ product }: { product: Product }) {
+export default function ProductDetail({
+  product,
+  related: relatedProducts,
+}: {
+  product: Product;
+  /** Other pieces to show below; the page passes live CMS products for a CMS piece. */
+  related?: Product[];
+}) {
   const { addToBag, toggleWishlist, isSaved } = useBagWishlist();
   const [size, setSize] = useState<(typeof SIZES)[number]>("M");
-  const related = PRODUCTS.filter((p) => p.slug !== product.slug).slice(0, 3);
+  const related = relatedProducts ?? PRODUCTS.filter((p) => p.slug !== product.slug).slice(0, 3);
   const [main, ...more] = productPhotos(product);
   const craft = craftFor(product);
   const saved = isSaved(product.slug);
@@ -199,10 +230,14 @@ export default function ProductDetail({ product }: { product: Product }) {
               ))}
             </div>
             <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-              <AddToBagButton onAdd={() => addToBag(product.slug)} />
+              {(product.buyAction ?? "buy_now") === "contact_whatsapp" ? (
+                <ContactWhatsAppButton product={product} size={size} />
+              ) : (
+                <BuyNowButton onAdd={() => addToBag(product)} />
+              )}
               <button
                 type="button"
-                onClick={() => toggleWishlist(product.slug)}
+                onClick={() => toggleWishlist(product)}
                 aria-pressed={saved}
                 className="ghost-btn ghost-btn-dark min-h-12 text-ink"
               >
@@ -287,6 +322,7 @@ export default function ProductDetail({ product }: { product: Product }) {
         </div>
       </section>
 
+      {related.length > 0 && (
       <section className="section-pad relative z-10 mx-auto max-w-[1280px] pb-20 pt-14" aria-label="Also from the house">
         <div className="mb-8 flex items-end justify-between gap-6">
           <div>
@@ -303,7 +339,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           {related.map((p, i) => (
-            <RelatedTile key={p.slug} product={p} large={i === 0} />
+            <RelatedTile key={p.id ?? p.slug} product={p} large={i === 0} />
           ))}
         </div>
 
@@ -313,6 +349,7 @@ export default function ProductDetail({ product }: { product: Product }) {
           </Link>
         </div>
       </section>
+      )}
     </main>
   );
 }

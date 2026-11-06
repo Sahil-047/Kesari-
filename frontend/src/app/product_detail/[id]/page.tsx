@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
@@ -25,7 +25,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 async function ProductContent({ params }: Props) {
   const { id } = await params;
   const product = getLookbookProduct(id);
-  if (!product) notFound();
+  if (!product) {
+    // CMS products live at /product/<id>; a lookbook-style link to one still lands right.
+    if (/^[a-f0-9]{24}$/i.test(id)) redirect(`/product/${id}`);
+    notFound();
+  }
 
   return (
     <LookbookProductDetail

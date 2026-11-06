@@ -15,7 +15,11 @@ export type Craft = {
   overlayAlign?: "left" | "right";
 };
 
+export type BuyAction = "buy_now" | "contact_whatsapp";
+
 export type Product = {
+  /** API product id (CMS products). Static pieces have none and route by slug. */
+  id?: string;
   slug: string;
   name: string;
   category: string;
@@ -24,9 +28,13 @@ export type Product = {
   description: string;
   details: string[];
   image: string;
+  /** Every photograph, cover first (CMS products). */
+  images?: string[];
   video?: string;
   videoPoster?: string;
   note?: string;
+  /** Product page primary CTA — bag vs WhatsApp. Defaults to buy now. */
+  buyAction?: BuyAction;
 };
 
 export const NAV_LINKS = [

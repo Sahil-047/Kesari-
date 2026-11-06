@@ -14,7 +14,7 @@
     ],
     "image": "/images/soft-ivory/insight-3.jpg",
     "note": "Made to measure is offered on this piece. After the bag is placed, the atelier writes with a fitting note.",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "forest-ari-lehenga",
@@ -31,7 +31,7 @@
     ],
     "image": "",
     "note": "Made to measure is offered on this piece. After the bag is placed, the atelier writes with a fitting note.",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "ivory-pitta-waistcoat",
@@ -47,7 +47,7 @@
       "Allow six to eight weeks"
     ],
     "image": "",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "saffron-resham-kurta",
@@ -63,7 +63,7 @@
       "Allow four to six weeks"
     ],
     "image": "",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "violet-cutdana-blouse",
@@ -79,7 +79,7 @@
       "Allow four to six weeks"
     ],
     "image": "",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "brocade-evening-jacket",
@@ -95,7 +95,7 @@
       "Allow six to eight weeks"
     ],
     "image": "",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "ice-veil-sequin",
@@ -114,7 +114,7 @@
     "video": "/videos/ice-veil.mp4",
     "videoPoster": "/images/ice-veil-poster.jpg",
     "note": "Made to measure is offered on this piece. After the bag is placed, the atelier writes with a fitting note.",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "mirror-veil-border",
@@ -130,7 +130,7 @@
       "Allow eight to ten weeks"
     ],
     "image": "",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "elephant-zardozi-panel",
@@ -146,7 +146,7 @@
       "Allow ten to twelve weeks"
     ],
     "image": "",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "hand-print-pitta-stole",
@@ -162,7 +162,7 @@
       "Allow three to five weeks"
     ],
     "image": "",
-    "status": "published"
+    "status": "active"
   },
   {
     "slug": "ari-resham-medallion",
@@ -178,6 +178,6 @@
       "Allow eight to twelve weeks"
     ],
     "image": "",
-    "status": "published"
+    "status": "active"
   }
 ]

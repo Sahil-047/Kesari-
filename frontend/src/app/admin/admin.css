@@ -1,406 +1,303 @@
 /*
- * Kesari Studio — isometric design system.
- * Paper canvas on a 30° isometric grid, blocks that extrude down-right,
- * technical mono labels, Kesari saffron for action. Scoped to .cms.
+ * Kesari Studio design system (see design-system/kesari-studio/MASTER.md).
+ * Sits inside the storefront's root layout, so it undoes the site's parchment
+ * background and serif body here. Colours mirror the Ant tokens in
+ * components/admin/AdminProviders.tsx.
+ *
+ * Fonts are linked here (not next/font/google) so Turbopack never hits the
+ * Google Fonts kit-URL resolution bug on Next 16.4.x. display=swap avoids
+ * invisible text while they load.
  */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap");
 
-.cms {
-  --cms-canvas: #f3efe7;
-  --cms-surface: #fffdf9;
-  --cms-sunken: #f0ebe1;
-  --cms-face-left: #e9e1d2; /* side faces of isometric blocks */
-  --cms-face-right: #ddd2bf;
-  --cms-border: #ddd4c4;
-  --cms-border-strong: #c7bba6;
-  --cms-line: #2a2622; /* diagram strokes */
-  --cms-ink: #1f1c19;
-  --cms-ink-2: #4a443d;
-  --cms-muted: #8b8276;
-  --cms-accent: #dc7426; /* kesari saffron */
-  --cms-accent-hover: #c4621a;
-  --cms-accent-soft: #fbe9d8;
-  --cms-accent-ink: #8a4410;
-  --cms-accent-side: #b85d18;
-  --cms-teal: #2f6f6a; /* secondary, for diagrams only */
-  --cms-success: #2f7d55;
-  --cms-success-soft: #e3f2e9;
-  --cms-warning: #9a6200;
-  --cms-warning-soft: #fcf0d4;
-  --cms-danger: #b42318;
-  --cms-danger-soft: #fce8e6;
-  --cms-radius: 4px;
-  --cms-extrude: 5px 5px 0 0 var(--cms-face-right);
-  --cms-extrude-strong: 6px 6px 0 0 var(--cms-line);
-  --cms-shadow-lg: 14px 14px 0 0 rgba(31, 28, 25, 0.12);
+/* Namespaced variables; on :root too because Ant renders drawers and popovers in portals outside .studio. */
+:root,
+.studio {
+  --studio-ink: #1c1917;
+  --studio-inkSoft: #44403c;
+  --studio-text: #0c0a09;
+  --studio-muted: #57534e;
+  --studio-faint: #78716c;
+  --studio-disabled: #a8a29e;
+  --studio-border: #d6d3d1;
+  --studio-hairline: #e7e5e4;
+  --studio-wash: #f5f5f4;
+  --studio-subtle: #fafaf9;
+  --studio-gold: #a16207;
+  --studio-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --studio-ease: cubic-bezier(0.23, 1, 0.32, 1);
+}
 
+.studio {
   min-height: 100vh;
-  font-family: var(--font-cms), system-ui, sans-serif;
+  background: var(--studio-subtle);
+  color: var(--studio-text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.55;
-  color: var(--cms-ink);
-  background-color: var(--cms-canvas);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.studio ::selection {
+  background: var(--studio-ink);
+  color: #fff;
+}
+
+/* ---------- Type ---------- */
+
+/* Display serif: page titles, login hero, drawer titles. Never controls or figures. */
+/* Doubled/qualified selectors: Ant styles h1.ant-typography and drawer titles at (0,1,1). */
+.studio-display.studio-display,
+.ant-drawer .ant-drawer-title {
+  font-family: var(--studio-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ant-drawer .ant-drawer-title {
+  font-size: 19px;
+}
+/* Portal content uses Inter too. */
+.ant-drawer,
+.ant-modal-root,
+.ant-popover,
+.ant-dropdown,
+.ant-select-dropdown,
+.ant-message,
+.ant-picker-dropdown {
+  font-feature-settings: "cv11", "ss01", "ss03";
   -webkit-font-smoothing: antialiased;
 }
 
-.cms ::selection {
-  background: var(--cms-accent-soft);
-  color: var(--cms-ink);
-}
-
-/* The isometric grid: lines at 30° and 150°. */
-.cms-iso-grid {
-  background-color: var(--cms-canvas);
-  background-image:
-    repeating-linear-gradient(30deg, rgba(42, 38, 34, 0.055) 0 1px, transparent 1px 28px),
-    repeating-linear-gradient(150deg, rgba(42, 38, 34, 0.055) 0 1px, transparent 1px 28px);
-}
-
-.cms-display {
-  font-family: var(--font-cms), system-ui, sans-serif;
+.studio h4.ant-typography,
+.studio h5.ant-typography {
+  letter-spacing: -0.015em;
   font-weight: 600;
+}
+.studio .ant-statistic-content,
+.studio .ant-table-cell,
+.studio-num,
+.ant-drawer .ant-descriptions-item-content {
+  font-variant-numeric: tabular-nums;
+}
+.studio .ant-statistic-content {
   letter-spacing: -0.025em;
-}
-
-.cms-mono {
-  font-family: var(--font-cms-mono), ui-monospace, monospace;
-  font-feature-settings: "zero" 1;
-}
-
-.cms-label {
-  display: block;
-  font-size: 12.5px;
   font-weight: 600;
-  color: var(--cms-ink-2);
 }
-
-.cms-help {
-  font-size: 12px;
-  color: var(--cms-muted);
-}
-
-.cms-eyebrow {
-  font-family: var(--font-cms-mono), ui-monospace, monospace;
-  font-size: 10.5px;
+.studio .ant-statistic-title {
+  color: var(--studio-muted);
   font-weight: 500;
-  letter-spacing: 0.12em;
+}
+.studio .ant-table-thead > tr > th {
+  font-size: 12px;
+  font-weight: 500;
   text-transform: uppercase;
-  color: var(--cms-muted);
+  letter-spacing: 0.05em;
+  color: var(--studio-muted);
 }
-
-/* Blocks: flat face with an extruded edge, like an isometric slab. */
-.cms-card {
-  border: 1px solid var(--cms-line);
-  border-radius: var(--cms-radius);
-  background: var(--cms-surface);
-  box-shadow: var(--cms-extrude);
-}
-.cms-card-quiet {
-  border: 1px solid var(--cms-border);
-  border-radius: var(--cms-radius);
-  background: var(--cms-surface);
-}
-a.cms-card,
-button.cms-card {
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-a.cms-card:hover,
-button.cms-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 7px 7px 0 0 var(--cms-face-right);
-}
-
-/* Inputs */
-.cms-input,
-.cms-textarea,
-.cms-select {
-  width: 100%;
-  border: 1px solid var(--cms-border-strong);
-  border-radius: var(--cms-radius);
-  background: #fff;
-  padding: 0 12px;
-  font: inherit;
-  color: var(--cms-ink);
-  outline: none;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.cms-input,
-.cms-select {
-  height: 40px;
-}
-.cms-textarea {
-  min-height: 96px;
-  padding: 10px 12px;
-  resize: vertical;
-}
-.cms-input::placeholder,
-.cms-textarea::placeholder {
-  color: #b3a99a;
-}
-.cms-input:focus,
-.cms-textarea:focus,
-.cms-select:focus {
-  border-color: var(--cms-line);
-  box-shadow: 3px 3px 0 0 var(--cms-accent);
-}
-.cms-input:disabled,
-.cms-textarea:disabled,
-.cms-select:disabled {
-  background: var(--cms-sunken);
-  color: var(--cms-ink-2);
-}
-
-/* Buttons: small extruded keys that press in. */
-.cms-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 38px;
-  border: 1px solid var(--cms-line);
-  border-radius: var(--cms-radius);
-  background: var(--cms-surface);
-  padding: 0 14px;
-  font: inherit;
+:is(.studio, .ant-drawer, .ant-modal-root) .ant-card-head-title {
   font-weight: 600;
-  color: var(--cms-ink);
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 0 var(--cms-line);
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.1s ease,
-    background 0.15s ease;
+  letter-spacing: -0.01em;
 }
-.cms-btn:hover {
-  background: var(--cms-sunken);
+:is(.studio, .ant-drawer) .ant-form-item-label > label {
+  font-weight: 500;
+  color: var(--studio-inkSoft, #44403c);
 }
-.cms-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 0 var(--cms-line);
-}
-.cms-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-  transform: none;
-}
-.cms-btn-primary {
-  background: var(--cms-accent);
-  color: #fff;
-}
-.cms-btn-primary:hover {
-  background: var(--cms-accent-hover);
-}
-.cms-btn-dark {
-  background: var(--cms-ink);
-  color: #fff;
-}
-.cms-btn-dark:hover {
-  background: #000;
-}
-.cms-btn-ghost,
-.cms-btn-danger {
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  color: var(--cms-ink-2);
-}
-.cms-btn-ghost:hover {
-  background: var(--cms-sunken);
-}
-.cms-btn-danger {
-  color: var(--cms-danger);
-}
-.cms-btn-danger:hover {
-  background: var(--cms-danger-soft);
-}
-.cms-btn-ghost:active,
-.cms-btn-danger:active {
-  transform: none;
-}
-.cms-btn-sm {
-  height: 30px;
-  padding: 0 10px;
+:is(.studio, .ant-drawer) .ant-form-item-extra {
+  color: var(--studio-faint);
   font-size: 12.5px;
+  margin-top: 2px;
 }
 
-/* Status chips: squared tags with a mono label. */
-.cms-chip {
+/* ---------- Links ---------- */
+
+/* The site sets `a { color: inherit }` globally; plain anchors read as ink links. */
+.studio a:not([class*="ant-"]) {
+  color: var(--studio-ink);
+  font-weight: 500;
+  text-underline-offset: 3px;
+}
+.studio a:not([class*="ant-"]):hover {
+  text-decoration: underline;
+}
+.studio .ant-menu a {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none !important;
+}
+
+/* ---------- Navigation ---------- */
+
+.studio .studio-sider-menu.ant-menu-inline {
+  font-size: 15px;
+}
+.studio .studio-sider-menu .ant-menu-item-group-title {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--studio-faint);
+  padding: 18px 14px 8px !important;
+}
+.studio .studio-sider-menu .ant-menu-item {
+  position: relative;
+  height: 46px !important;
+  line-height: 46px !important;
+  margin-block: 3px !important;
+  padding-inline: 14px !important;
+  border-radius: 8px !important;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--studio-inkSoft);
+}
+.studio .studio-sider-menu .ant-menu-item .anticon {
+  font-size: 17px;
+}
+.studio .studio-sider-menu .ant-menu-item-selected {
+  font-weight: 600;
+  color: var(--studio-text) !important;
+}
+/* Active location: a short gold rule, the one place the brand accent appears in the frame. */
+.studio .studio-sider-menu .ant-menu-item-selected::before {
+  content: "";
+  position: absolute;
+  /* Inside the item: Ant's menu items clip overflow. */
+  left: 0;
+  top: 11px;
+  bottom: 11px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--studio-gold);
+}
+
+/* Skip link: visible only when focused from the keyboard. */
+.studio-skip {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 1000;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: var(--studio-ink);
+  color: #fff !important;
+  font-weight: 600;
+  transition: top 0.15s var(--studio-ease);
+}
+.studio-skip:focus {
+  top: 12px;
+}
+
+/* ---------- Focus ---------- */
+
+/* Clear 2px keyboard focus everywhere; mouse clicks stay clean. */
+:is(.studio, .ant-drawer, .ant-modal-root) :is(a, button, [role="button"], [role="switch"], [tabindex]):focus-visible,
+.studio .ant-table-row:focus-visible {
+  outline: 2px solid var(--studio-ink);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------- Surfaces ---------- */
+
+.studio .ant-card {
+  transition: border-color 0.2s var(--studio-ease);
+}
+:is(.studio, .ant-drawer, .ant-modal-root) .ant-upload-wrapper .ant-upload-drag {
+  background: var(--studio-subtle);
+  border-color: var(--studio-border);
+  transition: border-color 0.2s var(--studio-ease), background-color 0.2s var(--studio-ease);
+}
+:is(.studio, .ant-drawer, .ant-modal-root) .ant-upload-wrapper .ant-upload-drag:hover {
+  border-color: var(--studio-ink);
+  background: #fff;
+}
+.studio .ant-upload-drag-icon .anticon {
+  color: var(--studio-ink) !important;
+}
+.studio .ant-table-tbody > tr {
+  cursor: pointer;
+}
+
+/* Press feedback on buttons (micro-interaction). */
+:is(.studio, .ant-drawer, .ant-modal-root) .ant-btn:not(:disabled):active {
+  transform: scale(0.98);
+}
+.studio .ant-btn {
+  transition-timing-function: var(--studio-ease);
+}
+
+/* Thumbnails in tables, cards and pickers. */
+.studio-thumb {
+  display: block;
+  width: 40px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--studio-wash);
+}
+
+.studio-media-cover {
+  display: block;
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  object-fit: cover;
+  background: var(--studio-wash);
+}
+
+/* ---------- Status badges (StatusTag.tsx): one ink colour, four weights ---------- */
+
+.studio-status {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 22px;
-  border: 1px solid currentColor;
-  border-radius: 2px;
-  padding: 0 7px;
-  font-family: var(--font-cms-mono), ui-monospace, monospace;
-  font-size: 10.5px;
+  padding: 0 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  line-height: 1;
   white-space: nowrap;
-  background: var(--cms-surface);
-  color: var(--cms-ink-2);
 }
-.cms-chip::before {
-  content: "";
+.studio-status[data-tone="solid"] {
+  background: var(--studio-ink);
+  color: #fff;
+}
+.studio-status[data-tone="soft"] {
+  background: var(--studio-wash);
+  border-color: var(--studio-hairline);
+  color: var(--studio-inkSoft, #44403c);
+}
+.studio-status[data-tone="outline"] {
+  background: #fff;
+  border-color: var(--studio-ink);
+  color: var(--studio-ink);
+}
+.studio-status[data-tone="muted"] {
+  background: transparent;
+  border-color: var(--studio-border);
+  color: var(--studio-faint);
+}
+.studio-status-dot {
   width: 6px;
   height: 6px;
+  border-radius: 50%;
   background: currentColor;
-  transform: rotate(45deg);
-}
-.cms-chip-success {
-  background: var(--cms-success-soft);
-  color: var(--cms-success);
-}
-.cms-chip-warning {
-  background: var(--cms-warning-soft);
-  color: var(--cms-warning);
-}
-.cms-chip-accent {
-  background: var(--cms-accent-soft);
-  color: var(--cms-accent-ink);
 }
 
-/* Tables */
-.cms-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-.cms-table th {
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--cms-line);
-  font-family: var(--font-cms-mono), ui-monospace, monospace;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--cms-muted);
-  background: var(--cms-sunken);
-}
-.cms-table td {
-  padding: 11px 16px;
-  border-bottom: 1px solid var(--cms-border);
-  color: var(--cms-ink-2);
-}
-.cms-table tbody tr:last-child td {
-  border-bottom: 0;
-}
-.cms-table tbody tr {
-  transition: background 0.12s ease;
-}
-.cms-table tbody tr:hover {
-  background: #fbf6ee;
-}
+/* ---------- Motion preference ---------- */
 
-/* Upload drop zone */
-.cms-drop {
-  border: 1.5px dashed var(--cms-border-strong);
-  border-radius: var(--cms-radius);
-  background: repeating-linear-gradient(135deg, #fbf8f2 0 8px, #f7f2e9 8px 16px);
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-.cms-drop:hover,
-.cms-drop[data-dragging="true"] {
-  border-color: var(--cms-accent);
-  background: var(--cms-accent-soft);
-}
-
-.cms-scroll::-webkit-scrollbar {
-  width: 10px;
-}
-.cms-scroll::-webkit-scrollbar-thumb {
-  border: 3px solid transparent;
-  border-radius: 999px;
-  background: #d3c8b5 padding-box;
-}
-
-/* ------------------------------------------------------------------ */
-/* Isometric primitives                                                */
-/* ------------------------------------------------------------------ */
-
-/* A flat plane laid into isometric space; children stack along Z. */
-.iso-plane {
-  transform: rotateX(55deg) rotateZ(-45deg);
-  transform-style: preserve-3d;
-}
-
-/* A slab: the face plus two visible sides drawn with pseudo-elements. */
-.iso-slab {
-  position: relative;
-  background: var(--slab-top, var(--cms-surface));
-  border: 1px solid var(--cms-line);
-  transform-style: preserve-3d;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.iso-slab::before,
-.iso-slab::after {
-  content: "";
-  position: absolute;
-  border: 1px solid var(--cms-line);
-}
-.iso-slab::before {
-  /* front-left side */
-  left: -1px;
-  right: -1px;
-  top: 100%;
-  height: var(--slab-depth, 10px);
-  background: var(--slab-left, var(--cms-face-left));
-  transform-origin: top;
-  transform: rotateX(-90deg);
-}
-.iso-slab::after {
-  /* front-right side */
-  top: -1px;
-  bottom: -1px;
-  left: 100%;
-  width: var(--slab-depth, 10px);
-  background: var(--slab-right, var(--cms-face-right));
-  transform-origin: left;
-  transform: rotateY(90deg);
-}
-.iso-slab[data-active="true"] {
-  --slab-top: var(--cms-accent);
-  --slab-left: var(--cms-accent-side);
-  --slab-right: #9e4f13;
-}
-
-/* Small isometric cube used as an icon tile. */
-.iso-cube {
-  position: relative;
-  width: 34px;
-  height: 34px;
-}
-.iso-cube > i {
-  position: absolute;
-  inset: 0;
-  border: 1px solid var(--cms-line);
-}
-.iso-cube > i:nth-child(1) {
-  /* top */
-  background: var(--cube-top, var(--cms-accent-soft));
-  clip-path: polygon(50% 0, 100% 25%, 50% 50%, 0 25%);
-  border: 0;
-}
-.iso-cube > i:nth-child(2) {
-  /* left */
-  background: var(--cube-left, var(--cms-face-left));
-  clip-path: polygon(0 25%, 50% 50%, 50% 100%, 0 75%);
-  border: 0;
-}
-.iso-cube > i:nth-child(3) {
-  /* right */
-  background: var(--cube-right, var(--cms-face-right));
-  clip-path: polygon(50% 50%, 100% 25%, 100% 75%, 50% 100%);
-  border: 0;
-}
-.iso-cube > svg {
-  position: absolute;
-  inset: 0;
+@media (prefers-reduced-motion: reduce) {
+  :is(.studio, .ant-drawer, .ant-modal-root, .ant-popover, .ant-dropdown) *,
+  :is(.studio, .ant-drawer, .ant-modal-root, .ant-popover, .ant-dropdown) *::before,
+  :is(.studio, .ant-drawer, .ant-modal-root, .ant-popover, .ant-dropdown) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .studio .ant-btn:active {
+    transform: none;
+  }
 }

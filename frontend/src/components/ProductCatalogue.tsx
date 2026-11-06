@@ -133,7 +133,7 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
         <ul className={`grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 md:gap-x-5 md:gap-y-10 lg:grid-cols-4 ${activeCount ? "pt-2" : "pt-6"}`}>
           {visible.map((product, index) => (
             <li key={product.id} className="min-w-0">
-              <Link href={`/product_detail/${product.id}`} prefetch={false} className={`${styles.card} group block ${focus}`}>
+              <Link href={product.href ?? `/product_detail/${product.id}`} prefetch={false} className={`${styles.card} group block ${focus}`}>
                 <div className="relative aspect-[2/3] overflow-hidden border border-gold/25 bg-cream transition-colors duration-200 group-hover:border-gold">
                   <Image src={product.image} alt={product.name} fill quality={95} priority={index < 2} sizes="(min-width: 1776px) 405px, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" className={`${styles.photo} object-cover object-[50%_25%]`} />
                   <span aria-hidden className="absolute bottom-3 right-3 grid h-10 w-10 translate-y-1 place-items-center rounded-full border border-gold/40 bg-cream text-ink opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:transform-none motion-reduce:transition-none">↗</span>

@@ -8,7 +8,7 @@ import { mergeContent, PAGE_DEFAULTS, type PageContentMap, type PageSlug } from 
  */
 export async function getPageContent<S extends PageSlug>(slug: S): Promise<PageContentMap[S]> {
   "use cache";
-  cacheLife("minutes");
+  cacheLife("seconds");
   cacheTag(`page:${slug}`);
 
   const defaults = PAGE_DEFAULTS[slug];

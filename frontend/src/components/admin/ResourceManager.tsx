@@ -1,11 +1,34 @@
 "use client";
 
+import { DeleteOutlined, PlusOutlined, RightOutlined } from "@ant-design/icons";
 import { api, ApiRequestError, type PageMeta } from "@/lib/api/client";
 import type { Column, ResourceConfig } from "@/lib/admin/resources";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
-import FieldInput from "./FieldInput";
-import Icon from "./Icon";
-import ScreenHeader from "./ScreenHeader";
+import {
+  Alert,
+  App,
+  Button,
+  Card,
+  Col,
+  Drawer,
+  Empty,
+  Flex,
+  Form,
+  Input,
+  Popconfirm,
+  Row,
+  Select,
+  Space,
+  Table,
+  Typography,
+  type TableColumnsType,
+} from "antd";
+import { useCallback, useEffect, useState } from "react";
+import { revalidateProducts } from "@/app/admin/content/actions";
+import { STATUS_TONE } from "@/lib/admin/format";
+import { STUDIO } from "./AdminProviders";
+import FieldInput, { optionLabel } from "./FieldInput";
+import StatusTag from "./StatusTag";
+import ScreenHeader, { ScreenBody } from "./ScreenHeader";
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -16,41 +39,59 @@ function getPath(obj: unknown, path: string): unknown {
   );
 }
 
-const CHIP: Record<string, string> = {
-  published: "cms-chip-success",
-  closed: "cms-chip-success",
-  new: "cms-chip-accent",
-  in_progress: "cms-chip-warning",
-  draft: "",
-};
 
-function Cell({ row, column }: { row: Row; column: Column }) {
-  const value = getPath(row, column.key);
+/** Logical product folder (products/soft-ivory); the API stores it under media/…. */
+function mediaFolderFor(prefix: string | undefined, values: Record<string, unknown>): string | undefined {
+  if (!prefix) return undefined;
+  const raw = String(values.slug || values.name || "draft")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+  return `${prefix}/${raw || "draft"}`;
+}
+
+function fieldSections(fields: ResourceConfig["fields"]) {
+  const sections: { title?: string; fields: ResourceConfig["fields"] }[] = [];
+  for (const field of fields) {
+    const last = sections[sections.length - 1];
+    if (last && last.title === field.section) last.fields.push(field);
+    else sections.push({ title: field.section, fields: [field] });
+  }
+  return sections;
+}
+
+function renderCell(value: unknown, column: Column) {
   switch (column.format) {
     case "image":
-      return (
-        <div className="h-12 w-10 overflow-hidden rounded-md bg-[var(--cms-sunken)]">
-          {typeof value === "string" && value && (
-            // eslint-disable-next-line @next/next/no-img-element -- S3 or /public URLs
-            <img src={value} alt="" className="h-full w-full object-cover" />
-          )}
-        </div>
+      return typeof value === "string" && value ? (
+        // eslint-disable-next-line @next/next/no-img-element -- S3 or /public URLs
+        <img src={value} alt="" className="studio-thumb" />
+      ) : (
+        <div className="studio-thumb" />
       );
     case "price":
-      return <span className="tabular-nums">₹{Number(value ?? 0).toLocaleString("en-IN")}</span>;
+      return <Typography.Text strong>₹{Number(value ?? 0).toLocaleString("en-IN")}</Typography.Text>;
     case "date":
-      return <>{typeof value === "string" ? new Date(value).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}</>;
+      return typeof value === "string"
+        ? new Date(value).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+        : "—";
     case "product":
-      return <>{(value as { name?: string } | null)?.name ?? "Missing product"}</>;
+      return (value as { name?: string } | null)?.name ?? <Typography.Text type="danger">Missing product</Typography.Text>;
     case "status": {
       const s = String(value ?? "");
-      return <span className={`cms-chip ${CHIP[s] ?? ""}`}>{s.replace("_", " ")}</span>;
+      return <StatusTag tone={STATUS_TONE[s] ?? "soft"}>{optionLabel(s)}</StatusTag>;
     }
     default:
-      if (typeof value === "boolean") {
-        return <span className={`cms-chip ${value ? "cms-chip-success" : ""}`}>{value ? "Yes" : "No"}</span>;
+      if (typeof value === "boolean") return <StatusTag tone={value ? "solid" : "muted"}>{value ? "Yes" : "No"}</StatusTag>;
+      if (Array.isArray(value)) {
+        if (value.length === 0) return "—";
+        return value
+          .map((v) => String(v).split(".").pop() ?? String(v))
+          .join(", ");
       }
-      return <>{String(value ?? "—")}</>;
+      return String(value ?? "—");
   }
 }
 
@@ -78,7 +119,20 @@ function toPayload(config: ResourceConfig, values: Record<string, unknown>, isNe
   return payload;
 }
 
+const WIDE_TYPES = ["images", "image", "video", "textarea", "list"];
+
+/** The save already succeeded; a failed cache refresh only delays the storefront by seconds. */
+async function refreshStorefront(productId?: string) {
+  try {
+    await revalidateProducts(productId);
+  } catch {
+    /* storefront cache expires on its own */
+  }
+}
+
+/** List + edit screen for one resource: Ant Table, filters, and a Drawer form. */
 export default function ResourceManager({ config, description }: { config: ResourceConfig; description?: string }) {
+  const { message } = App.useApp();
   const base = `/admin${config.endpoint}`;
   const [rows, setRows] = useState<Row[]>([]);
   const [meta, setMeta] = useState<PageMeta | null>(null);
@@ -114,8 +168,7 @@ export default function ResourceManager({ config, description }: { config: Resou
   }, [base, config.unpaged, page, search, filters]);
 
   useEffect(() => {
-    // Data fetching on mount and whenever the query changes.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount and when the query changes
     load();
   }, [load]);
 
@@ -137,8 +190,7 @@ export default function ResourceManager({ config, description }: { config: Resou
     }
   }, [config.canCreate, open]);
 
-  const save = async (e: FormEvent) => {
-    e.preventDefault();
+  const save = async () => {
     if (!editing) return;
     const isNew = editing === "new";
     setSaving(true);
@@ -146,8 +198,27 @@ export default function ResourceManager({ config, description }: { config: Resou
     setFormError(null);
     try {
       const payload = toPayload(config, values, isNew);
-      if (isNew) await api.post(base, payload);
-      else await api.patch(`${base}/${editing.id}`, payload);
+      // Always send placements (including []) so unticked surfaces clear on the API.
+      if (config.fields.some((f) => f.name === "placements")) {
+        payload.placements = Array.isArray(values.placements) ? values.placements : [];
+      }
+      const saved = isNew
+        ? await api.post<{ id: string }>(base, payload)
+        : await api.patch<{ id: string }>(`${base}/${editing.id}`, payload);
+      if (config.revalidate === "products") {
+        await refreshStorefront(saved?.id);
+        try {
+          const { syncPlacedChaptersFromProduct } = await import("@/lib/admin/placedChapters");
+          await syncPlacedChaptersFromProduct({
+            id: saved.id,
+            placements: Array.isArray(payload.placements) ? (payload.placements as string[]) : [],
+          });
+        } catch {
+          /* chapter sync is best-effort; storefront still merges by placement */
+        }
+      }
+      const noun = config.singular.charAt(0).toUpperCase() + config.singular.slice(1);
+      message.success(isNew ? `${noun} created` : "Changes saved");
       setEditing(null);
       await load();
     } catch (err) {
@@ -162,9 +233,10 @@ export default function ResourceManager({ config, description }: { config: Resou
 
   const remove = async () => {
     if (!editing || editing === "new") return;
-    if (!window.confirm(`Delete this ${config.singular}? This cannot be undone.`)) return;
     try {
       await api.delete(`${base}/${editing.id}`);
+      if (config.revalidate === "products") await refreshStorefront(editing.id);
+      message.success("Deleted");
       setEditing(null);
       await load();
     } catch (err) {
@@ -172,179 +244,191 @@ export default function ResourceManager({ config, description }: { config: Resou
     }
   };
 
-  const wide = (type: string) => ["images", "image", "textarea", "list"].includes(type);
+  const columns: TableColumnsType<Row> = [
+    ...config.columns.map((c) => ({
+      key: c.key,
+      title: c.label,
+      width: c.format === "image" ? 64 : undefined,
+      render: (_: unknown, row: Row) => renderCell(getPath(row, c.key), c),
+    })),
+    { key: "open", width: 40, align: "right" as const, render: () => <RightOutlined style={{ color: STUDIO.faint, fontSize: 12 }} /> },
+  ];
+
+  const sections = fieldSections(config.fields);
+  const uploadFolder = mediaFolderFor(config.mediaFolderPrefix, values);
+  const isNew = editing === "new";
+  const drawerTitle = isNew
+    ? `New ${config.singular}`
+    : editing
+      ? String(editing.name ?? editing.title ?? `Edit ${config.singular}`)
+      : "";
 
   return (
-    <div>
+    <>
       <ScreenHeader
         title={config.title}
         description={description ?? (meta ? `${meta.total} in total` : undefined)}
         actions={
           config.canCreate && (
-            <button type="button" onClick={() => open("new")} className="cms-btn cms-btn-primary">
-              <Icon name="plus" size={16} /> New {config.singular}
-            </button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => open("new")}>
+              New {config.singular}
+            </Button>
           )
         }
       />
 
-      <div className="mx-auto max-w-[1240px] px-8 py-6">
-        {(config.searchable || config.filters) && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {config.searchable && (
-              <input
-                placeholder={`Search ${config.title.toLowerCase()}…`}
-                className="cms-input max-w-xs"
-                value={search}
-                onChange={(e) => {
-                  setPage(1);
-                  setSearch(e.target.value);
-                }}
-              />
-            )}
-            {config.filters?.map((f) => (
-              <select
-                key={f.name}
-                className="cms-select w-auto min-w-[150px]"
-                value={filters[f.name] ?? ""}
-                onChange={(e) => {
-                  setPage(1);
-                  setFilters((prev) => ({ ...prev, [f.name]: e.target.value }));
-                }}
-              >
-                <option value="">All {f.label.toLowerCase()}</option>
-                {f.options.map((o) => (
-                  <option key={o} value={o}>
-                    {o.replace("_", " ")}
-                  </option>
-                ))}
-              </select>
-            ))}
-          </div>
-        )}
-
-        {listError && (
-          <p className="mb-4 rounded-[10px] bg-[var(--cms-danger-soft)] px-4 py-3 font-semibold text-[var(--cms-danger)]">{listError}</p>
-        )}
-
-        <div className="cms-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="cms-table">
-              <thead>
-                <tr>
-                  {config.columns.map((c) => (
-                    <th key={c.key}>{c.label}</th>
-                  ))}
-                  <th className="w-10" />
-                </tr>
-              </thead>
-              <tbody>
-                {loading && rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={config.columns.length + 1} className="py-12 text-center text-[var(--cms-muted)]">
-                      Loading…
-                    </td>
-                  </tr>
-                ) : rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={config.columns.length + 1} className="py-14 text-center">
-                      <p className="cms-display text-[18px] text-[var(--cms-ink)]">No {config.title.toLowerCase()} yet</p>
-                      {config.canCreate && (
-                        <button type="button" onClick={() => open("new")} className="cms-btn cms-btn-primary mt-4">
-                          <Icon name="plus" size={16} /> Add the first {config.singular}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ) : (
-                  rows.map((row) => (
-                    <tr key={row.id} onClick={() => open(row)} className="cursor-pointer">
-                      {config.columns.map((c) => (
-                        <td key={c.key}>
-                          <Cell row={row} column={c} />
-                        </td>
-                      ))}
-                      <td className="text-right text-[var(--cms-muted)]">
-                        <Icon name="arrow" size={16} />
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {meta && meta.pages > 1 && (
-          <div className="mt-4 flex items-center justify-end gap-2">
-            <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="cms-btn cms-btn-sm">
-              Previous
-            </button>
-            <span className="cms-help px-2">
-              Page {meta.page} of {meta.pages}
-            </span>
-            <button type="button" disabled={page >= meta.pages} onClick={() => setPage((p) => p + 1)} className="cms-btn cms-btn-sm">
-              Next
-            </button>
-          </div>
-        )}
-      </div>
-
-      {editing && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(26,23,20,0.35)]" onClick={() => setEditing(null)}>
-          <form
-            onSubmit={save}
-            onClick={(e) => e.stopPropagation()}
-            className="flex h-full w-full max-w-[680px] flex-col bg-[var(--cms-canvas)] shadow-[var(--cms-shadow-lg)]"
-          >
-            <div className="flex items-center justify-between border-b border-[var(--cms-border)] bg-[var(--cms-surface)] px-6 py-4">
-              <div>
-                <p className="cms-eyebrow">{config.title}</p>
-                <h2 className="cms-display text-[22px]">
-                  {editing === "new" ? `New ${config.singular}` : String(editing.name ?? editing.title ?? `Edit ${config.singular}`)}
-                </h2>
-              </div>
-              <button type="button" onClick={() => setEditing(null)} className="cms-btn cms-btn-ghost">
-                Close
-              </button>
-            </div>
-
-            <div className="cms-scroll flex-1 overflow-y-auto p-6">
-              <div className="cms-card grid gap-5 p-5 md:grid-cols-2">
-                {config.fields.map((field) => (
-                  <div key={field.name} className={wide(field.type) ? "md:col-span-2" : ""}>
-                    <FieldInput
-                      field={field}
-                      value={values[field.name]}
-                      error={fieldErrors[field.name]}
-                      onChange={(v) => setValues((prev) => ({ ...prev, [field.name]: v }))}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between gap-3 border-t border-[var(--cms-border)] bg-[var(--cms-surface)] px-6 py-4">
-              {editing !== "new" ? (
-                <button type="button" onClick={remove} className="cms-btn cms-btn-danger">
-                  <Icon name="trash" size={16} /> Delete
-                </button>
-              ) : (
-                <span />
+      <ScreenBody>
+        <Card styles={{ body: { padding: 0 } }}>
+          {(config.searchable || config.filters) && (
+            <Flex wrap gap={8} style={{ padding: "12px 16px", borderBottom: `1px solid ${STUDIO.hairline}` }}>
+              {config.searchable && (
+                <Input.Search
+                  allowClear
+                  placeholder={`Search ${config.title.toLowerCase()}…`}
+                  style={{ maxWidth: 280 }}
+                  onSearch={(v) => {
+                    setPage(1);
+                    setSearch(v);
+                  }}
+                  onChange={(e) => {
+                    if (!e.target.value) {
+                      setPage(1);
+                      setSearch("");
+                    }
+                  }}
+                />
               )}
-              <div className="flex items-center gap-3">
-                {formError && <p className="max-w-64 text-[12.5px] font-semibold text-[var(--cms-danger)]">{formError}</p>}
-                <button type="button" onClick={() => setEditing(null)} className="cms-btn">
-                  Cancel
-                </button>
-                <button type="submit" disabled={saving} className="cms-btn cms-btn-primary">
-                  {saving ? "Saving…" : editing === "new" ? `Create ${config.singular}` : "Save changes"}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+              {config.filters?.map((f) => (
+                <Select
+                  key={f.name}
+                  allowClear
+                  placeholder={`All ${f.label.toLowerCase()}`}
+                  style={{ minWidth: 160 }}
+                  value={filters[f.name] || undefined}
+                  onChange={(v) => {
+                    setPage(1);
+                    setFilters((prev) => ({ ...prev, [f.name]: v ?? "" }));
+                  }}
+                  options={f.options.map((o) => ({ value: o, label: optionLabel(o) }))}
+                />
+              ))}
+            </Flex>
+          )}
+
+          {listError && <Alert type="error" showIcon message={listError} style={{ margin: 16 }} />}
+
+          <Table<Row>
+            rowKey="id"
+            columns={columns}
+            dataSource={rows}
+            loading={loading}
+            scroll={{ x: "max-content" }}
+            onRow={(row) => ({ onClick: () => open(row), style: { cursor: "pointer" } })}
+            locale={{
+              emptyText: (
+                <Empty description={`No ${config.title.toLowerCase()} yet`}>
+                  {config.canCreate && (
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => open("new")}>
+                      Add the first {config.singular}
+                    </Button>
+                  )}
+                </Empty>
+              ),
+            }}
+            pagination={
+              meta && meta.pages > 1
+                ? {
+                    current: meta.page,
+                    pageSize: meta.limit,
+                    total: meta.total,
+                    showSizeChanger: false,
+                    onChange: setPage,
+                  }
+                : false
+            }
+          />
+        </Card>
+      </ScreenBody>
+
+      <Drawer
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        size={720}
+        title={drawerTitle}
+        destroyOnHidden
+        extra={<Typography.Text type="secondary">{config.title}</Typography.Text>}
+        styles={{ body: { background: STUDIO.subtle } }}
+        footer={
+          <Flex justify="space-between" align="center" gap={12}>
+            {!isNew ? (
+              <Popconfirm
+                title={`Delete this ${config.singular}?`}
+                description="This cannot be undone."
+                okText="Delete"
+                okButtonProps={{ danger: true }}
+                onConfirm={remove}
+              >
+                <Button danger icon={<DeleteOutlined />}>
+                  Delete
+                </Button>
+              </Popconfirm>
+            ) : (
+              <span />
+            )}
+            <Space>
+              <Button onClick={() => setEditing(null)}>Cancel</Button>
+              <Button type="primary" loading={saving} onClick={save}>
+                {isNew ? `Create ${config.singular}` : "Save changes"}
+              </Button>
+            </Space>
+          </Flex>
+        }
+      >
+        {formError && <Alert type="error" showIcon message={formError} style={{ marginBottom: 16 }} />}
+        <Form layout="vertical" component="div">
+          <Flex vertical gap={16}>
+            {sections.map((section, i) => (
+              <Card
+                key={section.title ?? `section-${i}`}
+                size="small"
+                title={section.title}
+                extra={
+                  section.title === "Media" && uploadFolder ? (
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                      media/{uploadFolder}
+                    </Typography.Text>
+                  ) : undefined
+                }
+              >
+                <Row gutter={16}>
+                  {section.fields.map((field) => (
+                    <Col
+                      key={field.name}
+                      xs={24}
+                      md={field.width === "half" ? 12 : field.width === "full" || WIDE_TYPES.includes(field.type) ? 24 : 12}
+                    >
+                      <Form.Item
+                        label={field.label}
+                        required={field.required}
+                        extra={field.hint}
+                        validateStatus={fieldErrors[field.name] ? "error" : undefined}
+                        help={fieldErrors[field.name]}
+                      >
+                        <FieldInput
+                          field={field}
+                          value={values[field.name]}
+                          uploadFolder={["images", "image", "video"].includes(field.type) ? uploadFolder : undefined}
+                          onChange={(v) => setValues((prev) => ({ ...prev, [field.name]: v }))}
+                        />
+                      </Form.Item>
+                    </Col>
+                  ))}
+                </Row>
+              </Card>
+            ))}
+          </Flex>
+        </Form>
+      </Drawer>
+    </>
   );
 }

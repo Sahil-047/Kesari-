@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  useMemo,
 } from "react";
 import {
   COLOR_COLLECTIONS,
@@ -606,13 +607,16 @@ function Lightbox({
 
 export default function WomenswearChapters({
   category = "all",
+  collections = COLOR_COLLECTIONS,
 }: {
   category?: WomensCategory | "all";
+  /** Look chapters from Website content (falls back to the static lookbook). */
+  collections?: ColorCollection[];
 }) {
-  const items =
-    category === "all"
-      ? COLOR_COLLECTIONS
-      : COLOR_COLLECTIONS.filter((c) => c.category === category);
+  const items = useMemo(
+    () => collections.filter((c) => category === "all" || c.category === category),
+    [category, collections],
+  );
 
   const [lightbox, setLightbox] = useState<{
     chapter: number;

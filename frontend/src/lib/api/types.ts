@@ -1,4 +1,4 @@
-/** Shapes returned by the Kesari API (see backend/src/schemas). */
+/** Shapes returned by the Kesari API (see backend/src/util/interface). */
 
 export type Role = "admin" | "editor";
 export type PublishStatus = "draft" | "published";
@@ -20,6 +20,9 @@ export type CmsUser = {
   lastLoginAt?: string;
 };
 
+export type BuyAction = "buy_now" | "contact_whatsapp";
+export type ProductStatus = "active" | "inactive";
+
 export type ApiProduct = {
   id: string;
   slug: string;
@@ -27,7 +30,18 @@ export type ApiProduct = {
   category: string;
   craft: string;
   priceInr: number;
-  status: PublishStatus;
+  buyAction?: BuyAction;
+  status: ProductStatus | PublishStatus;
+  description?: string;
+  details?: string[];
+  note?: string;
+  images?: ApiImage[];
+  video?: string;
+  videoPoster?: string;
+  featured?: boolean;
+  /** Storefront page/module keys this product may auto-appear on. */
+  placements?: string[];
+  createdAt?: string;
 };
 
 export type ApiEditEntry = {

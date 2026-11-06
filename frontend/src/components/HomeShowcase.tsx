@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HOUSE_COPY, HOME_SHOWCASE } from "@/lib/data";
+import { HOUSE_TILES, type HouseTile } from "@/lib/home";
 import AutoLoopVideo from "./AutoLoopVideo";
 import { BentoHeading, BentoPanel, BentoPhoto } from "./bento/BentoTile";
 import MediaFrame, { toneForSlug } from "./MediaFrame";
@@ -104,7 +105,14 @@ const catalogueCards = [
   },
 ];
 
-export default function HomeShowcase() {
+/** Layout of each House tile slot; the first is the tall arch. */
+const TILE_SLOTS = [
+  { shape: "arch" as const, className: "col-span-2 min-h-[420px] md:col-span-1 md:row-span-2", sizes: "(max-width:768px) 100vw, 25vw" },
+  { className: undefined, sizes: "(max-width:768px) 50vw, 25vw" },
+  { className: undefined, sizes: "(max-width:768px) 50vw, 25vw" },
+];
+
+export default function HomeShowcase({ tiles = HOUSE_TILES }: { tiles?: HouseTile[] }) {
   return (
     <div className="home-showcase relative isolate default-surface parchment-noise">
       <section
@@ -195,29 +203,21 @@ export default function HomeShowcase() {
               </div>
             </BentoPanel>
 
-            <BentoPhoto
-              href="/crafts/soft-bridal"
-              image="/images/hero-wedding.jpg"
-              eyebrow="Wedding"
-              title="Soft Bridal"
-              shape="arch"
-              className="col-span-2 min-h-[420px] md:col-span-1 md:row-span-2"
-              sizes="(max-width:768px) 100vw, 25vw"
-            />
-            <BentoPhoto
-              href="/crafts/warm-saffron"
-              image="/images/hero-orange.jpg"
-              eyebrow="Orange"
-              title="Warm Saffron"
-              sizes="(max-width:768px) 50vw, 25vw"
-            />
-            <BentoPhoto
-              href="/crafts/deep-plum"
-              image="/images/VIOLET/DSC06518.jpg"
-              eyebrow="Violet"
-              title="Midnight Bloom"
-              sizes="(max-width:768px) 50vw, 25vw"
-            />
+            {TILE_SLOTS.map((slot, i) => {
+              const tile = tiles[i] ?? HOUSE_TILES[i]!;
+              return (
+                <BentoPhoto
+                  key={i}
+                  href={tile.href}
+                  image={tile.image}
+                  eyebrow={tile.eyebrow}
+                  title={tile.title}
+                  shape={slot.shape}
+                  className={slot.className}
+                  sizes={slot.sizes}
+                />
+              );
+            })}
 
             <Link href="/whats-new" className="bento-tile mughal-frame group relative col-span-2 block min-h-[200px] overflow-hidden bg-[#1a140e] p-7 pr-20 md:p-9 md:pr-24">
               <span className="relative z-10 flex h-full flex-col justify-between gap-6">

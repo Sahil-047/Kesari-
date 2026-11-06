@@ -1,22 +1,51 @@
 "use client";
 
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  FormOutlined,
+  PlusOutlined,
+  ShoppingOutlined,
+  SkinOutlined,
+  WhatsAppOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "@/components/admin/AuthProvider";
-import Icon from "@/components/admin/Icon";
-import { IsoCube } from "@/components/admin/Iso";
+import { STUDIO } from "@/components/admin/AdminProviders";
 import RevenueChart from "@/components/admin/RevenueChart";
+import StatusTag from "@/components/admin/StatusTag";
+import ScreenHeader, { ScreenBody } from "@/components/admin/ScreenHeader";
 import { api } from "@/lib/api/client";
-import type { SalesRange, SalesReport } from "@/lib/api/types";
+import type { ApiOrder, SalesRange, SalesReport } from "@/lib/api/types";
 import {
   inr,
-  ORDER_CHIP,
+  ORDER_TONE,
   ORDER_STATUS_LABEL,
-  PAYMENT_CHIP,
+  PAYMENT_TONE,
   PAYMENT_LABEL,
   shortDate,
   SOURCE_LABEL,
 } from "@/lib/admin/format";
+import {
+  Alert,
+  Avatar,
+  Button,
+  Card,
+  Col,
+  Empty,
+  Flex,
+  Divider,
+  Progress,
+  Row,
+  Segmented,
+  Statistic,
+  Steps,
+  Table,
+  Typography,
+  type TableColumnsType,
+} from "antd";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
 
 const RANGES: { value: SalesRange; label: string }[] = [
   { value: "7d", label: "7 days" },
@@ -26,31 +55,48 @@ const RANGES: { value: SalesRange; label: string }[] = [
 ];
 
 function Change({ value }: { value: number | null }) {
-  if (value === null) return <span className="cms-mono text-[11px] text-[var(--cms-muted)]">new</span>;
+  if (value === null) return <StatusTag tone="muted">new</StatusTag>;
   const up = value >= 0;
   return (
-    <span className={`cms-mono text-[11px] font-semibold ${up ? "text-[var(--cms-success)]" : "text-[var(--cms-danger)]"}`}>
-      {up ? "▲" : "▼"} {Math.abs(value)}%
-    </span>
+    <Flex align="center" gap={6} style={{ fontSize: 12 }}>
+      <StatusTag tone={up ? "solid" : "soft"}>
+        {up ? <ArrowUpOutlined /> : <ArrowDownOutlined />} {Math.abs(value)}%
+      </StatusTag>
+      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+        vs previous
+      </Typography.Text>
+    </Flex>
   );
 }
 
-function Kpi({
-  label,
-  value,
-  note,
-  tone = "default",
-}: {
-  label: string;
-  value: string;
-  note?: React.ReactNode;
-  tone?: "default" | "accent";
-}) {
+function Kpi({ title, value, note }: { title: string; value: string; note?: ReactNode }) {
   return (
-    <div className={`cms-card p-5 ${tone === "accent" ? "bg-[var(--cms-accent-soft)]" : ""}`}>
-      <p className="cms-eyebrow">{label}</p>
-      <p className="cms-display mt-2 text-[28px] leading-none tabular-nums">{value}</p>
-      <div className="mt-2 min-h-4 text-[12px] text-[var(--cms-muted)]">{note}</div>
+    <Card style={{ height: "100%" }} styles={{ body: { padding: "18px 20px" } }}>
+      <Statistic title={title} value={value} />
+      <div style={{ minHeight: 22, marginTop: 4 }}>
+        {typeof note === "string" ? (
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            {note}
+          </Typography.Text>
+        ) : (
+          note
+        )}
+      </div>
+    </Card>
+  );
+}
+
+/** Divided rows: the dashboard's light replacement for Ant's deprecated List. */
+function Rows<T>({ items, render, empty }: { items: T[]; render: (item: T) => ReactNode; empty?: string }) {
+  if (!items.length) return empty ? <Typography.Paragraph type="secondary">{empty}</Typography.Paragraph> : null;
+  return (
+    <div>
+      {items.map((item, i) => (
+        <div key={i}>
+          {i > 0 && <Divider style={{ margin: "10px 0" }} />}
+          {render(item)}
+        </div>
+      ))}
     </div>
   );
 }
@@ -60,11 +106,26 @@ function greeting() {
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 }
 
+const RECENT_COLUMNS: TableColumnsType<ApiOrder> = [
+  { key: "no", title: "Order", render: (_, o) => <Typography.Text strong className="studio-num">{o.orderNumber}</Typography.Text> },
+  { key: "customer", title: "Customer", render: (_, o) => o.customer.name },
+  { key: "date", title: "Date", render: (_, o) => shortDate(o.placedAt) },
+  { key: "total", title: "Total", align: "right", render: (_, o) => inr(o.totalInr) },
+  { key: "stage", title: "Stage", render: (_, o) => <StatusTag tone={ORDER_TONE[o.status]}>{ORDER_STATUS_LABEL[o.status]}</StatusTag> },
+  {
+    key: "payment",
+    title: "Payment",
+    render: (_, o) => <StatusTag tone={PAYMENT_TONE[o.paymentStatus]}>{PAYMENT_LABEL[o.paymentStatus]}</StatusTag>,
+  },
+];
+
 export default function SalesDashboardPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [range, setRange] = useState<SalesRange>("30d");
   const [report, setReport] = useState<SalesReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [productTotal, setProductTotal] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,203 +138,192 @@ export default function SalesDashboardPage() {
     };
   }, [range]);
 
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .list("/admin/products", { limit: 1 })
+      .then((r) => !cancelled && setProductTotal(r.meta.total))
+      .catch(() => !cancelled && setProductTotal(null));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const s = report?.summary;
-  const rangeLabel = RANGES.find((r) => r.value === range)!.label.toLowerCase();
   const topMax = Math.max(1, ...(report?.topProducts.map((p) => p.revenue) ?? [1]));
   const empty = report && report.summary.orders === 0 && report.recentOrders.length === 0;
 
   return (
-    <div className="mx-auto max-w-[1240px] px-8 py-8">
-      {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="cms-eyebrow">
-            {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
-          </p>
-          <h1 className="cms-display mt-1 text-[30px] leading-tight">
-            {greeting()}, {user?.name.split(" ")[0]}
-          </h1>
-          <p className="text-[var(--cms-muted)]">Sales and money at the house, last {rangeLabel}.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-[4px] border border-[var(--cms-line)] bg-[var(--cms-surface)] p-0.5 shadow-[3px_3px_0_0_var(--cms-line)]" role="group" aria-label="Date range">
-            {RANGES.map((r) => (
-              <button
-                key={r.value}
-                type="button"
-                aria-pressed={range === r.value}
-                onClick={() => setRange(r.value)}
-                className={`cms-mono h-8 rounded-[3px] px-3 text-[11px] uppercase tracking-[0.06em] transition-colors ${
-                  range === r.value ? "bg-[var(--cms-ink)] text-white" : "text-[var(--cms-ink-2)] hover:bg-[var(--cms-sunken)]"
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-          <Link href="/admin/orders?new=1" className="cms-btn cms-btn-primary">
-            <Icon name="plus" size={16} /> Record a sale
-          </Link>
-        </div>
-      </div>
+    <>
+      <ScreenHeader
+        title={`${greeting()}, ${user?.name.split(" ")[0] ?? ""}`}
+        description={new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
+        actions={
+          <>
+            <Segmented<SalesRange> value={range} onChange={setRange} options={RANGES} />
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/admin/orders?new=1")}>
+              Record a sale
+            </Button>
+          </>
+        }
+      />
 
-      {error && (
-        <p className="mt-6 rounded-[4px] border border-[var(--cms-danger)] bg-[var(--cms-danger-soft)] px-4 py-3 font-semibold text-[var(--cms-danger)]">
-          {error}
-        </p>
-      )}
+      <ScreenBody>
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Steps
+            type="navigation"
+            size="small"
+            current={productTotal ? 1 : 0}
+            onChange={(i) => router.push(i === 0 ? "/admin/products" : "/admin/content")}
+            items={[
+              {
+                title: "Catalogue",
+                icon: <SkinOutlined />,
+                content:
+                  productTotal === null
+                    ? "Every piece lives here first"
+                    : productTotal === 0
+                      ? "No products yet — start here"
+                      : `${productTotal} product${productTotal === 1 ? "" : "s"}`,
+              },
+              { title: "Dress the site", icon: <FormOutlined />, content: "Arrange published pieces on pages" },
+            ]}
+          />
+        </Card>
 
-      {/* KPIs */}
-      <div className="mt-7 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
-        <Kpi tone="accent" label="Revenue" value={s ? inr(s.revenue, { compact: true }) : "—"} note={s && <><Change value={s.revenueChange} /> vs previous</>} />
-        <Kpi label="Collected" value={s ? inr(s.collected, { compact: true }) : "—"} note="Money received" />
-        <Kpi
-          label="To collect"
-          value={report ? inr(report.outstanding.amount, { compact: true }) : "—"}
-          note={report && `${report.outstanding.orders} open order${report.outstanding.orders === 1 ? "" : "s"}`}
-        />
-        <Kpi label="Orders" value={s ? String(s.orders) : "—"} note={s && <><Change value={s.ordersChange} /> vs previous</>} />
-        <Kpi label="Average order" value={s ? inr(s.averageOrder, { compact: true }) : "—"} />
-        <Kpi label="Pieces sold" value={s ? String(s.units) : "—"} />
-      </div>
+        {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
 
-      {empty ? (
-        <div className="cms-card mt-8 flex flex-col items-center gap-4 px-6 py-14 text-center">
-          <div className="flex items-end gap-1">
-            <IsoCube size={44} />
-            <IsoCube size={60} top="#f0a15f" left="var(--cms-accent)" right="var(--cms-accent-side)" />
-            <IsoCube size={36} />
-          </div>
-          <p className="cms-display text-[22px]">No sales recorded yet</p>
-          <p className="max-w-md text-[var(--cms-muted)]">
-            Orders from the website bag and WhatsApp land here automatically. Sales made in the store or on the phone can be recorded by hand.
-          </p>
-          <Link href="/admin/orders?new=1" className="cms-btn cms-btn-primary">
-            <Icon name="plus" size={16} /> Record the first sale
-          </Link>
-        </div>
-      ) : (
-        <>
-          {/* Revenue over time */}
-          <section className="cms-card mt-6 p-6">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="cms-eyebrow">Revenue · {range === "12m" ? "by month" : "by day"}</p>
-                <p className="cms-display mt-1 text-[20px]">{s ? inr(s.revenue) : "—"}</p>
-              </div>
-              <p className="cms-help">Cancelled orders are not counted</p>
-            </div>
-            <div className="mt-4">{report ? <RevenueChart data={report.series} /> : <div className="h-[220px]" />}</div>
-          </section>
+        <Row gutter={[16, 16]}>
+          <Col xs={12} lg={8} xl={4}>
+            <Kpi title="Revenue" value={s ? inr(s.revenue, { compact: true }) : "—"} note={s && <Change value={s.revenueChange} />} />
+          </Col>
+          <Col xs={12} lg={8} xl={4}>
+            <Kpi title="Collected" value={s ? inr(s.collected, { compact: true }) : "—"} note="Money received" />
+          </Col>
+          <Col xs={12} lg={8} xl={4}>
+            <Kpi
+              title="To collect"
+              value={report ? inr(report.outstanding.amount, { compact: true }) : "—"}
+              note={report ? `${report.outstanding.orders} open order${report.outstanding.orders === 1 ? "" : "s"}` : undefined}
+            />
+          </Col>
+          <Col xs={12} lg={8} xl={4}>
+            <Kpi title="Orders" value={s ? String(s.orders) : "—"} note={s && <Change value={s.ordersChange} />} />
+          </Col>
+          <Col xs={12} lg={8} xl={4}>
+            <Kpi title="Average order" value={s ? inr(s.averageOrder, { compact: true }) : "—"} />
+          </Col>
+          <Col xs={12} lg={8} xl={4}>
+            <Kpi title="Pieces sold" value={s ? String(s.units) : "—"} />
+          </Col>
+        </Row>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-            {/* Top products */}
-            <section className="cms-card p-6">
-              <p className="cms-eyebrow">Best sellers</p>
-              <h2 className="cms-display mt-1 text-[18px]">Top pieces by revenue</h2>
-              <ul className="mt-5 space-y-4">
-                {report?.topProducts.length === 0 && <li className="text-[var(--cms-muted)]">No pieces sold in this period.</li>}
-                {report?.topProducts.map((p, i) => (
-                  <li key={p.name} className="flex items-center gap-3">
-                    <span className="cms-mono w-5 text-[11px] text-[var(--cms-muted)]">{String(i + 1).padStart(2, "0")}</span>
-                    <span className="h-11 w-9 shrink-0 overflow-hidden rounded-[3px] border border-[var(--cms-border)] bg-[var(--cms-sunken)]">
-                      {p.image && (
-                        // eslint-disable-next-line @next/next/no-img-element -- S3 or /public URLs
-                        <img src={p.image} alt="" className="h-full w-full object-cover" />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-baseline justify-between gap-3">
-                        <span className="truncate font-semibold">{p.name}</span>
-                        <span className="cms-mono shrink-0 text-[12px] font-semibold">{inr(p.revenue)}</span>
-                      </span>
-                      <span className="mt-1.5 flex items-center gap-3">
-                        <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--cms-sunken)]">
-                          <span className="block h-full rounded-full bg-[var(--cms-accent)]" style={{ width: `${(p.revenue / topMax) * 100}%` }} />
-                        </span>
-                        <span className="cms-mono w-14 shrink-0 text-right text-[11px] text-[var(--cms-muted)]">{p.units} sold</span>
-                      </span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+        {empty ? (
+          <Card style={{ marginTop: 16 }}>
+            <Empty
+              image={<ShoppingOutlined style={{ fontSize: 48, color: STUDIO.ink }} />}
+              description={
+                <>
+                  <Typography.Title level={5}>No sales recorded yet</Typography.Title>
+                  <Typography.Text type="secondary">
+                    Orders from the website bag and WhatsApp land here automatically. Sales made in the store or on the
+                    phone can be recorded by hand.
+                  </Typography.Text>
+                </>
+              }
+            >
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/admin/orders?new=1")}>
+                Record the first sale
+              </Button>
+            </Empty>
+          </Card>
+        ) : (
+          <>
+            <Card
+              style={{ marginTop: 16 }}
+              title={`Revenue · ${range === "12m" ? "by month" : "by day"}`}
+              extra={<Typography.Text type="secondary">Cancelled orders are not counted</Typography.Text>}
+              loading={!report}
+            >
+              {report && <RevenueChart data={report.series} />}
+            </Card>
 
-            {/* Status and channels */}
-            <section className="cms-card p-6">
-              <p className="cms-eyebrow">Pipeline</p>
-              <h2 className="cms-display mt-1 text-[18px]">Orders by stage</h2>
-              <ul className="mt-4 divide-y divide-[var(--cms-border)]">
-                {(report?.byStatus ?? []).map((row) => (
-                  <li key={row.status} className="flex items-center justify-between py-2.5">
-                    <span className={`cms-chip ${ORDER_CHIP[row.status] ?? ""}`}>{ORDER_STATUS_LABEL[row.status]}</span>
-                    <span className="cms-mono font-semibold">{row.count}</span>
-                  </li>
-                ))}
-                {report?.byStatus.length === 0 && <li className="py-2.5 text-[var(--cms-muted)]">No orders in this period.</li>}
-              </ul>
+            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+              <Col xs={24} lg={14}>
+                <Card title="Best sellers" style={{ height: "100%" }} loading={!report}>
+                  <Rows
+                    items={report?.topProducts ?? []}
+                    empty="No pieces sold in this period."
+                    render={(p) => (
+                      <Flex key={p.name} align="center" gap={12}>
+                        <Avatar shape="square" size={44} src={p.image} icon={<SkinOutlined />} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <Flex justify="space-between" gap={12}>
+                            <Typography.Text strong ellipsis>
+                              {p.name}
+                            </Typography.Text>
+                            <Typography.Text strong>{inr(p.revenue)}</Typography.Text>
+                          </Flex>
+                          <Progress percent={Math.round((p.revenue / topMax) * 100)} size="small" status="normal" format={() => `${p.units} sold`} />
+                        </div>
+                      </Flex>
+                    )}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} lg={10}>
+                <Card title="Pipeline" style={{ height: "100%" }} loading={!report}>
+                  <Typography.Text type="secondary">Orders by stage</Typography.Text>
+                  <Rows
+                    items={report?.byStatus ?? []}
+                    empty="No orders in this period."
+                    render={(row) => (
+                      <Flex key={row.status} justify="space-between">
+                        <StatusTag tone={ORDER_TONE[row.status]}>{ORDER_STATUS_LABEL[row.status]}</StatusTag>
+                        <Typography.Text strong>{row.count}</Typography.Text>
+                      </Flex>
+                    )}
+                  />
+                  <Typography.Text type="secondary" style={{ display: "block", marginTop: 16 }}>
+                    Where orders come from
+                  </Typography.Text>
+                  <Rows
+                    items={report?.bySource ?? []}
+                    render={(row) => (
+                      <Flex key={row.source} justify="space-between">
+                        <Flex align="center" gap={6}>
+                          {row.source === "whatsapp" && <WhatsAppOutlined />}
+                          {SOURCE_LABEL[row.source]}
+                        </Flex>
+                        <Typography.Text type="secondary">
+                          {row.count} · {inr(row.revenue, { compact: true })}
+                        </Typography.Text>
+                      </Flex>
+                    )}
+                  />
+                </Card>
+              </Col>
+            </Row>
 
-              <h2 className="cms-display mt-6 text-[18px]">Where orders come from</h2>
-              <ul className="mt-3 divide-y divide-[var(--cms-border)]">
-                {(report?.bySource ?? []).map((row) => (
-                  <li key={row.source} className="flex items-center justify-between gap-3 py-2.5">
-                    <span className="flex items-center gap-2 font-semibold">
-                      {row.source === "whatsapp" && <Icon name="whatsapp" size={16} />}
-                      {SOURCE_LABEL[row.source]}
-                    </span>
-                    <span className="cms-mono text-[12px] text-[var(--cms-muted)]">
-                      {row.count} · {inr(row.revenue, { compact: true })}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-
-          {/* Recent orders */}
-          <section className="cms-card mt-6 overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4">
-              <div>
-                <p className="cms-eyebrow">Latest</p>
-                <h2 className="cms-display mt-1 text-[18px]">Recent orders</h2>
-              </div>
-              <Link href="/admin/orders" className="cms-btn cms-btn-sm">
-                All orders
-              </Link>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="cms-table">
-                <thead>
-                  <tr>
-                    <th>Order</th>
-                    <th>Customer</th>
-                    <th>Date</th>
-                    <th>Total</th>
-                    <th>Stage</th>
-                    <th>Payment</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {report?.recentOrders.map((o) => (
-                    <tr key={o.id}>
-                      <td className="cms-mono font-semibold text-[var(--cms-ink)]">{o.orderNumber}</td>
-                      <td>{o.customer.name}</td>
-                      <td>{shortDate(o.placedAt)}</td>
-                      <td className="cms-mono">{inr(o.totalInr)}</td>
-                      <td>
-                        <span className={`cms-chip ${ORDER_CHIP[o.status] ?? ""}`}>{ORDER_STATUS_LABEL[o.status]}</span>
-                      </td>
-                      <td>
-                        <span className={`cms-chip ${PAYMENT_CHIP[o.paymentStatus] ?? ""}`}>{PAYMENT_LABEL[o.paymentStatus]}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </>
-      )}
-    </div>
+            <Card
+              title="Recent orders"
+              style={{ marginTop: 16 }}
+              styles={{ body: { padding: 0 } }}
+              extra={<Link href="/admin/orders">All orders</Link>}
+            >
+              <Table<ApiOrder>
+                rowKey="id"
+                size="middle"
+                columns={RECENT_COLUMNS}
+                dataSource={report?.recentOrders ?? []}
+                loading={!report}
+                pagination={false}
+                scroll={{ x: "max-content" }}
+              />
+            </Card>
+          </>
+        )}
+      </ScreenBody>
+    </>
   );
 }

@@ -7,6 +7,7 @@ import InsightsGallery from "@/components/InsightsGallery";
 import MediaFrame, { toneForSlug } from "@/components/MediaFrame";
 import ProductCard from "@/components/ProductCard";
 import TechniqueSection from "@/components/TechniqueSection";
+import { getLiveProducts } from "@/lib/api/storefront";
 import {
   CRAFTS,
   EXPLORE_LOOK_SLUGS,
@@ -47,15 +48,20 @@ async function CraftDetail({
     craft.slug,
   );
 
-  const related = PRODUCTS.filter(
+  const live = await getLiveProducts();
+  const catalogue = live.length > 0 ? live : PRODUCTS;
+  const matched = catalogue.filter(
     (p) =>
       p.craft.toLowerCase().includes(craft.title.toLowerCase()) ||
       p.category.toLowerCase() === craft.label.toLowerCase(),
-  ).slice(0, 3);
+  );
+  // Prefer craft/category matches; otherwise any photographed live pieces.
+  const related = (matched.length > 0 ? matched : catalogue.filter((p) => Boolean(p.image))).slice(0, 3);
   const featured =
     related[0] ??
-    PRODUCTS.find((p) => p.slug.includes(craft.slug)) ??
-    PRODUCTS[0];
+    catalogue.find((p) => p.slug.includes(craft.slug)) ??
+    catalogue.find((p) => Boolean(p.image)) ??
+    catalogue[0];
 
   return (
     <div className={`site-shell ${isExploreLook ? "page-grain" : ""}`}>

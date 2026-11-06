@@ -3,11 +3,10 @@
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import { useBagWishlist } from "@/context/BagWishlistContext";
-import { getProduct } from "@/lib/data";
 
 export default function WishlistClient() {
-  const { wishlist } = useBagWishlist();
-  const items = wishlist.map(getProduct).filter(Boolean);
+  const { wishlist, productFor } = useBagWishlist();
+  const items = wishlist.map(productFor).filter(Boolean);
 
   return (
     <main className="site-main relative parchment-surface parchment-noise section-pad py-16">

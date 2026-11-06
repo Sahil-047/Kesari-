@@ -3,7 +3,10 @@ import type { LookbookProduct } from "@/lib/lookbook";
 export type CatalogueProduct = Pick<
   LookbookProduct,
   "id" | "name" | "category" | "garmentType" | "price" | "image"
->;
+> & {
+  /** Product page; lookbook pieces default to /product_detail/<id>. */
+  href?: string;
+};
 
 export type CatalogueFilters = {
   categories: string[];

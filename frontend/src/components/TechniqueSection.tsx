@@ -3,6 +3,7 @@
 import Link from "next/link";
 import SaveButton from "@/components/SaveButton";
 import { useBagWishlist } from "@/context/BagWishlistContext";
+import { productHref } from "@/lib/productLinks";
 import { formatPrice, type Craft, type Product } from "@/lib/data";
 import MediaFrame, { toneForSlug } from "./MediaFrame";
 
@@ -59,7 +60,7 @@ export default function TechniqueSection({
         >
           <div className="relative mx-auto w-full max-w-md">
             <Link
-              href={`/product/${product.slug}`}
+              href={productHref(product)}
               className="relative block aspect-[3/4] overflow-hidden"
             >
               <MediaFrame
@@ -80,7 +81,7 @@ export default function TechniqueSection({
             </Link>
             <SaveButton
               active={isSaved(product.slug)}
-              onClick={() => toggleWishlist(product.slug)}
+              onClick={() => toggleWishlist(product)}
             />
           </div>
         </div>

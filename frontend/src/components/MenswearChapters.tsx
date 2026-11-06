@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  useMemo,
 } from "react";
 import {
   MENS_COLLECTIONS,
@@ -606,13 +607,22 @@ function Lightbox({
 
 export default function MenswearChapters({
   category = "all",
+  links,
+  collections = MENS_COLLECTIONS,
 }: {
   category?: MensCategory | "all";
+  /** Look title -> product page, resolved on the server from the live catalogue. */
+  links?: Record<string, string>;
+  /** Static looks + products checked for Menswear. */
+  collections?: MensCollection[];
 }) {
-  const items =
-    category === "all"
-      ? MENS_COLLECTIONS
-      : MENS_COLLECTIONS.filter((c) => c.category === category);
+  const items = useMemo(
+    () =>
+      collections
+        .filter((c) => category === "all" || c.category === category)
+        .map((c) => (c.href && links?.[c.title] ? { ...c, href: links[c.title] } : c)),
+    [category, links, collections],
+  );
 
   const [lightbox, setLightbox] = useState<{
     chapter: number;

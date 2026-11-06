@@ -1,6 +1,6 @@
 /** Thin client for the Kesari API. Every response is { success, data, meta? }. */
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1").replace(
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(
   /\/$/,
   "",
 );
@@ -51,6 +51,11 @@ type RequestOptions = {
   auth?: boolean;
 };
 
+type SendResult = { data: unknown; meta: PageMeta | undefined };
+
+/** Collapse identical in-flight GETs (React Strict Mode, twin mounts). */
+const inflightGet = new Map<string, Promise<SendResult>>();
+
 async function send(path: string, { method = "GET", body, query, auth = true }: RequestOptions) {
   const url = new URL(API_URL + path);
   for (const [key, value] of Object.entries(query ?? {})) {
@@ -59,31 +64,50 @@ async function send(path: string, { method = "GET", body, query, auth = true }: 
 
   const token = auth ? tokenStore.get() : null;
   const isForm = body instanceof FormData;
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      method,
-      headers: {
-        ...(body !== undefined && !isForm && { "content-type": "application/json" }),
-        ...(token && { authorization: `Bearer ${token}` }),
-      },
-      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
-    });
-  } catch {
-    throw new ApiRequestError(0, "Cannot reach the Kesari API. Check that the backend is running.");
+  const getKey =
+    method === "GET" ? `${url.toString()}|${auth ? token ?? "" : "anon"}` : null;
+
+  if (getKey) {
+    const existing = inflightGet.get(getKey);
+    if (existing) return existing;
   }
 
-  if (res.status === 204) return { data: undefined, meta: undefined };
-  const json = await res.json().catch(() => null);
-  if (!res.ok || !json?.success) {
-    if (res.status === 401 && auth) tokenStore.clear();
-    throw new ApiRequestError(
-      res.status,
-      json?.error?.message ?? `Request failed (${res.status})`,
-      json?.error?.details,
-    );
+  const run = (async (): Promise<SendResult> => {
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method,
+        headers: {
+          ...(body !== undefined && !isForm && { "content-type": "application/json" }),
+          ...(token && { authorization: `Bearer ${token}` }),
+        },
+        body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
+      });
+    } catch {
+      throw new ApiRequestError(0, "Cannot reach the Kesari API. Check that the backend is running.");
+    }
+
+    if (res.status === 204) return { data: undefined, meta: undefined };
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json?.success) {
+      if (res.status === 401 && auth) tokenStore.clear();
+      throw new ApiRequestError(
+        res.status,
+        json?.error?.message ?? `Request failed (${res.status})`,
+        json?.error?.details,
+      );
+    }
+    return { data: json.data, meta: json.meta as PageMeta | undefined };
+  })();
+
+  if (getKey) {
+    inflightGet.set(getKey, run);
+    run.finally(() => {
+      if (inflightGet.get(getKey) === run) inflightGet.delete(getKey);
+    });
   }
-  return { data: json.data, meta: json.meta as PageMeta | undefined };
+
+  return run;
 }
 
 export const api = {

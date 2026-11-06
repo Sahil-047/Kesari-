@@ -70,6 +70,19 @@ function localImagePath(image: string): string {
   }
 }
 
+/** Lookbook id of a verified single-garment photograph (never ensemble shots). */
+export function lookbookIdForImage(image: string): string | undefined {
+  const path = localImagePath(image);
+  if (ENSEMBLE_IMAGES.has(path)) return undefined;
+  return IMAGE_IDS.get(path);
+}
+
+/** Lookbook id for an exact piece name, e.g. "Radhika Saree" -> KES-009. */
+export function lookbookIdForName(name: string): string | undefined {
+  const wanted = name.trim().toLowerCase();
+  return PIECES.find(([, pieceName]) => pieceName.toLowerCase() === wanted)?.[0];
+}
+
 /** Only migrate empty actions and known legacy product links, never authored URLs. */
 export function resolveWhatsNewPieceLink(piece: { image: string; name: string; link: string }): string {
   const { link } = piece;

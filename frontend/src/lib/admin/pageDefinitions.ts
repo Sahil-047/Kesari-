@@ -7,9 +7,13 @@ import { PAGE_DEFAULTS, type PageSlug } from "@/lib/content/pages";
 export type SimpleField = {
   name: string;
   label: string;
-  type: "text" | "textarea" | "image" | "video" | "link";
+  type: "text" | "textarea" | "image" | "images" | "video" | "link" | "select";
   help?: string;
   placeholder?: string;
+  /** For select fields. */
+  options?: { value: string; label: string }[];
+  /** For images fields — max photos in the gallery. */
+  max?: number;
 };
 
 export type RepeaterField = {
@@ -59,8 +63,16 @@ export const PAGE_DEFS: PageDef[] = [
       {
         key: "hero",
         title: "Hero",
-        description: "Full-width film at the top of the home page.",
-        fields: [...heroFields(), { name: "link", label: "Explore button links to", type: "link" }],
+        description: "Full-width film at the top of the home page. Link Explore into the catalogue or shop.",
+        fields: [
+          ...heroFields(),
+          {
+            name: "link",
+            label: "Explore button links to",
+            type: "link",
+            help: "Prefer a published product or shop path from the catalogue",
+          },
+        ],
       },
     ],
   },
@@ -74,7 +86,8 @@ export const PAGE_DEFS: PageDef[] = [
       {
         key: "edit",
         title: "The Edit",
-        description: "The pieces that stack like paper as visitors scroll, in this order.",
+        description:
+          "Arrange catalogue pieces for What’s New. Prefer links to products you already added under Catalogue → Products.",
         fields: [
           { name: "eyebrow", label: "Small heading", type: "text" },
           { name: "title", label: "Title", type: "text" },
@@ -86,10 +99,15 @@ export const PAGE_DEFS: PageDef[] = [
             addLabel: "Add a piece",
             max: 20,
             fields: [
-              { name: "image", label: "Photo", type: "image" },
-              { name: "name", label: "Name", type: "text" },
+              { name: "image", label: "Photo", type: "image", help: "From Media, ideally the same image as the product" },
+              { name: "name", label: "Name", type: "text", help: "Match the product name in the catalogue" },
               { name: "craft", label: "Craft", type: "text", placeholder: "e.g. Resham Work" },
-              { name: "link", label: "Links to", type: "link", placeholder: "/product/…" },
+              {
+                name: "link",
+                label: "Links to",
+                type: "link",
+                help: "Pick a catalogue piece — the product page opens on the site",
+              },
             ],
           },
         ],
@@ -97,7 +115,7 @@ export const PAGE_DEFS: PageDef[] = [
       {
         key: "silhouettes",
         title: "Shop by silhouette",
-        description: "The full-screen panel that slides over The Edit.",
+        description: "Full-screen panels that slide over The Edit — link each panel into the catalogue or shop.",
         fields: [
           { name: "label", label: "Label", type: "text" },
           {
@@ -111,7 +129,7 @@ export const PAGE_DEFS: PageDef[] = [
               { name: "image", label: "Photo", type: "image" },
               { name: "label", label: "Name", type: "text" },
               { name: "line", label: "Line", type: "text" },
-              { name: "link", label: "Links to", type: "link" },
+              { name: "link", label: "Links to", type: "link", help: "Usually a shop or collection path" },
             ],
           },
         ],
@@ -154,15 +172,127 @@ export const PAGE_DEFS: PageDef[] = [
     slug: "womenswear",
     title: "Womenswear",
     path: "/womenswear",
-    summary: "Hero of the womenswear page.",
-    sections: [{ key: "hero", title: "Hero", description: "The opening film and title.", fields: heroFields() }],
+    summary: "Hero film and the look chapters (photos, story, linked product).",
+    sections: [
+      { key: "hero", title: "Hero", description: "The opening film and title.", fields: heroFields() },
+      {
+        key: "chapters",
+        title: "Look chapters",
+        description:
+          "Each chapter is one look on /womenswear: photos, story, and the product Explore opens. Prefer five portrait photos per look.",
+        fields: [
+          { name: "eyebrow", label: "Small heading", type: "text" },
+          { name: "title", label: "Section title", type: "text" },
+          {
+            name: "items",
+            label: "Chapters",
+            type: "repeater",
+            titleField: "title",
+            addLabel: "Add a chapter",
+            max: 12,
+            fields: [
+              { name: "title", label: "Look title", type: "text", help: "Shown as the chapter heading" },
+              { name: "label", label: "Colour / label", type: "text", placeholder: "e.g. Light Pink" },
+              {
+                name: "category",
+                label: "Category",
+                type: "select",
+                help: "Used by the lehenga / dress / saree filter",
+                options: [
+                  { value: "lehenga", label: "Lehenga" },
+                  { value: "dress", label: "Dress" },
+                  { value: "saree", label: "Saree" },
+                ],
+              },
+              {
+                name: "accent",
+                label: "Accent colour",
+                type: "text",
+                placeholder: "#c9567a",
+                help: "Optional hex for the chapter marker",
+              },
+              { name: "story", label: "Story", type: "textarea", help: "Centre copy for this look" },
+              {
+                name: "images",
+                label: "Photos",
+                type: "images",
+                max: 8,
+                help: "Portrait photos for the chapter rail. Upload new ones or choose from the media library. First is the cover; five reads best.",
+              },
+              {
+                name: "link",
+                label: "Linked product",
+                type: "link",
+                help: "Explore opens this product page",
+              },
+            ],
+          },
+        ],
+      },
+    ],
   },
   {
     slug: "menswear",
     title: "Menswear",
     path: "/menswear",
-    summary: "Hero of the menswear page.",
-    sections: [{ key: "hero", title: "Hero", description: "The opening film and title.", fields: heroFields() }],
+    summary: "Hero film and the look chapters (photos, story, linked product).",
+    sections: [
+      { key: "hero", title: "Hero", description: "The opening film and title.", fields: heroFields() },
+      {
+        key: "chapters",
+        title: "Look chapters",
+        description:
+          "Each chapter is one look on /menswear: photos, story, and the product Explore opens. Prefer five portrait photos per look.",
+        fields: [
+          { name: "eyebrow", label: "Small heading", type: "text" },
+          { name: "title", label: "Section title", type: "text" },
+          {
+            name: "items",
+            label: "Chapters",
+            type: "repeater",
+            titleField: "title",
+            addLabel: "Add a chapter",
+            max: 12,
+            fields: [
+              { name: "title", label: "Look title", type: "text", help: "Shown as the chapter heading" },
+              { name: "label", label: "Label", type: "text", placeholder: "e.g. Sherwani" },
+              {
+                name: "category",
+                label: "Category",
+                type: "select",
+                help: "Used by the sherwani / kurta / bandhgala filter",
+                options: [
+                  { value: "sherwani", label: "Sherwani" },
+                  { value: "kurta", label: "Kurta" },
+                  { value: "bandhgala", label: "Bandhgala" },
+                ],
+              },
+              {
+                name: "accent",
+                label: "Accent colour",
+                type: "text",
+                placeholder: "#c4a090",
+                help: "Optional hex for the chapter marker",
+              },
+              { name: "story", label: "Story", type: "textarea", help: "Centre copy for this look" },
+              {
+                name: "images",
+                label: "Photos",
+                type: "images",
+                max: 8,
+                help: "Portrait photos for the chapter rail. Upload new ones or choose from the media library. First is the cover; five reads best.",
+              },
+              {
+                name: "link",
+                label: "Linked product",
+                type: "link",
+                help: "Explore opens this product page",
+              },
+            ],
+          },
+        ],
+      },
+    ],
   },
   {
     slug: "atelier",

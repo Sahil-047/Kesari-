@@ -1,0 +1,13 @@
+/** RBAC modules: every protected route names the module it belongs to. */
+export enum ModulesEnum {
+  PRODUCT = "PRODUCT MANAGEMENT",
+  CRAFT = "CRAFT MANAGEMENT",
+  COLLECTION = "COLLECTION MANAGEMENT",
+  EDIT = "THE EDIT",
+  ENQUIRY = "ENQUIRY MANAGEMENT",
+  MEDIA = "MEDIA LIBRARY",
+  PAGE = "WEBSITE CONTENT",
+  ORDER = "ORDER MANAGEMENT",
+  ANALYTICS = "SALES ANALYTICS",
+  USER = "USER MANAGEMENT",
+}

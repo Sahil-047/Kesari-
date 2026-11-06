@@ -78,9 +78,12 @@ test("clear silhouette defaults use catalogue categories and intentional destina
   assert.equal(silhouetteLink({ label: "Custom Edit", link: "/atelier" }), "/atelier");
 });
 
-test("both arcade actions consume the same resolved piece link", async () => {
-  const source = await readFile(new URL("../components/whats-new/ArchArcade.tsx", import.meta.url), "utf8");
-  assert.match(source, /link: resolveWhatsNewPieceLink\(piece\)/);
-  assert.match(source, /href=\{piece.link \|\| "#"\}/);
-  assert.match(source, /<MagneticLink href=\{piece.link \|\| "#"\}/);
+test("both arcade actions consume the same server-resolved piece link", async () => {
+  // Links are remapped in whats-new/page.tsx (CMS over lookbook); the arcade must not re-resolve.
+  const arcade = await readFile(new URL("../components/whats-new/ArchArcade.tsx", import.meta.url), "utf8");
+  const page = await readFile(new URL("../app/whats-new/page.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(arcade, /resolveWhatsNewPieceLink/);
+  assert.match(arcade, /href=\{piece\.link \|\| "#"\}/);
+  assert.match(arcade, /<MagneticLink href=\{piece\.link \|\| "#"\}/);
+  assert.match(page, /links\.forPiece/);
 });

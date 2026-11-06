@@ -1,39 +1,35 @@
 import { Router } from "express";
-import { authenticate } from "../middlewares/authenticate.js";
-import { authorize } from "../middlewares/authorize.js";
-import { authRoutes } from "./auth.routes.js";
-import { collectionAdminRoutes, collectionPublicRoutes } from "./collection.routes.js";
-import { craftAdminRoutes, craftPublicRoutes } from "./craft.routes.js";
-import { editEntryAdminRoutes, editEntryPublicRoutes } from "./editEntry.routes.js";
-import { enquiryAdminRoutes, enquiryPublicRoutes } from "./enquiry.routes.js";
-import { mediaAdminRoutes } from "./media.routes.js";
-import { analyticsAdminRoutes, orderAdminRoutes, orderPublicRoutes } from "./order.routes.js";
-import { pageAdminRoutes, pagePublicRoutes } from "./page.routes.js";
-import { productAdminRoutes, productPublicRoutes } from "./product.routes.js";
-import { userAdminRoutes } from "./user.routes.js";
+import { isMongoUp } from "../lib/mongoose/index.js";
+import authRouter from "./auth/index.js";
+import collectionRouter from "./collection/index.js";
+import craftRouter from "./craft/index.js";
+import editEntryRouter from "./editEntry/index.js";
+import enquiryRouter from "./enquiry/index.js";
+import mediaRouter from "./media/index.js";
+import orderRouter from "./order/index.js";
+import pageRouter from "./page/index.js";
+import productRouter from "./product/index.js";
+import userRouter from "./user/index.js";
 
-/** CMS: every route here needs a signed-in admin or editor. */
-const adminRoutes = Router()
-  .use(authenticate, authorize("admin", "editor"))
-  .use("/products", productAdminRoutes)
-  .use("/crafts", craftAdminRoutes)
-  .use("/collections", collectionAdminRoutes)
-  .use("/edit", editEntryAdminRoutes)
-  .use("/enquiries", enquiryAdminRoutes)
-  .use("/media", mediaAdminRoutes)
-  .use("/pages", pageAdminRoutes)
-  .use("/orders", orderAdminRoutes)
-  .use("/analytics", analyticsAdminRoutes)
-  .use("/users", authorize("admin"), userAdminRoutes);
+/**
+ * Mounted at /api. Each domain router carries its own public paths
+ * (/products) and CMS paths (/admin/products).
+ */
+const router = Router();
 
-/** Mounted at /api/v1. */
-export const apiRoutes = Router()
-  .use("/auth", authRoutes)
-  .use("/products", productPublicRoutes)
-  .use("/crafts", craftPublicRoutes)
-  .use("/collections", collectionPublicRoutes)
-  .use("/edit", editEntryPublicRoutes)
-  .use("/enquiries", enquiryPublicRoutes)
-  .use("/pages", pagePublicRoutes)
-  .use("/orders", orderPublicRoutes)
-  .use("/admin", adminRoutes);
+router.get("/ping", (_req, res) => {
+  res.json({ success: true, data: { status: "ok", db: isMongoUp() ? "up" : "down", time: new Date() } });
+});
+
+router.use("/auth", authRouter);
+router.use(productRouter);
+router.use(craftRouter);
+router.use(collectionRouter);
+router.use(editEntryRouter);
+router.use(enquiryRouter);
+router.use(mediaRouter);
+router.use(pageRouter);
+router.use(orderRouter);
+router.use(userRouter);
+
+export default router;

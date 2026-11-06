@@ -44,18 +44,45 @@ export const SOURCE_LABEL: Record<string, string> = {
   store: "In store",
 };
 
-export const ORDER_CHIP: Record<string, string> = {
-  pending: "cms-chip-accent",
-  confirmed: "",
-  in_production: "cms-chip-warning",
-  ready: "cms-chip-warning",
-  delivered: "cms-chip-success",
-  cancelled: "",
+export const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  upi: "UPI",
+  cash: "Cash",
+  card: "Card",
+  bank_transfer: "Bank transfer",
+  razorpay: "Razorpay (online)",
+  other: "Other",
 };
 
-export const PAYMENT_CHIP: Record<string, string> = {
-  unpaid: "cms-chip-accent",
-  partial: "cms-chip-warning",
-  paid: "cms-chip-success",
-  refunded: "",
+/** Unicolor badge weights (see components/admin/StatusTag.tsx). */
+export type Tone = "solid" | "outline" | "soft" | "muted";
+
+export const ORDER_TONE: Record<string, Tone> = {
+  pending: "outline",
+  confirmed: "soft",
+  in_production: "soft",
+  ready: "soft",
+  delivered: "solid",
+  cancelled: "muted",
 };
+
+export const PAYMENT_TONE: Record<string, Tone> = {
+  unpaid: "outline",
+  partial: "soft",
+  paid: "solid",
+  refunded: "muted",
+};
+
+/** Catalogue, content and enquiry statuses. */
+export const STATUS_TONE: Record<string, Tone> = {
+  published: "solid",
+  active: "solid",
+  new: "outline",
+  in_progress: "soft",
+  closed: "soft",
+  draft: "muted",
+  inactive: "muted",
+};
+
+/** Select options from a label map. */
+export const optionsOf = (labels: Record<string, string>) =>
+  Object.entries(labels).map(([value, label]) => ({ value, label }));

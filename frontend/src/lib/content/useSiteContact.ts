@@ -1,10 +1,11 @@
 "use client";
 
 import { API_URL } from "@/lib/api/client";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PAGE_DEFAULTS, type SiteContent } from "./pages";
 
-type Contact = SiteContent["contact"];
+export type Contact = SiteContent["contact"];
 
 let cached: Promise<Contact> | null = null;
 
@@ -17,15 +18,24 @@ function loadContact(): Promise<Contact> {
   return cached;
 }
 
-export function useSiteContact(): Contact {
-  const [contact, setContact] = useState<Contact>(PAGE_DEFAULTS.site.contact);
+/** Prefer a server-seeded `initial` so the first paint already has CMS values. */
+export function useSiteContact(initial?: Contact): Contact {
+  const pathname = usePathname();
+  const onAdmin = Boolean(pathname?.startsWith("/admin"));
+  const [contact, setContact] = useState<Contact>(initial ?? PAGE_DEFAULTS.site.contact);
+
   useEffect(() => {
+    // Studio never needs the public WhatsApp number; skip the /pages/site round-trip.
+    if (onAdmin) return;
+    // Server already passed contact — don't refetch on mount.
+    if (initial) return;
     let alive = true;
     loadContact().then((c) => alive && setContact(c));
     return () => {
       alive = false;
     };
-  }, []);
+  }, [onAdmin, initial]);
+
   return contact;
 }
 

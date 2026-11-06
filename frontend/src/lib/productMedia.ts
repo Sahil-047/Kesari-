@@ -11,6 +11,10 @@ export function craftFor(product: Product): Craft | undefined {
  * wrong garment. May be empty; callers show a tonal placeholder then.
  */
 export function productPhotos(product: Product): string[] {
+  // CMS products carry their own gallery; never borrow a craft's photographs for them.
+  if (product.id) {
+    return [...new Set([product.image, ...(product.images ?? [])].filter(Boolean))];
+  }
   const craft = craftFor(product);
   const photos = [
     product.image,
