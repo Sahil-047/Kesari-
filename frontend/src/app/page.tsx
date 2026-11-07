@@ -25,7 +25,17 @@ export default async function HomePage() {
     <div className="site-shell default-surface parchment-noise">
       <main className="site-main">
         <HomeHero hero={{ ...content.hero, link: links.resolveHref(content.hero.link) }} />
-        <HomeShowcase tiles={tiles} />
+        <HomeShowcase
+          tiles={tiles}
+          catalogue={{
+            ...content.catalogue,
+            exploreHref: links.resolveHref(content.catalogue.exploreHref),
+            items: content.catalogue.items.map((card) => ({
+              ...card,
+              href: links.resolveHref(card.href),
+            })),
+          }}
+        />
       </main>
       <Footer />
     </div>

@@ -56,7 +56,7 @@ export const PAGE_DEFS: PageDef[] = [
     slug: "home",
     title: "Home",
     path: "/",
-    summary: "Landing hero",
+    summary: "Hero film and catalogue tiles",
     sections: [
       {
         key: "hero",
@@ -64,6 +64,31 @@ export const PAGE_DEFS: PageDef[] = [
         fields: [
           ...heroFields(),
           { name: "link", label: "Explore link", type: "link" },
+        ],
+      },
+      {
+        key: "catalogue",
+        title: "Catalogue",
+        description: "The four shop-by-form tiles under the hero. Change photographs here.",
+        fields: [
+          { name: "eyebrow", label: "Eyebrow", type: "text" },
+          { name: "title", label: "Title", type: "text" },
+          { name: "exploreLabel", label: "Explore label", type: "text" },
+          { name: "exploreHref", label: "Explore link", type: "link" },
+          {
+            name: "items",
+            label: "Tiles",
+            type: "repeater",
+            titleField: "title",
+            addLabel: "Add tile",
+            max: 8,
+            fields: [
+              { name: "image", label: "Photograph", type: "image" },
+              { name: "title", label: "Title", type: "text" },
+              { name: "alt", label: "Alt text", type: "text", help: "Short description for accessibility" },
+              { name: "href", label: "Link", type: "link" },
+            ],
+          },
         ],
       },
     ],

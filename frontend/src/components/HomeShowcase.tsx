@@ -2,12 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { HomeContent } from "@/lib/content/pages";
 import { HOUSE_COPY, HOME_SHOWCASE } from "@/lib/data";
 import { HOUSE_TILES, type HouseTile } from "@/lib/home";
 import AutoLoopVideo from "./AutoLoopVideo";
 import { BentoHeading, BentoPanel, BentoPhoto } from "./bento/BentoTile";
 import MediaFrame, { toneForSlug } from "./MediaFrame";
 import { JaaliMark } from "./Logo";
+
+type CatalogueContent = HomeContent["catalogue"];
 
 function FullBleedCraft({
   eyebrow,
@@ -72,33 +75,6 @@ function FullBleedCraft({
   );
 }
 
-const catalogueCards = [
-  {
-    title: "Lahenga",
-    image: "/images/PINK/DSC05812.jpg",
-    alt: "Pink embroidered lehenga with a flowing panelled skirt",
-    href: "/products?category=lehenga",
-  },
-  {
-    title: "Saree",
-    image: "/images/LIGHT PINK/DSC07146.jpg",
-    alt: "Light pink saree with delicate floral embroidery",
-    href: "/products?category=saree",
-  },
-  {
-    title: "Dress",
-    image: "/images/soft-ivory/insight-1.jpg",
-    alt: "Ivory dress with embroidered neckline and cuffs",
-    href: "/products?category=dress",
-  },
-  {
-    title: "Menswear",
-    image: "/images/Wedding/DSC06237.jpg",
-    alt: "Blush pink menswear ensemble with an embroidered waistcoat",
-    href: "/products?category=menswear",
-  },
-];
-
 /** Layout of each House tile slot; the first is the tall arch. */
 const TILE_SLOTS = [
   { shape: "arch" as const, className: "col-span-2 min-h-[420px] md:col-span-1 md:row-span-2", sizes: "(max-width:768px) 100vw, 25vw" },
@@ -106,7 +82,15 @@ const TILE_SLOTS = [
   { className: undefined, sizes: "(max-width:768px) 50vw, 25vw" },
 ];
 
-export default function HomeShowcase({ tiles = HOUSE_TILES }: { tiles?: HouseTile[] }) {
+export default function HomeShowcase({
+  tiles = HOUSE_TILES,
+  catalogue,
+}: {
+  tiles?: HouseTile[];
+  catalogue: CatalogueContent;
+}) {
+  const cards = catalogue.items.filter((card) => card.image && card.title);
+
   return (
     <div className="home-showcase relative isolate">
       <section
@@ -114,22 +98,23 @@ export default function HomeShowcase({ tiles = HOUSE_TILES }: { tiles?: HouseTil
         aria-label="Catalogue"
       >
         <div className="relative z-10 mx-auto max-w-[1680px]">
-          <BentoHeading eyebrow="Shop by form" title="The Catalogue" />
+          <BentoHeading eyebrow={catalogue.eyebrow} title={catalogue.title} />
           <div className="-mt-4 mb-8 flex justify-center md:-mt-6 md:mb-10">
-            <Link href="/products" className="ww-explore">
-              Explore all pieces <span className="ww-explore__arrow" aria-hidden />
+            <Link href={catalogue.exploreHref || "/products"} className="ww-explore">
+              {catalogue.exploreLabel || "Explore all pieces"}{" "}
+              <span className="ww-explore__arrow" aria-hidden />
             </Link>
           </div>
           <ul className="grid grid-cols-2 gap-3 md:gap-5 lg:grid-cols-4">
-            {catalogueCards.map((card) => (
-              <li key={card.title}>
+            {cards.map((card) => (
+              <li key={`${card.title}-${card.href}`}>
                 <Link
-                  href={card.href}
+                  href={card.href || "/products"}
                   className="mughal-frame group relative block aspect-[2/3] overflow-hidden bg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
                 >
                   <Image
                     src={card.image}
-                    alt={card.alt}
+                    alt={card.alt || card.title}
                     fill
                     quality={95}
                     sizes="(min-width: 1776px) 405px, (min-width: 1024px) 25vw, 50vw"

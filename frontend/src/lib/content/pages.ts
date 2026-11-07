@@ -14,7 +14,23 @@ export type { WomenswearChapter, MenswearChapter };
 
 export type Hero = { eyebrow: string; title: string; line?: string; video: string; poster: string };
 
-export type HomeContent = { hero: Hero & { link: string } };
+export type HomeCatalogueCard = {
+  title: string;
+  image: string;
+  alt: string;
+  href: string;
+};
+
+export type HomeContent = {
+  hero: Hero & { link: string };
+  catalogue: {
+    eyebrow: string;
+    title: string;
+    exploreLabel: string;
+    exploreHref: string;
+    items: HomeCatalogueCard[];
+  };
+};
 
 export type WhatsNewContent = {
   hero: Hero;
@@ -99,6 +115,38 @@ export const PAGE_DEFAULTS: PageContentMap = {
       video: homeHero.video,
       poster: homeHero.videoPoster,
       link: homeHero.href,
+    },
+    catalogue: {
+      eyebrow: "Shop by form",
+      title: "The Catalogue",
+      exploreLabel: "Explore all pieces",
+      exploreHref: "/products",
+      items: [
+        {
+          title: "Lahenga",
+          image: "/images/PINK/DSC05812.jpg",
+          alt: "Pink embroidered lehenga with a flowing panelled skirt",
+          href: "/products?category=lehenga",
+        },
+        {
+          title: "Saree",
+          image: "/images/LIGHT PINK/DSC07146.jpg",
+          alt: "Light pink saree with delicate floral embroidery",
+          href: "/products?category=saree",
+        },
+        {
+          title: "Dress",
+          image: "/images/soft-ivory/insight-1.jpg",
+          alt: "Ivory dress with embroidered neckline and cuffs",
+          href: "/products?category=dress",
+        },
+        {
+          title: "Menswear",
+          image: "/images/Wedding/DSC06237.jpg",
+          alt: "Blush pink menswear ensemble with an embroidered waistcoat",
+          href: "/products?category=menswear",
+        },
+      ],
     },
   },
 
