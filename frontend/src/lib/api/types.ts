@@ -22,6 +22,13 @@ export type CmsUser = {
 
 export type BuyAction = "buy_now" | "contact_whatsapp";
 export type ProductStatus = "active" | "inactive";
+export type ProductSizeLabel = "XS" | "S" | "M" | "L" | "XL";
+
+export type ApiProductSizing = {
+  enabled: boolean;
+  allowCustom: boolean;
+  stock: { size: ProductSizeLabel; quantity: number }[];
+};
 
 export type ApiProduct = {
   id: string;
@@ -31,6 +38,7 @@ export type ApiProduct = {
   craft: string;
   priceInr: number;
   buyAction?: BuyAction;
+  sizing?: ApiProductSizing;
   status: ProductStatus | PublishStatus;
   description?: string;
   details?: string[];
@@ -42,14 +50,6 @@ export type ApiProduct = {
   /** Storefront page/module keys this product may auto-appear on. */
   placements?: string[];
   createdAt?: string;
-};
-
-export type ApiEditEntry = {
-  id: string;
-  product: ApiProduct | null;
-  coverImage: ApiImage;
-  position: number;
-  status: PublishStatus;
 };
 
 export type ApiEnquiry = {

@@ -4,25 +4,25 @@ import HomeShowcase from "@/components/HomeShowcase";
 import { getLiveProducts, liveForPlacement } from "@/lib/api/storefront";
 import { getPageContent } from "@/lib/content/getPageContent";
 import { HOUSE_TILES, type HouseTile } from "@/lib/home";
-import { createProductLinker, productHref } from "@/lib/productLinks";
+import { createProductLinker } from "@/lib/productLinks";
 
 export default async function HomePage() {
   const [content, live] = await Promise.all([getPageContent("home"), getLiveProducts()]);
   const links = createProductLinker(live);
 
-  // Products checked for Home fill The House tiles; static looks fill the rest.
-  const featured: HouseTile[] = liveForPlacement(live, "home").map((p) => ({
-    href: productHref(p),
-    image: p.image,
-    eyebrow: p.category,
-    title: p.name,
+  // Home placement only swaps the tile photograph — Soft Bridal / Warm Saffron /
+  // Midnight Bloom keep their fixed titles, labels and destinations.
+  const homeImages = liveForPlacement(live, "home")
+    .map((p) => p.image)
+    .filter(Boolean);
+  const tiles: HouseTile[] = HOUSE_TILES.map((fallback, i) => ({
+    ...fallback,
+    href: links.resolveHref(fallback.href),
+    ...(homeImages[i] ? { image: homeImages[i]! } : {}),
   }));
-  const tiles = HOUSE_TILES.map(
-    (fallback, i) => featured[i] ?? { ...fallback, href: links.resolveHref(fallback.href) },
-  );
 
   return (
-    <div className="site-shell">
+    <div className="site-shell default-surface parchment-noise">
       <main className="site-main">
         <HomeHero hero={{ ...content.hero, link: links.resolveHref(content.hero.link) }} />
         <HomeShowcase tiles={tiles} />

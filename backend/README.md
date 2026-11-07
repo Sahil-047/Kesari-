@@ -40,10 +40,7 @@ A feature has matching pieces across layers. Products, for example: `routes/prod
 | Domain | Public | CMS | Module (RBAC) |
 |---|---|---|---|
 | Auth | `POST /api/auth/login` | `GET /api/auth/me`, `PATCH /api/auth/password` | — |
-| Products | `GET /api/products`, `/products/:slug` | `/api/admin/products` | `PRODUCT MANAGEMENT` |
-| Crafts | `GET /api/crafts`, `/crafts/:slug` | `/api/admin/crafts` | `CRAFT MANAGEMENT` |
-| Collections | `GET /api/collections`, `/collections/:slug` | `/api/admin/collections` | `COLLECTION MANAGEMENT` |
-| The Edit | `GET /api/edit` | `/api/admin/edit`, `PUT /admin/edit/order` | `THE EDIT` |
+| Products | `GET /api/products`, `/products/:id` | `/api/admin/products` | `PRODUCT MANAGEMENT` |
 | Enquiries | `POST /api/enquiries` | `/api/admin/enquiries` | `ENQUIRY MANAGEMENT` |
 | Media | `GET /img/<key>` | `/api/admin/media` | `MEDIA LIBRARY` |
 | Pages | `GET /api/pages/:slug` | `/api/admin/pages`, `PUT /:slug`, `POST /:slug/publish` | `WEBSITE CONTENT` |

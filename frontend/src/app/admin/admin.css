@@ -1,16 +1,8 @@
 /*
- * Kesari Studio design system (see design-system/kesari-studio/MASTER.md).
- * Sits inside the storefront's root layout, so it undoes the site's parchment
- * background and serif body here. Colours mirror the Ant tokens in
- * components/admin/AdminProviders.tsx.
- *
- * Fonts are linked here (not next/font/google) so Turbopack never hits the
- * Google Fonts kit-URL resolution bug on Next 16.4.x. display=swap avoids
- * invisible text while they load.
+ * Kesari Studio — minimal warm shell. Soft elevation only; no heavy neo.
  */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap");
 
-/* Namespaced variables; on :root too because Ant renders drawers and popovers in portals outside .studio. */
 :root,
 .studio {
   --studio-ink: #1c1917;
@@ -19,13 +11,15 @@
   --studio-muted: #57534e;
   --studio-faint: #78716c;
   --studio-disabled: #a8a29e;
-  --studio-border: #d6d3d1;
-  --studio-hairline: #e7e5e4;
-  --studio-wash: #f5f5f4;
-  --studio-subtle: #fafaf9;
+  --studio-border: #ddd8d1;
+  --studio-hairline: #e8e4de;
+  --studio-wash: #ebe7e1;
+  --studio-subtle: #f3f0eb;
+  --studio-surface: #faf8f5;
   --studio-gold: #a16207;
   --studio-display: "Playfair Display", Georgia, "Times New Roman", serif;
   --studio-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --studio-elev: 0 1px 2px rgba(28, 25, 23, 0.04), 0 6px 16px -8px rgba(28, 25, 23, 0.1);
 }
 
 .studio {
@@ -45,10 +39,6 @@
   color: #fff;
 }
 
-/* ---------- Type ---------- */
-
-/* Display serif: page titles, login hero, drawer titles. Never controls or figures. */
-/* Doubled/qualified selectors: Ant styles h1.ant-typography and drawer titles at (0,1,1). */
 .studio-display.studio-display,
 .ant-drawer .ant-drawer-title {
   font-family: var(--studio-display);
@@ -58,7 +48,6 @@
 .ant-drawer .ant-drawer-title {
   font-size: 19px;
 }
-/* Portal content uses Inter too. */
 .ant-drawer,
 .ant-modal-root,
 .ant-popover,
@@ -102,7 +91,7 @@
 }
 :is(.studio, .ant-drawer) .ant-form-item-label > label {
   font-weight: 500;
-  color: var(--studio-inkSoft, #44403c);
+  color: var(--studio-inkSoft);
 }
 :is(.studio, .ant-drawer) .ant-form-item-extra {
   color: var(--studio-faint);
@@ -110,9 +99,6 @@
   margin-top: 2px;
 }
 
-/* ---------- Links ---------- */
-
-/* The site sets `a { color: inherit }` globally; plain anchors read as ink links. */
 .studio a:not([class*="ant-"]) {
   color: var(--studio-ink);
   font-weight: 500;
@@ -127,10 +113,23 @@
   text-decoration: none !important;
 }
 
-/* ---------- Navigation ---------- */
+.studio .studio-sider.ant-layout-sider {
+  background: var(--studio-surface) !important;
+  border-inline-end: 1px solid var(--studio-hairline) !important;
+  box-shadow: none;
+}
+.studio .studio-header.ant-layout-header {
+  background: rgba(250, 248, 245, 0.88) !important;
+  border-bottom: 1px solid var(--studio-hairline) !important;
+  backdrop-filter: saturate(160%) blur(10px);
+}
+.studio .studio-brand-mark {
+  border-radius: 8px;
+}
 
 .studio .studio-sider-menu.ant-menu-inline {
   font-size: 15px;
+  background: transparent !important;
 }
 .studio .studio-sider-menu .ant-menu-item-group-title {
   text-transform: uppercase;
@@ -142,43 +141,47 @@
 }
 .studio .studio-sider-menu .ant-menu-item {
   position: relative;
-  height: 46px !important;
-  line-height: 46px !important;
-  margin-block: 3px !important;
+  height: 42px !important;
+  line-height: 42px !important;
+  margin-block: 2px !important;
   padding-inline: 14px !important;
   border-radius: 8px !important;
   font-size: 15px;
   font-weight: 500;
   color: var(--studio-inkSoft);
+  box-shadow: none !important;
 }
 .studio .studio-sider-menu .ant-menu-item .anticon {
   font-size: 17px;
 }
+.studio .studio-sider-menu .ant-menu-item:hover {
+  background: var(--studio-wash) !important;
+  color: var(--studio-text) !important;
+}
 .studio .studio-sider-menu .ant-menu-item-selected {
   font-weight: 600;
   color: var(--studio-text) !important;
+  background: var(--studio-wash) !important;
+  box-shadow: none !important;
 }
-/* Active location: a short gold rule, the one place the brand accent appears in the frame. */
 .studio .studio-sider-menu .ant-menu-item-selected::before {
   content: "";
   position: absolute;
-  /* Inside the item: Ant's menu items clip overflow. */
   left: 0;
-  top: 11px;
-  bottom: 11px;
+  top: 10px;
+  bottom: 10px;
   width: 3px;
   border-radius: 0 3px 3px 0;
   background: var(--studio-gold);
 }
 
-/* Skip link: visible only when focused from the keyboard. */
 .studio-skip {
   position: absolute;
   left: 12px;
   top: -48px;
   z-index: 1000;
   padding: 8px 14px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--studio-ink);
   color: #fff !important;
   font-weight: 600;
@@ -188,52 +191,69 @@
   top: 12px;
 }
 
-/* ---------- Focus ---------- */
-
-/* Clear 2px keyboard focus everywhere; mouse clicks stay clean. */
 :is(.studio, .ant-drawer, .ant-modal-root) :is(a, button, [role="button"], [role="switch"], [tabindex]):focus-visible,
 .studio .ant-table-row:focus-visible {
   outline: 2px solid var(--studio-ink);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 8px;
 }
-
-/* ---------- Surfaces ---------- */
 
 .studio .ant-card {
-  transition: border-color 0.2s var(--studio-ease);
+  background: var(--studio-surface) !important;
+  border: 1px solid var(--studio-hairline) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--studio-elev);
+  transition: border-color 0.2s var(--studio-ease), box-shadow 0.2s var(--studio-ease);
 }
+.studio .ant-card-hoverable:hover {
+  border-color: var(--studio-border);
+}
+.studio .ant-card .ant-card-head {
+  border-bottom-color: var(--studio-hairline);
+}
+
+:is(.studio, .ant-drawer, .ant-modal-root) .ant-btn {
+  border-radius: 8px !important;
+  transition: transform 0.12s var(--studio-ease), background 0.15s var(--studio-ease), border-color 0.15s var(--studio-ease);
+}
+:is(.studio, .ant-drawer, .ant-modal-root) .ant-btn:not(:disabled):not(.ant-btn-text):not(.ant-btn-link):active {
+  transform: scale(0.98);
+}
+:is(.studio, .ant-drawer, .ant-modal-root) .ant-btn-text,
+:is(.studio, .ant-drawer, .ant-modal-root) .ant-btn-link {
+  box-shadow: none !important;
+}
+
 :is(.studio, .ant-drawer, .ant-modal-root) .ant-upload-wrapper .ant-upload-drag {
   background: var(--studio-subtle);
   border-color: var(--studio-border);
-  transition: border-color 0.2s var(--studio-ease), background-color 0.2s var(--studio-ease);
+  border-radius: 12px;
 }
 :is(.studio, .ant-drawer, .ant-modal-root) .ant-upload-wrapper .ant-upload-drag:hover {
   border-color: var(--studio-ink);
-  background: #fff;
+  background: var(--studio-surface);
 }
 .studio .ant-upload-drag-icon .anticon {
   color: var(--studio-ink) !important;
 }
+
 .studio .ant-table-tbody > tr {
   cursor: pointer;
 }
 
-/* Press feedback on buttons (micro-interaction). */
-:is(.studio, .ant-drawer, .ant-modal-root) .ant-btn:not(:disabled):active {
-  transform: scale(0.98);
-}
-.studio .ant-btn {
-  transition-timing-function: var(--studio-ease);
+.studio .studio-affix-bar {
+  background: rgba(250, 248, 245, 0.92) !important;
+  backdrop-filter: blur(12px) saturate(160%);
+  border-top: 1px solid var(--studio-hairline) !important;
+  box-shadow: none;
 }
 
-/* Thumbnails in tables, cards and pickers. */
 .studio-thumb {
   display: block;
   width: 40px;
   height: 52px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--studio-wash);
 }
 
@@ -243,9 +263,8 @@
   width: 100%;
   object-fit: cover;
   background: var(--studio-wash);
+  border-radius: 8px;
 }
-
-/* ---------- Status badges (StatusTag.tsx): one ink colour, four weights ---------- */
 
 .studio-status {
   display: inline-flex;
@@ -259,6 +278,7 @@
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
+  box-shadow: none;
 }
 .studio-status[data-tone="solid"] {
   background: var(--studio-ink);
@@ -267,10 +287,10 @@
 .studio-status[data-tone="soft"] {
   background: var(--studio-wash);
   border-color: var(--studio-hairline);
-  color: var(--studio-inkSoft, #44403c);
+  color: var(--studio-inkSoft);
 }
 .studio-status[data-tone="outline"] {
-  background: #fff;
+  background: var(--studio-surface);
   border-color: var(--studio-ink);
   color: var(--studio-ink);
 }
@@ -285,8 +305,6 @@
   border-radius: 50%;
   background: currentColor;
 }
-
-/* ---------- Motion preference ---------- */
 
 @media (prefers-reduced-motion: reduce) {
   :is(.studio, .ant-drawer, .ant-modal-root, .ant-popover, .ant-dropdown) *,

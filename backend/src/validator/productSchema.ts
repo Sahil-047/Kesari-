@@ -1,7 +1,27 @@
 import * as yup from "yup";
 import { PRODUCT_PLACEMENTS } from "../util/enum/placement.enum.js";
-import { BuyActionEnum, ProductStatusEnum } from "../util/enum/product.enum.js";
+import { BuyActionEnum, PRODUCT_SIZE_LABELS, ProductStatusEnum } from "../util/enum/product.enum.js";
 import { assetUrl, imageInput, paginationQuery, slug, textList } from "./commonSchema.js";
+
+const defaultSizeStock = () => PRODUCT_SIZE_LABELS.map((size) => ({ size, quantity: 1 }));
+
+const sizeStockSchema = yup.object({
+  size: yup.string().oneOf([...PRODUCT_SIZE_LABELS]).required(),
+  quantity: yup.number().integer().min(0).required(),
+});
+
+const sizingSchema = yup.object({
+  enabled: yup.boolean().required(),
+  allowCustom: yup.boolean().required(),
+  stock: yup
+    .array(sizeStockSchema.required())
+    .max(PRODUCT_SIZE_LABELS.length)
+    .test("unique-sizes", "Each size may only appear once", (rows) => {
+      if (!rows) return true;
+      const seen = new Set(rows.map((r) => r.size));
+      return seen.size === rows.length;
+    }),
+});
 
 /** Field rules shared by create and update; update makes every one optional. */
 const fields = {
@@ -17,6 +37,7 @@ const fields = {
   video: assetUrl().optional(),
   videoPoster: assetUrl().optional(),
   buyAction: yup.string().oneOf(Object.values(BuyActionEnum)),
+  sizing: sizingSchema,
   featured: yup.boolean(),
   placements: yup
     .array(yup.string().oneOf([...PRODUCT_PLACEMENTS]).required())
@@ -35,6 +56,11 @@ export const createProductSchema = yup.object({
   details: fields.details.default([]),
   images: fields.images.default([]),
   buyAction: fields.buyAction.default(BuyActionEnum.BUY_NOW),
+  sizing: fields.sizing.default({
+    enabled: true,
+    allowCustom: true,
+    stock: defaultSizeStock(),
+  }),
   featured: fields.featured.default(false),
   placements: fields.placements.default(["shop"]),
   status: fields.status.default(ProductStatusEnum.INACTIVE),

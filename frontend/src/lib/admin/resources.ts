@@ -19,7 +19,8 @@ export type FieldType =
   | "video"
   | "product"
   | "checkbox"
-  | "checkboxes";
+  | "checkboxes"
+  | "sizeConfig";
 
 export type FieldOptionGroup = {
   group: string;
@@ -68,9 +69,7 @@ export type ResourceConfig = {
   revalidate?: "products";
 };
 
-const STATUS = ["draft", "published"] as const;
 const PRODUCT_STATUS = ["active", "inactive"] as const;
-const WOMENS = ["lehenga", "dress", "saree"] as const;
 const BUY_ACTIONS = ["buy_now", "contact_whatsapp"] as const;
 
 export const productsResource: ResourceConfig = {
@@ -123,6 +122,13 @@ export const productsResource: ResourceConfig = {
       hint: "Buy now opens the bag. Contact us opens WhatsApp with this piece.",
     },
     {
+      name: "sizing",
+      label: "Sizes & stock",
+      type: "sizeConfig",
+      section: "Sizes",
+      hint: "Turn sizes off for saree-only pieces. Set quantity per size — 0 hides that size. Custom is made-to-measure and has no stock count.",
+    },
+    {
       name: "status",
       label: "Status",
       type: "checkbox",
@@ -136,7 +142,7 @@ export const productsResource: ResourceConfig = {
       type: "checkboxes",
       optionGroups: PRODUCT_PLACEMENT_GROUPS,
       section: "Visibility",
-      hint: "Tick every page or module where this active piece should appear. Leave all unticked to keep it link-only (Website content can still open it).",
+      hint: "Tick where this active piece should appear. Home uses only the cover photo for Soft Bridal / Warm Saffron / Midnight Bloom — titles and links stay fixed. Leave all unticked to keep it link-only.",
     },
   ],
   defaults: {
@@ -148,90 +154,18 @@ export const productsResource: ResourceConfig = {
     placements: ["shop"],
     priceInr: 0,
     craft: "",
+    sizing: {
+      enabled: true,
+      allowCustom: true,
+      stock: [
+        { size: "XS", quantity: 1 },
+        { size: "S", quantity: 1 },
+        { size: "M", quantity: 1 },
+        { size: "L", quantity: 1 },
+        { size: "XL", quantity: 1 },
+      ],
+    },
   },
-};
-
-export const editResource: ResourceConfig = {
-  title: "The Edit",
-  singular: "entry",
-  endpoint: "/edit",
-  unpaged: true,
-  orderable: true,
-  canCreate: true,
-  columns: [
-    { key: "coverImage.url", label: "", format: "image" },
-    { key: "product", label: "Product", format: "product" },
-    { key: "status", label: "Status", format: "status" },
-  ],
-  fields: [
-    { name: "product", label: "Product", type: "product", required: true },
-    { name: "coverImage", label: "Cover image", type: "image", required: true },
-    { name: "status", label: "Status", type: "select", options: STATUS },
-  ],
-  defaults: { status: "draft" },
-};
-
-export const collectionsResource: ResourceConfig = {
-  title: "Collections",
-  singular: "collection",
-  endpoint: "/collections",
-  canCreate: true,
-  filters: [
-    { name: "category", label: "Category", options: WOMENS },
-    { name: "status", label: "Status", options: STATUS },
-  ],
-  columns: [
-    { key: "images.0.url", label: "", format: "image" },
-    { key: "title", label: "Title" },
-    { key: "label", label: "Colour" },
-    { key: "category", label: "Category" },
-    { key: "status", label: "Status", format: "status" },
-  ],
-  fields: [
-    { name: "title", label: "Title", type: "text", required: true },
-    { name: "slug", label: "Slug", type: "text", hint: "Leave empty to generate from the title" },
-    { name: "label", label: "Colour name", type: "text", required: true },
-    { name: "category", label: "Category", type: "select", options: WOMENS, required: true },
-    { name: "accent", label: "Accent colour", type: "color", required: true },
-    { name: "story", label: "Story", type: "textarea" },
-    { name: "description", label: "Description", type: "textarea" },
-    { name: "notes", label: "Notes", type: "list", hint: "One per line" },
-    { name: "images", label: "Images", type: "images" },
-    { name: "href", label: "Link", type: "text", hint: "e.g. /crafts/blush-veranda" },
-    { name: "sortOrder", label: "Sort order", type: "number" },
-    { name: "status", label: "Status", type: "select", options: STATUS },
-  ],
-  defaults: { category: "lehenga", accent: "#c5a059", notes: [], images: [], sortOrder: 0, status: "draft" },
-};
-
-export const craftsResource: ResourceConfig = {
-  title: "Crafts",
-  singular: "craft",
-  endpoint: "/crafts",
-  canCreate: true,
-  filters: [{ name: "status", label: "Status", options: STATUS }],
-  columns: [
-    { key: "image.url", label: "", format: "image" },
-    { key: "title", label: "Title" },
-    { key: "label", label: "Label" },
-    { key: "status", label: "Status", format: "status" },
-  ],
-  fields: [
-    { name: "title", label: "Title", type: "text", required: true },
-    { name: "slug", label: "Slug", type: "text", hint: "Leave empty to generate from the title" },
-    { name: "label", label: "Label", type: "text", required: true },
-    { name: "subtitle", label: "Subtitle", type: "text" },
-    { name: "description", label: "Description", type: "textarea" },
-    { name: "image", label: "Hero image", type: "image" },
-    { name: "imagePosition", label: "Hero crop (CSS object-position)", type: "text" },
-    { name: "video", label: "Video URL", type: "text" },
-    { name: "videoPoster", label: "Video poster URL", type: "text" },
-    { name: "insights", label: "Insights", type: "list", hint: "One per line" },
-    { name: "overlayAlign", label: "Text side", type: "select", options: ["left", "right"] },
-    { name: "sortOrder", label: "Sort order", type: "number" },
-    { name: "status", label: "Status", type: "select", options: STATUS },
-  ],
-  defaults: { insights: [], gallery: [], overlayAlign: "left", sortOrder: 0, status: "draft" },
 };
 
 export const enquiriesResource: ResourceConfig = {

@@ -1,7 +1,17 @@
 import mongoose, { Schema } from "mongoose";
-import { BuyActionEnum, ProductStatusEnum } from "../util/enum/product.enum.js";
+import { BuyActionEnum, PRODUCT_SIZE_LABELS, ProductStatusEnum } from "../util/enum/product.enum.js";
 import type { IProduct } from "../util/interface/catalogue.interface.js";
 import { baseSchemaOptions, imageSchema } from "./shared.js";
+
+const defaultSizeStock = () => PRODUCT_SIZE_LABELS.map((size) => ({ size, quantity: 1 }));
+
+const sizeStockSchema = new Schema(
+  {
+    size: { type: String, enum: [...PRODUCT_SIZE_LABELS], required: true },
+    quantity: { type: Number, required: true, min: 0, default: 0 },
+  },
+  { _id: false },
+);
 
 const productSchema = new Schema<IProduct>(
   {
@@ -17,6 +27,11 @@ const productSchema = new Schema<IProduct>(
     video: { type: String, trim: true },
     videoPoster: { type: String, trim: true },
     buyAction: { type: String, enum: Object.values(BuyActionEnum), default: BuyActionEnum.BUY_NOW },
+    sizing: {
+      enabled: { type: Boolean, default: true },
+      allowCustom: { type: Boolean, default: true },
+      stock: { type: [sizeStockSchema], default: defaultSizeStock },
+    },
     featured: { type: Boolean, default: false },
     placements: { type: [String], default: ["shop"] },
     status: {

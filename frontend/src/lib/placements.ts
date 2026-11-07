@@ -10,7 +10,7 @@ export const PRODUCT_PLACEMENT_GROUPS = [
   },
   {
     group: "Home",
-    options: [{ value: "home", label: "The House tiles" }],
+    options: [{ value: "home", label: "The House tile photos (image only)" }],
   },
   {
     group: "What's New",

@@ -175,11 +175,19 @@ export default function ResourceManager({ config, description }: { config: Resou
   const open = useCallback(
     (row: Row | "new") => {
       setEditing(row);
-      setValues(row === "new" ? { ...config.defaults } : { ...row });
+      const next =
+        row === "new" ? { ...config.defaults } : ({ ...row } as Record<string, unknown>);
+      // Older products may predate sizeConfig — seed the form from defaults so save persists stock.
+      for (const field of config.fields) {
+        if (field.type === "sizeConfig" && next[field.name] == null && config.defaults[field.name] != null) {
+          next[field.name] = config.defaults[field.name];
+        }
+      }
+      setValues(next);
       setFieldErrors({});
       setFormError(null);
     },
-    [config.defaults],
+    [config.defaults, config.fields],
   );
 
   // Dashboard shortcuts link here with ?new=1.

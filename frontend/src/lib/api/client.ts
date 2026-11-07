@@ -1,9 +1,16 @@
 /** Thin client for the Kesari API. Every response is { success, data, meta? }. */
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(
-  /\/$/,
-  "",
-);
+/** The API as browsers reach it (inlined into the client bundle at build time). */
+const PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+
+/**
+ * Server-side rendering may take a private route to the API instead, e.g.
+ * http://backend:4000/api inside Docker (API_INTERNAL_URL, read at runtime).
+ * Browsers always use the public URL.
+ */
+export const API_URL = (
+  (typeof window === "undefined" ? process.env.API_INTERNAL_URL : undefined) || PUBLIC_API_URL
+).replace(/\/$/, "");
 
 const TOKEN_KEY = "kesari.cms.token";
 

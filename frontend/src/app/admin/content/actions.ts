@@ -25,8 +25,8 @@ export async function revalidatePage(slug: string) {
   if (path) {
     revalidatePath(path);
   }
-  // Footer + site settings appear on every route.
-  if (slug === "footer" || slug === "site") {
+  // Site settings (WhatsApp, etc.) appear on every route.
+  if (slug === "site") {
     revalidatePath("/", "layout");
   }
 

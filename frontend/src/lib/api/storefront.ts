@@ -32,6 +32,7 @@ export function toSiteProduct(p: ApiProduct): Product {
     videoPoster: p.videoPoster,
     note: p.note,
     buyAction: p.buyAction,
+    sizing: p.sizing,
   };
 }
 

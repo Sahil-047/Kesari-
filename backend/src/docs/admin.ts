@@ -25,39 +25,7 @@
  *   parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
  *   get: { tags: [Studio], summary: One product, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
  *   patch: { tags: [Studio], summary: Update a product, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *   delete: { tags: [Studio], summary: Delete a product (not while it is in The Edit), security: [{ bearerAuth: [] }], responses: { 204: { description: Deleted }, 409: { description: In The Edit } } }
- *
- * /admin/crafts:
- *   get: { tags: [Studio], summary: Every craft story, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *   post: { tags: [Studio], summary: Create a craft story, security: [{ bearerAuth: [] }], responses: { 201: { description: Created } } }
- *
- * /admin/crafts/{id}:
- *   parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
- *   get: { tags: [Studio], summary: One craft story, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *   patch: { tags: [Studio], summary: Update a craft story, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *   delete: { tags: [Studio], summary: Delete a craft story, security: [{ bearerAuth: [] }], responses: { 204: { description: Deleted } } }
- *
- * /admin/collections:
- *   get: { tags: [Studio], summary: Every collection, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *   post: { tags: [Studio], summary: Create a collection, security: [{ bearerAuth: [] }], responses: { 201: { description: Created } } }
- *
- * /admin/collections/{id}:
- *   parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
- *   get: { tags: [Studio], summary: One collection, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *   patch: { tags: [Studio], summary: Update a collection, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *   delete: { tags: [Studio], summary: Delete a collection, security: [{ bearerAuth: [] }], responses: { 204: { description: Deleted } } }
- *
- * /admin/edit:
- *   get: { tags: [Studio], summary: The Edit with drafts, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *   post: { tags: [Studio], summary: Add an entry, security: [{ bearerAuth: [] }], responses: { 201: { description: Created } } }
- *
- * /admin/edit/order:
- *   put: { tags: [Studio], summary: "Reorder: send every id exactly once", security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *
- * /admin/edit/{id}:
- *   parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
- *   patch: { tags: [Studio], summary: Update an entry, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }
- *   delete: { tags: [Studio], summary: Remove an entry, security: [{ bearerAuth: [] }], responses: { 204: { description: Deleted } } }
+ *   delete: { tags: [Studio], summary: Delete a product, security: [{ bearerAuth: [] }], responses: { 204: { description: Deleted } } }
  *
  * /admin/enquiries:
  *   get: { tags: [Studio], summary: Enquiries, security: [{ bearerAuth: [] }], responses: { 200: { description: OK } } }

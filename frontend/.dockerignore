@@ -1,0 +1,24 @@
+# Everything else (src/, public/, configs, lockfile) goes into the build context.
+node_modules
+.next
+out
+coverage
+*.log
+*.tsbuildinfo
+next-env.d.ts
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+.vscode
+.idea
+.cursor
+.claude
+.ref-frames
+Dockerfile
+.dockerignore
+README.md
+AGENTS.md
+CLAUDE.md
+src/**/*.test.mjs

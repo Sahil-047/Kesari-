@@ -17,6 +17,14 @@ export type Craft = {
 
 export type BuyAction = "buy_now" | "contact_whatsapp";
 
+export type ProductSizeLabel = "XS" | "S" | "M" | "L" | "XL";
+
+export type ProductSizing = {
+  enabled: boolean;
+  allowCustom: boolean;
+  stock: { size: ProductSizeLabel; quantity: number }[];
+};
+
 export type Product = {
   /** API product id (CMS products). Static pieces have none and route by slug. */
   id?: string;
@@ -35,6 +43,8 @@ export type Product = {
   note?: string;
   /** Product page primary CTA — bag vs WhatsApp. Defaults to buy now. */
   buyAction?: BuyAction;
+  /** Size request + stock; omitted on older static pieces. */
+  sizing?: ProductSizing;
 };
 
 export const NAV_LINKS = [

@@ -42,6 +42,8 @@ const apiHost = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  // Self-contained server bundle for the Docker image (see frontend/Dockerfile).
+  output: "standalone",
   cacheComponents: true,
   partialPrefetching: true,
   images: {

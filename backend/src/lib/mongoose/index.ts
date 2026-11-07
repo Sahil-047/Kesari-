@@ -8,14 +8,20 @@ mongoose.set("strictQuery", true);
 
 export async function connectMongo(): Promise<void> {
   mongoose.connection.on("error", (error: Error) =>
-    logger.error("MongoDB connection error", { error: error.message }),
+    logger.error("MongoDB error", { error: error.message }),
   );
+  mongoose.connection.on("disconnected", () => logger.warn("MongoDB disconnected"));
   await mongoose.connect(config.mongoConfig.uri);
-  logger.info("MongoDB connected", { db: mongoose.connection.name });
+  const host = mongoose.connection.host || "unknown";
+  logger.info("MongoDB ready", {
+    db: mongoose.connection.name,
+    host,
+  });
 }
 
 export async function disconnectMongo(): Promise<void> {
   await mongoose.disconnect();
+  logger.info("MongoDB closed");
 }
 
 export const isMongoUp = () => mongoose.connection.readyState === 1;

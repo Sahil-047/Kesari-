@@ -5,15 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
 import { houseWhatsappLink, useSiteContact } from "@/lib/content/useSiteContact";
-import type { LookbookProduct } from "@/lib/lookbook";
+import type { ProductEnquiryView } from "@/lib/lookbook";
 
-const SIZES = ["XS", "S", "M", "L", "XL", "Custom"];
+const FALLBACK_SIZES = ["XS", "S", "M", "L", "XL", "Custom"];
 const priceLabel = (amount: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 const focus = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink";
 
-
-export default function LookbookProductDetail({ product, photos }: { product: LookbookProduct; photos: string[] }) {
+export default function LookbookProductDetail({
+  product,
+  photos,
+}: {
+  product: ProductEnquiryView;
+  photos: string[];
+}) {
   const router = useRouter();
   const contact = useSiteContact();
   const [activeImage, setActiveImage] = useState(0);
@@ -26,17 +31,29 @@ export default function LookbookProductDetail({ product, photos }: { product: Lo
   const option = product.priceOptions.find((item) => item.id === optionId);
   const addOns = product.addOns.filter((item) => addOnIds.includes(item.id));
   const total = (option?.price ?? product.price) + addOns.reduce((sum, item) => sum + item.price, 0);
-  const needsSize = product.category !== "saree" || option?.label === "With blouse";
+  // CMS sizing wins; lookbook sarees still follow ensemble rules when sizing is unset.
+  const needsSize = product.sizing
+    ? product.sizing.enabled
+    : product.category !== "saree" || option?.label === "With blouse";
+  const sizeChoices = (() => {
+    if (!needsSize) return [] as string[];
+    if (!product.sizing) return FALLBACK_SIZES;
+    const labelled = product.sizing.stock.map((row) => row.size);
+    return product.sizing.allowCustom ? [...labelled, "Custom"] : labelled;
+  })();
+  const stockBySize = new Map((product.sizing?.stock ?? []).map((row) => [row.size, row.quantity]));
   const collectionHref = `/products?category=${product.category}`;
   const hasWhatsapp = Boolean(houseWhatsappLink(contact.whatsapp, ""));
 
   function enquire(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const selection = needsSize ? size : "Saree only; please advise on draping";
+    const qty = size && size !== "Custom" ? stockBySize.get(size) : undefined;
     const message = [
       `Hello Kesari, I would like to enquire about ${product.name} (${product.id}).`,
       option ? `Option: ${option.label}` : "",
       `Size request: ${selection}`,
+      typeof qty === "number" ? `Listed stock for ${selection}: ${qty}` : "",
       addOns.length ? `Add-ons: ${addOns.map((item) => item.name).join(", ")}` : "",
       `Lookbook total: ${priceLabel(total)} (INR)`,
       "Please confirm availability, fit, final pricing, and delivery timing.",
@@ -98,30 +115,38 @@ export default function LookbookProductDetail({ product, photos }: { product: Lo
             )}
             <div className="order-1 min-w-0 flex-1 md:order-2">
               <div className="relative aspect-[2/3] overflow-hidden border border-gold/30 bg-cream">
-                <Image
-                  src={photos[activeImage]}
-                  alt={`${product.name}, photograph ${activeImage + 1}`}
-                  fill
-                  quality={95}
-                  priority={activeImage === 0}
-                  sizes="(min-width: 1280px) 560px, (min-width: 1024px) 45vw, (min-width: 768px) 85vw, 100vw"
-                  className="object-contain"
-                />
+                {photos[activeImage] ? (
+                  <Image
+                    src={photos[activeImage]}
+                    alt={`${product.name}, photograph ${activeImage + 1}`}
+                    fill
+                    quality={95}
+                    priority={activeImage === 0}
+                    sizes="(min-width: 1280px) 560px, (min-width: 1024px) 45vw, (min-width: 768px) 85vw, 100vw"
+                    className="object-contain"
+                  />
+                ) : (
+                  <div className="absolute inset-0 grid place-items-center px-6 text-center">
+                    <p className="font-sans text-[0.65rem] uppercase tracking-[0.24em] text-ink-soft">Photograph coming soon</p>
+                  </div>
+                )}
                 <button type="button" onClick={share} aria-label={`Share ${product.name}`} className={`absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full border border-gold/30 bg-cream/95 text-ink transition-colors hover:bg-parchment-light ${focus}`}>
                   <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" className="h-5 w-5">
                     <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4" />
                   </svg>
                 </button>
               </div>
-              <div className="mt-3 flex min-h-11 items-center justify-between gap-3">
-                <p aria-live="polite" className="font-sans text-[0.65rem] uppercase tracking-[0.18em] text-ink-soft">{String(activeImage + 1).padStart(2, "0")} / {String(photos.length).padStart(2, "0")}</p>
-                {photos.length > 1 && (
-                  <div className="flex gap-2">
-                    <button type="button" aria-label="Previous photograph" onClick={() => setActiveImage((activeImage + photos.length - 1) % photos.length)} className={`h-11 w-11 border border-ink/25 text-lg transition-colors hover:bg-cream ${focus}`}>←</button>
-                    <button type="button" aria-label="Next photograph" onClick={() => setActiveImage((activeImage + 1) % photos.length)} className={`h-11 w-11 border border-ink/25 text-lg transition-colors hover:bg-cream ${focus}`}>→</button>
-                  </div>
-                )}
-              </div>
+              {photos.length > 0 && (
+                <div className="mt-3 flex min-h-11 items-center justify-between gap-3">
+                  <p aria-live="polite" className="font-sans text-[0.65rem] uppercase tracking-[0.18em] text-ink-soft">{String(activeImage + 1).padStart(2, "0")} / {String(photos.length).padStart(2, "0")}</p>
+                  {photos.length > 1 && (
+                    <div className="flex gap-2">
+                      <button type="button" aria-label="Previous photograph" onClick={() => setActiveImage((activeImage + photos.length - 1) % photos.length)} className={`h-11 w-11 border border-ink/25 text-lg transition-colors hover:bg-cream ${focus}`}>←</button>
+                      <button type="button" aria-label="Next photograph" onClick={() => setActiveImage((activeImage + 1) % photos.length)} className={`h-11 w-11 border border-ink/25 text-lg transition-colors hover:bg-cream ${focus}`}>→</button>
+                    </div>
+                  )}
+                </div>
+              )}
               <p role="status" className="text-sm text-ink-soft">{shareStatus}</p>
             </div>
           </div>
@@ -157,16 +182,40 @@ export default function LookbookProductDetail({ product, photos }: { product: Lo
               <button ref={sizeGuideButton} type="button" aria-expanded={sizeGuideOpen} aria-controls="lookbook-size-guide" onClick={() => setSizeGuideOpen(!sizeGuideOpen)} className={`min-h-11 font-sans text-xs text-ink-soft underline underline-offset-4 ${focus}`}>Size & fit guide</button>
             </div>
             {needsSize ? (
-              <fieldset aria-labelledby="size-label" aria-describedby="size-note" className="flex flex-wrap gap-2">
-                {SIZES.map((item) => (
-                  <label key={item} className="cursor-pointer">
-                    <input type="radio" name="size" value={item} required checked={size === item} onChange={() => setSize(item)} className="peer sr-only" />
-                    <span className="grid min-h-11 min-w-11 place-items-center border border-ink/25 px-3 font-sans text-xs text-ink transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:text-cream peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-ink">{item}</span>
-                  </label>
-                ))}
-              </fieldset>
-            ) : <p className="text-base text-ink-soft">Draped fit. Select “With blouse” above to request a blouse size.</p>}
-            <p id="size-note" className="mt-3 font-sans text-xs leading-relaxed text-ink-soft">{needsSize ? "Sizes are enquiry preferences, not confirmed stock. The atelier will confirm measurements and fit." : "Please confirm saree dimensions and any fitting requirements with the atelier."}</p>
+              sizeChoices.length > 0 ? (
+                <fieldset aria-labelledby="size-label" aria-describedby="size-note" className="flex flex-wrap gap-2">
+                  {sizeChoices.map((item) => {
+                    const qty = item === "Custom" ? undefined : stockBySize.get(item);
+                    return (
+                      <label key={item} className="cursor-pointer">
+                        <input type="radio" name="size" value={item} required checked={size === item} onChange={() => setSize(item)} className="peer sr-only" />
+                        <span className="grid min-h-11 min-w-11 place-items-center border border-ink/25 px-3 font-sans text-xs text-ink transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:text-cream peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-ink">
+                          <span className="flex flex-col items-center leading-tight">
+                            <span>{item}</span>
+                            {typeof qty === "number" && product.sizing && (
+                              <span className="mt-0.5 text-[0.55rem] uppercase tracking-[0.12em] opacity-70">{qty} left</span>
+                            )}
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </fieldset>
+              ) : (
+                <p className="text-base text-ink-soft">No sizes are listed right now. Contact the house to ask about availability and fit.</p>
+              )
+            ) : (
+              <p className="text-base text-ink-soft">
+                {product.priceOptions.length > 0
+                  ? "Draped fit. Select “With blouse” above to request a blouse size."
+                  : "This piece is offered without a size request. Write to the house about fit if you need guidance."}
+              </p>
+            )}
+            <p id="size-note" className="mt-3 font-sans text-xs leading-relaxed text-ink-soft">
+              {needsSize
+                ? "Sizes and quantities are enquiry preferences. The atelier will confirm measurements, fit, and availability."
+                : "Please confirm saree dimensions and any fitting requirements with the atelier."}
+            </p>
 
             {sizeGuideOpen && (
               <div id="lookbook-size-guide" className="mt-4 border border-gold/40 bg-cream p-5 text-ink-soft">

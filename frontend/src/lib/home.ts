@@ -2,8 +2,8 @@
 export type HouseTile = { href: string; image: string; eyebrow: string; title: string };
 
 /**
- * The House tiles when no featured CMS product fills them. The home page
- * resolves these links to product pages (lib/productLinks.ts) before rendering.
+ * Soft Bridal, Warm Saffron, Midnight Bloom — fixed labels and destinations.
+ * Products ticked for Home only replace `image` (cover photo), in placement order.
  */
 export const HOUSE_TILES: HouseTile[] = [
   { href: "/crafts/soft-bridal", image: "/images/hero-wedding.jpg", eyebrow: "Wedding", title: "Soft Bridal" },

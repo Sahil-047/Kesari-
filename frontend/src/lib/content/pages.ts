@@ -72,12 +72,6 @@ export type WorldContent = {
   story: { eyebrow: string; title: string; intro: string; houseCopy: string };
 };
 
-export type FooterContent = {
-  brand: { tagline: string };
-  invitation: { eyebrow: string; title: string; link: string };
-  bottom: { left: string; middle: string };
-};
-
 export type SiteContent = {
   contact: { whatsapp: string; whatsappGreeting: string; phone: string; email: string };
 };
@@ -90,7 +84,6 @@ export type PageContentMap = {
   menswear: MenswearContent;
   atelier: AtelierContent;
   "world-of-kesari": WorldContent;
-  footer: FooterContent;
   site: SiteContent;
 };
 
@@ -240,12 +233,6 @@ export const PAGE_DEFAULTS: PageContentMap = {
       intro: WORLD_INTRO,
       houseCopy: HOUSE_COPY,
     },
-  },
-
-  footer: {
-    brand: { tagline: "Same traditions. New stories." },
-    invitation: { eyebrow: "The atelier", title: "Write to the house", link: "/atelier" },
-    bottom: { left: "Ship to: India · INR", middle: "Craft in every detail · 2026" },
   },
 
   site: {

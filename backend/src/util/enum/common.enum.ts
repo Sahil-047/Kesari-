@@ -1,4 +1,4 @@
-/** Draft/published lifecycle shared by crafts, collections and The Edit. */
+/** Draft/published lifecycle for pages and other studio content. */
 export enum PublishStatusEnum {
   DRAFT = "draft",
   PUBLISHED = "published",
@@ -9,9 +9,4 @@ export enum PayloadType {
   BODY = "body",
   QUERY = "query",
   PARAMS = "params",
-}
-
-export enum OverlayAlignEnum {
-  LEFT = "left",
-  RIGHT = "right",
 }

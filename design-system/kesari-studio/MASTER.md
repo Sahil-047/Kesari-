@@ -10,11 +10,10 @@ Implementation: tokens in `frontend/src/components/admin/AdminProviders.tsx` (An
 ## Direction
 
 - **Pattern:** data-dense back office for a luxury fashion house. Clarity over ornament.
-- **Style:** Minimalism & Swiss, with micro-interactions for feedback. One primary colour,
-  no decoration, surfaces separated by borders (not shadows); only floating layers
-  (popovers, drawers, toasts) get elevation.
-- **Avoid:** glassmorphism and chromatic effects (the skill suggests them for *storefronts*,
-  not internal tools), gradients, multi-hue status colours, emoji icons, slow (400ms+) motion.
+- **Style:** Minimal warm shell — light borders, quiet card elevation, one ink colour.
+  Gold is brand-only. Neumorphism kept very light if used at all.
+- **Avoid:** heavy dual-shadow neo, plastic white extrusion, multi-hue status colours,
+  emoji icons, slow (400ms+) motion.
 
 ## Colour (warm stone, one ink)
 
@@ -29,7 +28,9 @@ Implementation: tokens in `frontend/src/components/admin/AdminProviders.tsx` (An
 | Border | `border` | `#d6d3d1` | Inputs, cards |
 | Hairline | `hairline` | `#e7e5e4` | Dividers, table rules |
 | Wash | `wash` | `#f5f5f4` | Hover/selected fills, soft badges |
-| Canvas | `subtle` | `#fafaf9` | Page background |
+| Canvas | `subtle` | `#f3f0eb` | Page background |
+| Surface | `surface` | `#faf8f5` | Cards, sider, header |
+| Wash | `wash` | `#ebe7e1` | Hover / selected fills |
 | Accent (gold) | `gold` | `#a16207` | **Brand only**: logo mark, active-nav rule. Never carries meaning |
 | Destructive | `danger` | `#dc2626` | Errors, delete actions only |
 

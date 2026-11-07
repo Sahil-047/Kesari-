@@ -42,17 +42,21 @@ export function createApp() {
 }
 
 async function main() {
+  const port = config.commonConfig.port;
+  logger.info("Kesari API starting…");
   await connectMongo();
 
-  const server = createApp().listen(config.commonConfig.port, "0.0.0.0", () => {
-    logger.info("Kesari API listening", {
-      port: config.commonConfig.port,
-      docs: `http://localhost:${config.commonConfig.port}/api-docs`,
+  const server = createApp().listen(port, "0.0.0.0", () => {
+    logger.info("Kesari API ready", {
+      port,
+      health: `http://localhost:${port}/health`,
+      docs: `http://localhost:${port}/api-docs`,
+      api: `http://localhost:${port}/api`,
     });
   });
 
   const shutdown = (signal: string) => {
-    logger.info("Shutting down", { signal });
+    logger.info("Shutting down…", { signal });
     server.close(async () => {
       await disconnectMongo();
       process.exit(0);
@@ -63,6 +67,9 @@ async function main() {
 }
 
 main().catch((error) => {
-  logger.error("Failed to start", { error: error instanceof Error ? error.message : error });
+  logger.error("Startup failed", {
+    error: error instanceof Error ? error.message : error,
+    ...(error instanceof Error && error.stack ? { stack: error.stack } : {}),
+  });
   process.exit(1);
 });

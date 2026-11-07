@@ -1,6 +1,7 @@
 "use client";
 
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
+import { STUDIO } from "@/components/admin/AdminProviders";
 import { useAuth } from "@/components/admin/AuthProvider";
 import { Alert, Avatar, Button, Card, Flex, Form, Input, Typography } from "antd";
 import Image from "next/image";
@@ -66,12 +67,16 @@ export default function AdminLoginPage() {
       </div>
 
       {/* Form side */}
-      <Flex align="center" justify="center" style={{ padding: 24, background: "#fff" }}>
-        <Card variant="borderless" style={{ width: "100%", maxWidth: 380, boxShadow: "none" }} styles={{ body: { padding: 8 } }}>
+      <Flex align="center" justify="center" style={{ padding: 24, background: STUDIO.subtle }}>
+        <Card
+          variant="borderless"
+          style={{ width: "100%", maxWidth: 400, borderRadius: 18 }}
+          styles={{ body: { padding: 22 } }}
+        >
           <Typography.Title level={1} className="studio-display" style={{ marginTop: 0, marginBottom: 6, fontSize: 32 }}>
             Welcome back
           </Typography.Title>
-          <Typography.Paragraph type="secondary">Manage the Kesari website.</Typography.Paragraph>
+          <Typography.Paragraph type="secondary">Sign in to Studio.</Typography.Paragraph>
 
           {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
 

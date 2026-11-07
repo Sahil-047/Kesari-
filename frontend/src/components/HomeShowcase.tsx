@@ -114,7 +114,7 @@ const TILE_SLOTS = [
 
 export default function HomeShowcase({ tiles = HOUSE_TILES }: { tiles?: HouseTile[] }) {
   return (
-    <div className="home-showcase relative isolate default-surface parchment-noise">
+    <div className="home-showcase relative isolate">
       <section
         className="relative z-10 section-pad py-16 md:py-24"
         aria-label="Catalogue"

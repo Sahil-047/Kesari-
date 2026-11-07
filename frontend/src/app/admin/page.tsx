@@ -186,7 +186,7 @@ export default function SalesDashboardPage() {
                       ? "No products yet — start here"
                       : `${productTotal} product${productTotal === 1 ? "" : "s"}`,
               },
-              { title: "Dress the site", icon: <FormOutlined />, content: "Arrange published pieces on pages" },
+              { title: "Pages", icon: <FormOutlined />, content: "Home, What's New, and the rest" },
             ]}
           />
         </Card>

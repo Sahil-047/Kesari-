@@ -1,0 +1,101 @@
+# Kesari production stack.
+#
+#   cp .env.example .env        # fill in DOMAIN, MongoDB, JWT secret, S3
+#   docker compose up -d --build
+#
+# Bundled MongoDB instead of Atlas:  docker compose --profile local-db up -d --build
+# (then set MONGODB_URI=mongodb://mongo:27017/kesari in .env)
+
+name: kesari
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  backend:
+    <<: *restart
+    build:
+      context: ./backend
+    image: kesari-api:latest
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      # Derived from DOMAIN so the site, CORS and media links always agree.
+      CORS_ORIGINS: https://${DOMAIN:?Set DOMAIN in .env}
+      AWS_S3_PUBLIC_URL: https://${DOMAIN}/img
+    expose:
+      - "4000"
+    networks: [kesari]
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  frontend:
+    <<: *restart
+    build:
+      context: ./frontend
+      args:
+        # Inlined into the browser bundle; changing DOMAIN needs a rebuild.
+        NEXT_PUBLIC_API_URL: https://${DOMAIN:?Set DOMAIN in .env}/api
+    image: kesari-web:latest
+    environment:
+      NODE_ENV: production
+      # Server rendering talks to the API over the private network.
+      API_INTERNAL_URL: http://backend:4000/api
+    expose:
+      - "3000"
+    volumes:
+      - next-cache:/app/.next/cache
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks: [kesari]
+    logging: *logging
+
+  caddy:
+    <<: *restart
+    image: caddy:2.10-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - frontend
+      - backend
+    networks: [kesari]
+    logging: *logging
+
+  # Optional self-hosted MongoDB (production default is MongoDB Atlas via MONGODB_URI).
+  mongo:
+    <<: *restart
+    profiles: ["local-db"]
+    image: mongo:7
+    command: ["--quiet"]
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [kesari]
+    logging: *logging
+
+networks:
+  kesari: {}
+
+volumes:
+  next-cache: {}
+  caddy-data: {}
+  caddy-config: {}
+  mongo-data: {}

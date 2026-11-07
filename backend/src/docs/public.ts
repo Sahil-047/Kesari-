@@ -78,44 +78,6 @@
  *       200: { description: OK }
  *       404: { description: Not found }
  *
- * /crafts:
- *   get:
- *     tags: [Storefront]
- *     summary: Published craft stories
- *     responses:
- *       200: { description: OK }
- *
- * /crafts/{slug}:
- *   get:
- *     tags: [Storefront]
- *     summary: One published craft story
- *     parameters: [{ in: path, name: slug, required: true, schema: { type: string } }]
- *     responses:
- *       200: { description: OK }
- *
- * /collections:
- *   get:
- *     tags: [Storefront]
- *     summary: Published colour collections
- *     parameters: [{ in: query, name: category, schema: { type: string, enum: [lehenga, dress, saree] } }]
- *     responses:
- *       200: { description: OK }
- *
- * /collections/{slug}:
- *   get:
- *     tags: [Storefront]
- *     summary: One published collection
- *     parameters: [{ in: path, name: slug, required: true, schema: { type: string } }]
- *     responses:
- *       200: { description: OK }
- *
- * /edit:
- *   get:
- *     tags: [Storefront]
- *     summary: The Edit, in order
- *     responses:
- *       200: { description: OK }
- *
  * /pages/{slug}:
  *   get:
  *     tags: [Storefront]
@@ -124,7 +86,7 @@
  *       - in: path
  *         name: slug
  *         required: true
- *         schema: { type: string, enum: [home, whats-new, weddings, womenswear, menswear, atelier, world-of-kesari, footer, site] }
+ *         schema: { type: string, enum: [home, whats-new, weddings, womenswear, menswear, atelier, world-of-kesari, site] }
  *     responses:
  *       200: { description: "{ slug, content, publishedAt }" }
  *       404: { description: Never published }

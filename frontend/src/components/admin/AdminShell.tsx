@@ -1,12 +1,10 @@
 "use client";
 
 import {
-  AppstoreOutlined,
   BarChartOutlined,
   ExportOutlined,
   FileImageOutlined,
   FormOutlined,
-  GoldOutlined,
   InboxOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -44,11 +42,7 @@ const NAV: { heading?: string; items: NavItem[] }[] = [
   },
   {
     heading: "Website",
-    items: [
-      { href: "/admin/content", label: "Website content", icon: <FormOutlined /> },
-      { href: "/admin/collections", label: "Collections", icon: <AppstoreOutlined /> },
-      { href: "/admin/crafts", label: "Crafts", icon: <GoldOutlined /> },
-    ],
+    items: [{ href: "/admin/content", label: "Pages", icon: <FormOutlined /> }],
   },
   {
     heading: "Sales",
@@ -154,25 +148,26 @@ export default function AdminShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <Sider
-        width={268}
-        collapsedWidth={72}
+        width={272}
+        collapsedWidth={76}
         collapsible
         collapsed={collapsed}
         trigger={null}
         breakpoint="lg"
         onBreakpoint={setCollapsed}
+        className="studio-sider"
         style={{
           position: "sticky",
           top: 0,
           height: "100vh",
           overflow: "auto",
-          borderRight: `1px solid ${STUDIO.border}`,
         }}
       >
-        <Flex align="center" gap={12} style={{ height: 64, padding: collapsed ? "0 22px" : "0 22px" }}>
+        <Flex align="center" gap={12} style={{ height: 68, padding: "0 18px" }}>
           <Avatar
             shape="square"
-            size={32}
+            size={34}
+            className="studio-brand-mark"
             style={{
               background: STUDIO.ink,
               color: "#e9c46a",
@@ -180,7 +175,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
               fontFamily: DISPLAY_FONT,
               fontWeight: 600,
               fontSize: 16,
-              borderRadius: 6,
+              borderRadius: 10,
             }}
           >
             K
@@ -207,13 +202,12 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 
       <Layout>
         <Header
+          className="studio-header"
           style={{
             position: "sticky",
             top: 0,
             zIndex: 20,
             padding: "0 20px 0 8px",
-            borderBottom: `1px solid ${STUDIO.border}`,
-            backdropFilter: "saturate(180%) blur(12px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",

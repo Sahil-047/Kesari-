@@ -2,8 +2,22 @@
 
 import { ArrowLeftOutlined, ArrowRightOutlined, DeleteOutlined, PlusOutlined, ScissorOutlined } from "@ant-design/icons";
 import { api } from "@/lib/api/client";
-import type { ApiImage, ApiProduct } from "@/lib/api/types";
+import type { ApiImage, ApiProduct, ApiProductSizing, ProductSizeLabel } from "@/lib/api/types";
 import type { Field } from "@/lib/admin/resources";
+
+const SIZE_LABELS: ProductSizeLabel[] = ["XS", "S", "M", "L", "XL"];
+
+function normalizeSizing(value: unknown): ApiProductSizing {
+  const raw = value && typeof value === "object" ? (value as Partial<ApiProductSizing>) : {};
+  const bySize = new Map(
+    (Array.isArray(raw.stock) ? raw.stock : []).map((row) => [row.size, Math.max(0, Number(row.quantity) || 0)]),
+  );
+  return {
+    enabled: raw.enabled !== false,
+    allowCustom: raw.allowCustom !== false,
+    stock: SIZE_LABELS.map((size) => ({ size, quantity: bySize.get(size) ?? 0 })),
+  };
+}
 import {
   Card,
   Checkbox,
@@ -397,6 +411,70 @@ export default function FieldInput({ field, value, onChange, uploadFolder }: Pro
       );
     case "product":
       return <ProductSelect value={value} onChange={onChange} disabled={disabled} />;
+    case "sizeConfig": {
+      const sizing = normalizeSizing(value);
+      return (
+        <Flex vertical gap={14}>
+          <Flex align="center" justify="space-between" gap={12}>
+            <div>
+              <Typography.Text strong>Offer sizes</Typography.Text>
+              <Typography.Paragraph type="secondary" style={{ margin: 0, fontSize: 12 }}>
+                Off = hide the size picker on the product page.
+              </Typography.Paragraph>
+            </div>
+            <Switch
+              checked={sizing.enabled}
+              disabled={disabled}
+              onChange={(enabled) => onChange({ ...sizing, enabled })}
+            />
+          </Flex>
+          {sizing.enabled && (
+            <>
+              <Flex align="center" justify="space-between" gap={12}>
+                <div>
+                  <Typography.Text strong>Show Custom</Typography.Text>
+                  <Typography.Paragraph type="secondary" style={{ margin: 0, fontSize: 12 }}>
+                    Made-to-measure option beside XS–XL.
+                  </Typography.Paragraph>
+                </div>
+                <Switch
+                  checked={sizing.allowCustom}
+                  disabled={disabled}
+                  onChange={(allowCustom) => onChange({ ...sizing, allowCustom })}
+                />
+              </Flex>
+              <div>
+                <Typography.Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 8 }}>
+                  Quantity per size — set 0 to hide that size on the site.
+                </Typography.Text>
+                <Flex wrap="wrap" gap={10}>
+                  {sizing.stock.map((row) => (
+                    <Flex key={row.size} vertical gap={4} style={{ minWidth: 72 }}>
+                      <Typography.Text style={{ fontSize: 12 }}>{row.size}</Typography.Text>
+                      <InputNumber
+                        min={0}
+                        precision={0}
+                        disabled={disabled}
+                        value={row.quantity}
+                        style={{ width: "100%" }}
+                        onChange={(qty) =>
+                          onChange({
+                            ...sizing,
+                            stock: sizing.stock.map((s) =>
+                              s.size === row.size ? { ...s, quantity: Math.max(0, Number(qty) || 0) } : s,
+                            ),
+                          })
+                        }
+                      />
+                    </Flex>
+                  ))}
+                </Flex>
+              </div>
+            </>
+          )}
+        </Flex>
+      );
+    }
     default:
       return (
         <Input

@@ -1,11 +1,80 @@
 import catalogue from "@/lib/lookbook-products.json";
+import type { Product } from "@/lib/data";
+import { productPhotos } from "@/lib/productMedia";
 
 export type LookbookProduct = (typeof catalogue.products)[number];
+
+/** Fields the product enquiry page needs — lookbook JSON or a CMS piece. */
+export type ProductEnquiryView = {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  description: string;
+  priceOptions: { id: string; label: string; price: number }[];
+  addOns: { id: string; name: string; price: number }[];
+  /**
+   * When set (CMS), drives the size picker. When omitted (static lookbook),
+   * the page falls back to category / ensemble rules.
+   */
+  sizing?: {
+    enabled: boolean;
+    allowCustom: boolean;
+    /** Labelled sizes still in stock (quantity > 0). */
+    stock: { size: string; quantity: number }[];
+  };
+};
 
 export const LOOKBOOK_PRODUCTS = catalogue.products;
 
 export function getLookbookProduct(id: string): LookbookProduct | undefined {
   return LOOKBOOK_PRODUCTS.find((product) => product.id === id);
+}
+
+function enquiryCategory(category: string): string {
+  const c = category.trim().toLowerCase();
+  if (/(lehenga|lahenga)/.test(c)) return "lehenga";
+  if (/saree|sari/.test(c)) return "saree";
+  if (/(sherwani|kurta|bandhgala|bundi|men|indo)/.test(c)) return "menswear";
+  return "dress";
+}
+
+/** Map a CMS / static storefront product onto the lookbook product page. */
+export function productToEnquiryView(product: Product): ProductEnquiryView {
+  const sizing = product.sizing
+    ? {
+        enabled: Boolean(product.sizing.enabled),
+        allowCustom: Boolean(product.sizing.allowCustom),
+        stock: (product.sizing.stock ?? [])
+          .filter((row) => row.quantity > 0)
+          .map((row) => ({ size: row.size, quantity: row.quantity })),
+      }
+    : {
+        enabled: true,
+        allowCustom: true,
+        stock: [
+          { size: "XS", quantity: 1 },
+          { size: "S", quantity: 1 },
+          { size: "M", quantity: 1 },
+          { size: "L", quantity: 1 },
+          { size: "XL", quantity: 1 },
+        ],
+      };
+
+  return {
+    id: product.id ?? product.slug,
+    name: product.name,
+    category: enquiryCategory(product.category),
+    price: product.price,
+    description: product.description ?? "",
+    priceOptions: [],
+    addOns: [],
+    sizing,
+  };
+}
+
+export function enquiryPhotos(product: Product): string[] {
+  return productPhotos(product);
 }
 
 // Visually verified photographs of each garment, not folder-wide galleries.

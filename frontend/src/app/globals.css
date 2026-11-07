@@ -113,13 +113,13 @@ button {
   mix-blend-mode: multiply;
 }
 
-/* Keep the tall home surface free of procedural filters and blend groups. */
-.home-showcase.parchment-noise::before,
-.home-showcase .parchment-noise::before {
+/* Home shell uses the soft paper grain across main + footer. */
+.site-shell.parchment-noise::before {
   background-image: url("/textures/paper-grain-fine.png");
   background-size: 260px 260px;
   background-repeat: repeat;
   mix-blend-mode: normal;
+  opacity: 0.1;
 }
 
 .page-grain {
@@ -157,9 +157,17 @@ button {
 }
 
 .site-shell {
+  position: relative;
   display: flex;
   min-height: 100dvh;
   flex-direction: column;
+}
+
+/* One wash for main + footer so the page never cuts off above the footer. */
+.site-shell.default-surface,
+.site-shell.parchment-surface,
+.site-shell.page-grain {
+  isolation: isolate;
 }
 
 .site-main {

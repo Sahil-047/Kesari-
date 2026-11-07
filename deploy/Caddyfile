@@ -1,0 +1,36 @@
+# Kesari: one public domain, automatic HTTPS (Let's Encrypt) via Caddy.
+#   /api/*, /img/* (media proxy), /api-docs, /health  -> backend:4000
+#   everything else (site + /admin studio)            -> frontend:3000
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	@backend path /api /api/* /img/* /api-docs /api-docs/* /api-docs.json /health
+	handle @backend {
+		reverse_proxy backend:4000
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# Optional: send www to the bare domain. Uncomment and set WWW_DOMAIN in .env.
+# {$WWW_DOMAIN} {
+# 	redir https://{$DOMAIN}{uri} permanent
+# }

@@ -1,9 +1,6 @@
 import { Router } from "express";
 import { isMongoUp } from "../lib/mongoose/index.js";
 import authRouter from "./auth/index.js";
-import collectionRouter from "./collection/index.js";
-import craftRouter from "./craft/index.js";
-import editEntryRouter from "./editEntry/index.js";
 import enquiryRouter from "./enquiry/index.js";
 import mediaRouter from "./media/index.js";
 import orderRouter from "./order/index.js";
@@ -23,9 +20,6 @@ router.get("/ping", (_req, res) => {
 
 router.use("/auth", authRouter);
 router.use(productRouter);
-router.use(craftRouter);
-router.use(collectionRouter);
-router.use(editEntryRouter);
 router.use(enquiryRouter);
 router.use(mediaRouter);
 router.use(pageRouter);

@@ -1,5 +1,4 @@
 import type { FilterQuery } from "mongoose";
-import EditEntryModel from "../../model/editEntry.model.js";
 import ProductModel from "../../model/product.model.js";
 import { ProductPlacementEnum } from "../../util/enum/placement.enum.js";
 import { ACTIVE_PRODUCT_STATUSES } from "../../util/enum/product.enum.js";
@@ -127,12 +126,8 @@ class ProductUseCase {
     ).exec();
   }
 
-  /** A piece still featured in The Edit cannot be deleted. */
   async deleteProduct(id: string) {
     await this.getOrThrow(id);
-    if (await EditEntryModel.exists({ product: id })) {
-      throw CustomError.conflict("This product is in The Edit. Remove it from The Edit first.");
-    }
     await ProductModel.findByIdAndDelete(id).exec();
   }
 }

@@ -7,6 +7,5 @@ export enum PageSlugEnum {
   MENSWEAR = "menswear",
   ATELIER = "atelier",
   WORLD_OF_KESARI = "world-of-kesari",
-  FOOTER = "footer",
   SITE = "site",
 }
