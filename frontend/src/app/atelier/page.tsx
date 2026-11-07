@@ -7,8 +7,8 @@ export default async function AtelierPage() {
   const content = await getPageContent("atelier");
 
   return (
-    <div className="site-shell bg-[#0b0907]">
-      <Header variant="overlay" />
+    <div className="site-shell default-surface parchment-noise">
+      <Header />
       <main className="site-main relative z-10">
         <AtelierEnquiry intro={content.intro} />
       </main>

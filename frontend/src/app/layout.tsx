@@ -36,6 +36,12 @@ export const metadata: Metadata = {
     "Same traditions. New stories. Resham, zardozi, ari, cutdana, pitta tiki — craft in every detail.",
 };
 
+/** Browser chrome matches the parchment wash (not black). Favicon: app/icon.png */
+export const viewport = {
+  themeColor: "#b8a686",
+  colorScheme: "light" as const,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

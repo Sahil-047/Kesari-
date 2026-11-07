@@ -7,9 +7,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 
 const fieldClass =
-  "mt-2 w-full border-0 border-b border-white/20 bg-transparent px-0 py-2.5 font-serif text-[1.02rem] text-white outline-none transition placeholder:text-white/25 focus:border-gold/70 [color-scheme:dark]";
+  "mt-2 w-full border-0 border-b border-ink/25 bg-transparent px-0 py-2.5 font-serif text-[1.02rem] text-ink outline-none transition placeholder:text-ink/30 focus:border-gold [color-scheme:light]";
 const labelClass =
-  "font-sans text-[0.58rem] uppercase tracking-[0.24em] text-white/50";
+  "font-sans text-[0.58rem] uppercase tracking-[0.24em] text-ink-soft";
 
 export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro"] }) {
   const titleWords = intro.title.split(" ");
@@ -52,34 +52,32 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
   };
 
   return (
-    <section className="relative overflow-hidden bg-[#0b0907] px-6 pb-16 pt-44 md:px-10 md:pb-24 md:pt-36 lg:px-14">
-      {/* Soft saffron glow instead of photography */}
+    <section className="relative overflow-hidden px-6 pb-16 pt-44 md:px-10 md:pb-24 md:pt-36 lg:px-14">
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-gold/10 blur-[120px]"
+        className="pointer-events-none absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-gold/15 blur-[120px]"
       />
 
       <div className="relative mx-auto grid max-w-[1180px] grid-cols-1 gap-12 md:grid-cols-12 md:gap-10 lg:gap-16">
-        {/* Intro + steps */}
         <div className="md:col-span-6">
-          <p className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-gold-soft">
+          <p className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-ink-soft">
             {intro.eyebrow}
           </p>
-          <h1 className="display mt-3 text-[clamp(2.6rem,7vw,6rem)] uppercase leading-[0.9] tracking-[0.12em] text-white">
+          <h1 className="display mt-3 text-[clamp(2.6rem,7vw,6rem)] uppercase leading-[0.9] tracking-[0.12em] text-ink">
             {titleWords.map((word, i) => (
               <span key={i} className="block">
                 {word}
               </span>
             ))}
           </h1>
-          <p className="mt-6 max-w-md text-[1.02rem] leading-relaxed text-white/65">
+          <p className="mt-6 max-w-md text-[1.02rem] leading-relaxed text-ink-soft">
             {intro.text}
           </p>
 
           <ol className="relative mt-10 max-w-md">
             <span
               aria-hidden
-              className="absolute bottom-3 left-[0.9rem] top-3 w-px bg-white/12"
+              className="absolute bottom-3 left-[0.9rem] top-3 w-px bg-ink/15"
             />
             {intro.steps.map((s, i) => {
               const lit = i < stage || (i === stage && (started || sent));
@@ -87,17 +85,17 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
               return (
                 <li key={s.title} className="relative flex gap-5 pb-6 last:pb-0">
                   <span
-                    className={`relative z-10 grid h-[1.8rem] w-[1.8rem] shrink-0 place-items-center rounded-full border bg-[#0b0907] font-sans text-[0.58rem] tracking-[0.1em] transition-colors duration-500 ${
+                    className={`relative z-10 grid h-[1.8rem] w-[1.8rem] shrink-0 place-items-center rounded-full border font-sans text-[0.58rem] tracking-[0.1em] transition-colors duration-500 ${
                       lit
-                        ? "border-gold text-gold-soft"
-                        : "border-white/20 text-white/40"
+                        ? "border-gold bg-cream text-ink"
+                        : "border-ink/25 bg-transparent text-ink-soft"
                     }`}
                   >
                     0{i + 1}
                     {current && !reduce && (
                       <motion.span
                         layoutId="step-ring"
-                        className="absolute -inset-1 rounded-full border border-gold/40"
+                        className="absolute -inset-1 rounded-full border border-gold/50"
                         transition={{ duration: 0.6, ease: EASE_FLUENT }}
                       />
                     )}
@@ -105,12 +103,12 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                   <div className="pt-1">
                     <p
                       className={`font-sans text-[0.62rem] uppercase tracking-[0.26em] transition-colors duration-500 ${
-                        lit ? "text-white" : "text-white/45"
+                        lit ? "text-ink" : "text-ink-soft"
                       }`}
                     >
                       {s.title}
                     </p>
-                    <p className="mt-1 text-[0.9rem] leading-snug text-white/45">
+                    <p className="mt-1 text-[0.9rem] leading-snug text-ink-soft">
                       {s.line}
                     </p>
                   </div>
@@ -120,9 +118,8 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
           </ol>
         </div>
 
-        {/* Enquiry */}
         <div className="md:col-span-6">
-          <div className="border border-white/12 bg-white/[0.025] p-6 md:p-9">
+          <div className="border border-ink/15 bg-cream/40 p-6 md:p-9">
             <AnimatePresence mode="wait" initial={false}>
               {sent ? (
                 <motion.div
@@ -134,13 +131,13 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                   role="status"
                   className="py-6"
                 >
-                  <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-gold-soft">
+                  <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-ink-soft">
                     Received
                   </p>
-                  <p className="display mt-3 text-[clamp(1.6rem,3vw,2.2rem)] uppercase leading-tight tracking-[0.1em] text-white">
+                  <p className="display mt-3 text-[clamp(1.6rem,3vw,2.2rem)] uppercase leading-tight tracking-[0.1em] text-ink">
                     Your note is with the house
                   </p>
-                  <p className="mt-3 text-[0.98rem] leading-relaxed text-white/60">
+                  <p className="mt-3 text-[0.98rem] leading-relaxed text-ink-soft">
                     The atelier will write back with a note.
                   </p>
                   <button
@@ -149,7 +146,7 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                       setSent(false);
                       setStarted(false);
                     }}
-                    className="mt-8 font-sans text-[0.62rem] uppercase tracking-[0.26em] text-white/70 underline-offset-4 hover:text-white hover:underline"
+                    className="mt-8 font-sans text-[0.62rem] uppercase tracking-[0.26em] text-ink-soft underline-offset-4 hover:text-ink hover:underline"
                   >
                     Write another note
                   </button>
@@ -165,7 +162,7 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <p className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-gold-soft">
+                  <p className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-ink-soft">
                     Enquiry
                   </p>
 
@@ -195,7 +192,7 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                   <label className="block">
                     <span className={labelClass}>
                       Wedding date{" "}
-                      <span className="text-white/30">(optional)</span>
+                      <span className="text-ink/40">(optional)</span>
                     </span>
                     <input type="date" name="date" className={fieldClass} />
                   </label>
@@ -210,7 +207,6 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                     />
                   </label>
 
-                  {/* Honeypot: hidden from people, filled in by bots */}
                   <input
                     type="text"
                     name="website"
@@ -221,7 +217,7 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                   />
 
                   {error && (
-                    <p role="alert" className="text-sm text-[#e8a598]">
+                    <p role="alert" className="text-sm text-[#8a3a2e]">
                       {error}
                     </p>
                   )}
@@ -229,7 +225,7 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                   <button
                     type="submit"
                     disabled={sending}
-                    className="solid-btn group w-full cursor-pointer gap-3 bg-cream text-ink hover:bg-parchment-light disabled:cursor-wait disabled:opacity-70"
+                    className="solid-btn group w-full cursor-pointer gap-3 disabled:cursor-wait disabled:opacity-70"
                   >
                     {sending ? "Sending…" : "Write to the House"}
                     <span
