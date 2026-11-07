@@ -11,7 +11,7 @@ type LogoProps = {
 };
 
 const sizes = {
-  sm: "w-[120px] md:w-[156px]",
+  sm: "w-[84px] sm:w-[96px] lg:w-[156px]",
   md: "w-[180px]",
   lg: "w-[220px] md:w-[260px]",
 };

@@ -24,11 +24,11 @@ export default function PageHero({
     >
       <div className="relative z-10 mx-auto max-w-3xl">
         {eyebrow ? <p className="eyebrow mb-4">{eyebrow}</p> : null}
-        <h1 className="display text-[clamp(2.25rem,5vw,3.75rem)] uppercase tracking-[0.12em] text-ink">
+        <h1 className="display text-[clamp(1.75rem,7vw,3.75rem)] uppercase tracking-[0.1em] text-ink sm:tracking-[0.12em]">
           {title}
         </h1>
         {children ? (
-          <div className="mx-auto mt-6 max-w-2xl text-[1.05rem] leading-relaxed text-ink-soft md:text-lg">
+          <div className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-soft sm:mt-6 sm:text-[1.05rem] md:text-lg">
             {children}
           </div>
         ) : null}

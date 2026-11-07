@@ -84,14 +84,14 @@ export default function LookbookProductDetail({
 
   return (
     <div className="mx-auto max-w-[1280px] font-sans">
-      <nav aria-label="Breadcrumb" className="mb-7 flex flex-wrap items-center gap-x-3 gap-y-2 font-sans text-[0.65rem] uppercase tracking-[0.18em] text-ink-soft md:mb-10">
+      <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-2 font-sans text-[0.6rem] uppercase tracking-[0.16em] text-ink-soft sm:gap-x-3 sm:text-[0.65rem] sm:tracking-[0.18em] md:mb-10">
         <Link href="/" className={`hover:underline ${focus}`}>Home</Link>
         <span aria-hidden className="text-gold">/</span>
         <Link href="/products" className={`hover:underline ${focus}`}>All pieces</Link>
         <span aria-hidden className="text-gold">/</span>
         <Link href={collectionHref} className={`hover:underline ${focus}`}>{product.category}</Link>
         <span aria-hidden className="text-gold">/</span>
-        <span aria-current="page">{product.name}</span>
+        <span aria-current="page" className="min-w-0 break-words">{product.name}</span>
       </nav>
 
       <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)] lg:gap-12 xl:gap-16">
@@ -177,7 +177,7 @@ export default function LookbookProductDetail({
               </fieldset>
             )}
 
-            <div className="mb-3 flex items-center justify-between gap-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
               <span id="size-label" className="font-sans text-[0.65rem] uppercase tracking-[0.24em] text-ink">{needsSize ? "Size request" : "Saree sizing"}</span>
               <button ref={sizeGuideButton} type="button" aria-expanded={sizeGuideOpen} aria-controls="lookbook-size-guide" onClick={() => setSizeGuideOpen(!sizeGuideOpen)} className={`min-h-11 font-sans text-xs text-ink-soft underline underline-offset-4 ${focus}`}>Size & fit guide</button>
             </div>

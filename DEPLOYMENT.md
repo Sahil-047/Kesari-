@@ -19,6 +19,10 @@ git fetch origin && git checkout kesari-site && git reset --hard origin/kesari-s
 cp .env.example .env && nano .env   # DOMAIN, MONGODB_URI, JWT_SECRET, S3
 ```
 
+Root `.env` (not `backend/.env`) is what Compose loads. For host Mongo on this VPS use  
+`MONGODB_URI=mongodb://172.17.0.1:27017/kesari?directConnection=true`  
+(`host.docker.internal` + compose `extra_hosts` also works; never `localhost` inside Docker. `directConnection=true` avoids replica-set discovery rewriting the host to `localhost`.)
+
 `DOMAIN` must match the nginx `server_name`. Changing it requires a frontend rebuild.
 
 Media (`frontend/public/images`, `videos`) is gitignored — rsync it onto the server before building if the site needs those files.

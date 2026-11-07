@@ -31,13 +31,7 @@ function FullBleedCraft({
   const isVideo = Boolean(video);
 
   return (
-    <section
-      className={
-        isVideo
-          ? "relative aspect-video w-full overflow-hidden md:min-h-[56dvh]"
-          : "full-bleed"
-      }
-    >
+    <section className={isVideo ? "film-hero" : "full-bleed"}>
       {isVideo ? (
         <AutoLoopVideo
           className="absolute inset-0 h-full w-full object-cover"
@@ -58,17 +52,17 @@ function FullBleedCraft({
       {dim && !isVideo ? (
         <div className="absolute inset-0 z-[1] bg-black/35" />
       ) : null}
-      <div className="absolute inset-0 z-[2] flex items-end justify-center pb-[10%] text-white md:pb-[12%]">
-        <div className="flex flex-col items-center text-center drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
-          <p className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-white/90">
+      <div className="absolute inset-0 z-[2] flex items-end justify-center px-4 pb-[12%] text-white sm:px-6 md:pb-[12%]">
+        <div className="flex max-w-[min(36rem,100%)] flex-col items-center text-center drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
+          <p className="font-sans text-[0.58rem] uppercase tracking-[0.28em] text-white/90 sm:text-[0.6rem] sm:tracking-[0.35em]">
             {eyebrow}
           </p>
-          <h2 className="display mt-3 text-[clamp(1.75rem,4.5vw,3rem)] uppercase tracking-[0.18em]">
+          <h2 className="display mt-3 text-[clamp(1.45rem,6.5vw,3rem)] uppercase tracking-[0.14em] sm:tracking-[0.18em]">
             {title}
           </h2>
           <Link
             href={href}
-            className="ghost-btn mt-8 px-14 py-4.5 text-[0.95rem] tracking-[0.34em] md:px-16 md:py-5 md:text-[1.05rem]"
+            className="ghost-btn mt-6 text-[0.8rem] tracking-[0.28em] sm:mt-8 sm:px-14 sm:py-4.5 sm:text-[0.95rem] sm:tracking-[0.34em] md:px-16 md:py-5 md:text-[1.05rem]"
           >
             Explore
           </Link>
@@ -185,7 +179,7 @@ export default function HomeShowcase({ tiles = HOUSE_TILES }: { tiles?: HouseTil
           <BentoHeading eyebrow="Kesari" title="The House" />
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:grid-rows-[repeat(3,minmax(200px,auto))] md:gap-4">
-            <BentoPanel shape="arch" className="col-span-2 row-span-2 px-7 pb-10 pt-24 text-center md:px-14 md:pt-32">
+            <BentoPanel shape="arch" className="col-span-2 row-span-2 px-5 pb-8 pt-16 text-center sm:px-7 sm:pb-10 sm:pt-24 md:px-14 md:pt-32">
               <span className="khatam mx-auto text-gold" aria-hidden />
               <p className="display mt-6 text-[clamp(1rem,1.7vw,1.22rem)] leading-[1.75] text-ink">{HOUSE_COPY}</p>
               <div className="mt-auto flex justify-center pt-8">
@@ -219,7 +213,7 @@ export default function HomeShowcase({ tiles = HOUSE_TILES }: { tiles?: HouseTil
               );
             })}
 
-            <Link href="/whats-new" className="bento-tile mughal-frame group relative col-span-2 block min-h-[200px] overflow-hidden bg-[#1a140e] p-7 pr-20 md:p-9 md:pr-24">
+            <Link href="/whats-new" className="bento-tile mughal-frame group relative col-span-2 block min-h-[180px] overflow-hidden bg-[#1a140e] p-5 pr-16 sm:min-h-[200px] sm:p-7 sm:pr-20 md:p-9 md:pr-24">
               <span className="relative z-10 flex h-full flex-col justify-between gap-6">
                 <span className="khatam text-gold" aria-hidden />
                 <span>
@@ -237,7 +231,7 @@ export default function HomeShowcase({ tiles = HOUSE_TILES }: { tiles?: HouseTil
               </span>
             </Link>
 
-            <Link href="/crafts" className="bento-tile mughal-frame group relative col-span-2 block min-h-[200px] overflow-hidden parchment-surface p-7 md:p-9">
+            <Link href="/crafts" className="bento-tile mughal-frame group relative col-span-2 block min-h-[180px] overflow-hidden parchment-surface p-5 sm:min-h-[200px] sm:p-7 md:p-9">
               <span className="relative z-10 flex h-full flex-col justify-between gap-5">
                 <span className="block font-sans text-[0.58rem] uppercase tracking-[0.32em] text-ink/60">The Work</span>
                 <span className="display block text-[clamp(1.05rem,1.9vw,1.5rem)] uppercase leading-[1.5] tracking-[0.12em] text-ink">

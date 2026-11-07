@@ -24,6 +24,9 @@ services:
       PORT: "4000"
       CORS_ORIGINS: https://${DOMAIN:?Set DOMAIN in .env}
       AWS_S3_PUBLIC_URL: https://${DOMAIN}/img
+    # So MONGODB_URI=mongodb://host.docker.internal:27017/kesari reaches host mongod.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "127.0.0.1:${BACKEND_HOST_PORT:-4000}:4000"
     networks: [kesari]
