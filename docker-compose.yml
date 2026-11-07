@@ -1,10 +1,11 @@
-# Kesari production stack.
+# Kesari behind host nginx (recommended on shared VPS).
 #
-#   cp .env.example .env        # fill in DOMAIN, MongoDB, JWT secret, S3
+#   cp .env.example .env && nano .env
 #   docker compose up -d --build
+#   # then install deploy/nginx.conf.example as an nginx site
 #
-# Bundled MongoDB instead of Atlas:  docker compose --profile local-db up -d --build
-# (then set MONGODB_URI=mongodb://mongo:27017/kesari in .env)
+# Optional bundled MongoDB:  docker compose --profile local-db up -d --build
+# Optional Caddy (sole occupant of 80/443):  docker compose --profile caddy up -d
 
 name: kesari
 
@@ -21,11 +22,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: "4000"
-      # Derived from DOMAIN so the site, CORS and media links always agree.
       CORS_ORIGINS: https://${DOMAIN:?Set DOMAIN in .env}
       AWS_S3_PUBLIC_URL: https://${DOMAIN}/img
-    expose:
-      - "4000"
+    ports:
+      - "127.0.0.1:${BACKEND_HOST_PORT:-4000}:4000"
     networks: [kesari]
     logging: &logging
       driver: json-file
@@ -38,15 +38,13 @@ services:
     build:
       context: ./frontend
       args:
-        # Inlined into the browser bundle; changing DOMAIN needs a rebuild.
         NEXT_PUBLIC_API_URL: https://${DOMAIN:?Set DOMAIN in .env}/api
     image: kesari-web:latest
     environment:
       NODE_ENV: production
-      # Server rendering talks to the API over the private network.
       API_INTERNAL_URL: http://backend:4000/api
-    expose:
-      - "3000"
+    ports:
+      - "127.0.0.1:${FRONTEND_HOST_PORT:-3020}:3000"
     volumes:
       - next-cache:/app/.next/cache
     depends_on:
@@ -55,8 +53,10 @@ services:
     networks: [kesari]
     logging: *logging
 
+  # Only if nothing else owns 80/443 on the host.
   caddy:
     <<: *restart
+    profiles: ["caddy"]
     image: caddy:2.10-alpine
     ports:
       - "80:80"
@@ -64,7 +64,7 @@ services:
       - "443:443/udp"
     environment:
       DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
-      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in .env}
+      ACME_EMAIL: ${ACME_EMAIL:-}
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
@@ -75,7 +75,6 @@ services:
     networks: [kesari]
     logging: *logging
 
-  # Optional self-hosted MongoDB (production default is MongoDB Atlas via MONGODB_URI).
   mongo:
     <<: *restart
     profiles: ["local-db"]

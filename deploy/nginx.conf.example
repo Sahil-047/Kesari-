@@ -1,0 +1,45 @@
+# Kesari — drop into /etc/nginx/sites-available/ then:
+#   sudo ln -sf /etc/nginx/sites-available/kesari /etc/nginx/sites-enabled/kesari
+#   sudo nginx -t && sudo systemctl reload nginx
+#
+# Replace kesari.example.com. Certbot (optional):
+#   sudo certbot --nginx -d kesari.example.com -d www.kesari.example.com
+
+upstream kesari_web {
+    server 127.0.0.1:3020;
+    keepalive 16;
+}
+
+upstream kesari_api {
+    server 127.0.0.1:4000;
+    keepalive 16;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name kesari.example.com www.kesari.example.com;
+
+    client_max_body_size 20m;
+
+    location ~ ^/(api|img|api-docs|health)(/|$) {
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+        proxy_pass http://kesari_api;
+    }
+
+    location / {
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_pass http://kesari_web;
+    }
+}
