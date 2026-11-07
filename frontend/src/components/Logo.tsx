@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import logoDark from "../../public/images/kesari-logo.png";
-import logoLight from "../../public/images/kesari-logo-light.png";
+import logoDark from "@/assets/brand/kesari-logo.png";
+import logoLight from "@/assets/brand/kesari-logo-light.png";
 
 type LogoProps = {
   /** "light" and "gold" are for dark backgrounds. */

@@ -47,6 +47,7 @@ next-env.d.ts
 .ref-frames/
 .claude/
 
-# Storefront media (large photos/films — keep local / sync separately; not in git)
+# Storefront media (large photos/films — sync to server separately; not in git).
+# Brand logos live in frontend/src/assets/brand/ (imported at build time).
 frontend/public/images/
 frontend/public/videos/
