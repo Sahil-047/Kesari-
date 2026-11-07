@@ -46,3 +46,7 @@ next-env.d.ts
 
 .ref-frames/
 .claude/
+
+# Storefront media (large photos/films — keep local / sync separately; not in git)
+frontend/public/images/
+frontend/public/videos/
