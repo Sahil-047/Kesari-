@@ -1,9 +1,11 @@
 "use client";
 
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
+import logoDark from "@/assets/brand/kesari-logo.png";
+import logoLight from "@/assets/brand/kesari-logo-light.png";
 import { STUDIO } from "@/components/admin/AdminProviders";
 import { useAuth } from "@/components/admin/AuthProvider";
-import { Alert, Avatar, Button, Card, Flex, Form, Input, Typography } from "antd";
+import { Alert, Button, Card, Flex, Form, Input, Typography } from "antd";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -28,7 +30,6 @@ export default function AdminLoginPage() {
 
   return (
     <div style={{ display: "grid", minHeight: "100vh" }} className="lg:grid-cols-[1fr_minmax(460px,0.8fr)]">
-      {/* Brand side */}
       <div className="relative hidden overflow-hidden bg-[#0c0a09] lg:block">
         <Image
           src="/images/hero-wedding.jpg"
@@ -39,21 +40,9 @@ export default function AdminLoginPage() {
           className="object-cover object-[50%_25%] opacity-60 grayscale"
         />
         <div className="relative flex h-full flex-col justify-between p-12">
-          <Flex align="center" gap={12}>
-            <Avatar
-              shape="square"
-              size={32}
-              className="studio-display"
-              style={{ background: "#fff", color: "#a16207", fontWeight: 600, fontSize: 16, borderRadius: 6 }}
-            >
-              K
-            </Avatar>
-            <Typography.Text strong style={{ color: "#fff", fontSize: 15 }}>
-              Kesari Studio
-            </Typography.Text>
-          </Flex>
+          <Image src={logoLight} alt="Kesari" height={40} style={{ width: "auto", height: 40 }} priority />
           <div style={{ maxWidth: 440 }}>
-            <Typography.Title className="studio-display" style={{ color: "#fff", margin: 0, fontSize: 48, lineHeight: 1.08 }}>
+            <Typography.Title className="studio-display" style={{ color: "#fff", margin: 0, fontSize: 48, lineHeight: 1.08, fontWeight: 400 }}>
               Same traditions.
               <br />
               New stories.
@@ -66,17 +55,27 @@ export default function AdminLoginPage() {
         </div>
       </div>
 
-      {/* Form side */}
       <Flex align="center" justify="center" style={{ padding: 24, background: STUDIO.subtle }}>
         <Card
           variant="borderless"
           style={{ width: "100%", maxWidth: 400, borderRadius: 18 }}
           styles={{ body: { padding: 22 } }}
         >
-          <Typography.Title level={1} className="studio-display" style={{ marginTop: 0, marginBottom: 6, fontSize: 32 }}>
-            Welcome back
-          </Typography.Title>
-          <Typography.Paragraph type="secondary">Sign in to Studio.</Typography.Paragraph>
+          <Flex vertical align="flex-start" gap={10} style={{ marginBottom: 18 }}>
+            <Image src={logoDark} alt="Kesari" height={36} style={{ width: "auto", height: 36 }} priority />
+            <div>
+              <Typography.Title
+                level={1}
+                className="studio-display"
+                style={{ marginTop: 0, marginBottom: 4, fontSize: 32, fontWeight: 400 }}
+              >
+                Welcome back
+              </Typography.Title>
+              <Typography.Paragraph type="secondary" style={{ margin: 0 }}>
+                Sign in to Studio.
+              </Typography.Paragraph>
+            </div>
+          </Flex>
 
           {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
 

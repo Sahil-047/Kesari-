@@ -2,6 +2,7 @@
 
 import { useReducedMotion } from "framer-motion";
 import { useState } from "react";
+import type { CollectionEdit } from "@/lib/content/pages";
 import type { MensCategory, MensCollection } from "@/lib/mens-collections";
 import MenswearCategories from "./MenswearCategories";
 import MenswearChapters from "./MenswearChapters";
@@ -9,9 +10,11 @@ import MenswearChapters from "./MenswearChapters";
 export default function MenswearBrowse({
   links,
   collections,
+  edit,
 }: {
   links?: Record<string, string>;
   collections?: MensCollection[];
+  edit: CollectionEdit;
 }) {
   const [category, setCategory] = useState<MensCategory | "all">("all");
   const reduce = useReducedMotion();
@@ -29,7 +32,12 @@ export default function MenswearBrowse({
 
   return (
     <>
-      <MenswearCategories active={category} onChange={onChange} />
+      <MenswearCategories
+        active={category}
+        onChange={onChange}
+        edit={edit}
+        collections={collections}
+      />
       <MenswearChapters category={category} links={links} collections={collections} />
     </>
   );

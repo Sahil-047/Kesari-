@@ -3,6 +3,7 @@
 import { useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
 import type { ColorCollection, WomensCategory } from "@/lib/color-collections";
+import type { CollectionEdit } from "@/lib/content/pages";
 import WomenswearCategories from "./WomenswearCategories";
 import WomenswearChapters from "./WomenswearChapters";
 
@@ -16,10 +17,12 @@ function scrollToLooks(smooth: boolean) {
 export default function WomenswearBrowse({
   initialCategory,
   collections,
+  edit,
 }: {
   initialCategory?: WomensCategory;
   /** CMS look chapters (resolved on the server). */
   collections?: ColorCollection[];
+  edit: CollectionEdit;
 }) {
   const [category, setCategory] = useState<WomensCategory | "all">(
     initialCategory ?? "all",
@@ -41,7 +44,12 @@ export default function WomenswearBrowse({
 
   return (
     <>
-      <WomenswearCategories active={category} onChange={onChange} />
+      <WomenswearCategories
+        active={category}
+        onChange={onChange}
+        edit={edit}
+        collections={collections}
+      />
       <WomenswearChapters category={category} collections={collections} />
     </>
   );

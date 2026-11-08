@@ -1,20 +1,24 @@
 "use client";
 
 import Image from "next/image";
-import {
-  COLOR_COLLECTIONS,
-  WOMENS_CATEGORIES,
-  type WomensCategory,
-} from "@/lib/color-collections";
+import type { ColorCollection, WomensCategory } from "@/lib/color-collections";
+import type { CollectionEdit } from "@/lib/content/pages";
 
 type Props = {
   active: WomensCategory | "all";
   onChange: (next: WomensCategory | "all") => void;
+  edit: CollectionEdit;
+  collections?: ColorCollection[];
 };
 
-export default function WomenswearCategories({ active, onChange }: Props) {
-  const count = (id: WomensCategory) =>
-    COLOR_COLLECTIONS.filter((c) => c.category === id).length;
+export default function WomenswearCategories({
+  active,
+  onChange,
+  edit,
+  collections = [],
+}: Props) {
+  const count = (id: string) => collections.filter((c) => c.category === id).length;
+  const tiles = edit.items.filter((item) => item.image && item.title);
 
   return (
     <section
@@ -24,10 +28,10 @@ export default function WomenswearCategories({ active, onChange }: Props) {
       <div className="mb-5 flex flex-col items-center gap-3 text-center md:mb-8 md:flex-row md:items-end md:justify-between md:text-left">
         <div>
           <p className="font-sans text-[0.6rem] uppercase tracking-[0.32em] text-ink/65">
-            Shop by form
+            {edit.eyebrow}
           </p>
           <h2 className="display mt-1.5 text-[clamp(1.35rem,2.8vw,2rem)] uppercase tracking-[0.18em] text-ink md:mt-2">
-            The Edit
+            {edit.title}
           </h2>
         </div>
         <button
@@ -45,14 +49,15 @@ export default function WomenswearCategories({ active, onChange }: Props) {
       </div>
 
       <ul className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5">
-        {WOMENS_CATEGORIES.map((cat) => {
-          const on = active === cat.id;
+        {tiles.map((cat) => {
+          const id = cat.id as WomensCategory;
+          const on = active === id;
           const n = count(cat.id);
           return (
             <li key={cat.id}>
               <button
                 type="button"
-                onClick={() => onChange(on ? "all" : cat.id)}
+                onClick={() => onChange(on ? "all" : id)}
                 aria-pressed={on}
                 className={`group relative block aspect-[2/3] w-full cursor-pointer overflow-hidden text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-ink sm:aspect-[3/4] ${
                   on ? "ring-1 ring-ink" : ""

@@ -34,6 +34,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import CategorySelect from "./CategorySelect";
 import ImageCropModal from "./ImageCropModal";
 import MediaDrop, { uploadToLibrary } from "./MediaDrop";
 import StatusTag from "./StatusTag";
@@ -301,6 +302,15 @@ export default function FieldInput({ field, value, onChange, uploadFolder }: Pro
           options={field.options?.map((o) => ({ value: o, label: optionLabel(o) }))}
         />
       );
+    case "category":
+      return (
+        <CategorySelect
+          value={value ? String(value) : ""}
+          onChange={onChange}
+          disabled={disabled}
+          required={field.required}
+        />
+      );
     case "boolean":
       return <Switch checked={Boolean(value)} disabled={disabled} onChange={onChange} />;
     case "checkbox": {
@@ -356,8 +366,25 @@ export default function FieldInput({ field, value, onChange, uploadFolder }: Pro
           showText
           disabledAlpha
           format="hex"
-          value={String(value ?? "#000000")}
+          value={String(value ?? "#c9a227")}
           disabled={disabled}
+          presets={[
+            {
+              label: "Kesari",
+              colors: [
+                "#c9a227",
+                "#a16207",
+                "#c5a059",
+                "#d4b36e",
+                "#c9567a",
+                "#e8c4c0",
+                "#c4a090",
+                "#2c241c",
+                "#4a3f35",
+                "#b8a686",
+              ],
+            },
+          ]}
           onChange={(c) => onChange(c.toHexString())}
         />
       );

@@ -22,6 +22,7 @@ import {
   Drawer,
   Flex,
   Form,
+  Grid,
   Input,
   InputNumber,
   Popconfirm,
@@ -162,6 +163,8 @@ export default function OrderForm({
     }
   };
 
+  const screens = Grid.useBreakpoint();
+  const drawerWide = Boolean(screens.md);
   const wa = whatsappLink(
     draft.customer.phone,
     order ? `Hello ${draft.customer.name}, this is Kesari about your order ${order.orderNumber}.` : "",
@@ -171,18 +174,19 @@ export default function OrderForm({
     <Drawer
       open
       onClose={onClose}
-      size={800}
+      width={drawerWide ? 800 : "100%"}
+      className="studio-form-drawer"
       title={order ? `Order ${order.orderNumber}` : "Record a sale"}
       styles={{ body: { background: "#fafaf9" } }}
       extra={
         wa && (
-          <Button icon={<WhatsAppOutlined />} href={wa} target="_blank">
-            WhatsApp
+          <Button icon={<WhatsAppOutlined />} href={wa} target="_blank" aria-label="WhatsApp">
+            {drawerWide ? "WhatsApp" : null}
           </Button>
         )
       }
       footer={
-        <Flex justify="space-between" align="center">
+        <Flex justify="space-between" align="center" wrap gap={12}>
           {order ? (
             <Popconfirm
               title={`Delete order ${order.orderNumber}?`}
@@ -198,7 +202,7 @@ export default function OrderForm({
           ) : (
             <span />
           )}
-          <Space>
+          <Space wrap>
             <Button onClick={onClose}>Cancel</Button>
             <Button type="primary" loading={saving} onClick={save}>
               {order ? "Save order" : `Record sale · ${inr(total)}`}
@@ -316,7 +320,7 @@ export default function OrderForm({
                 column={1}
                 size="small"
                 bordered
-                style={{ width: 360 }}
+                style={{ width: "100%", maxWidth: 360 }}
                 items={[
                   { key: "sub", label: "Subtotal", children: inr(subtotal) },
                   {

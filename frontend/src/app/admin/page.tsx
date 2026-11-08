@@ -14,6 +14,7 @@ import { STUDIO } from "@/components/admin/AdminProviders";
 import RevenueChart from "@/components/admin/RevenueChart";
 import StatusTag from "@/components/admin/StatusTag";
 import ScreenHeader, { ScreenBody } from "@/components/admin/ScreenHeader";
+import StudioGreeting from "@/components/admin/StudioGreeting";
 import { api } from "@/lib/api/client";
 import type { ApiOrder, SalesRange, SalesReport } from "@/lib/api/types";
 import {
@@ -34,6 +35,7 @@ import {
   Empty,
   Flex,
   Divider,
+  Grid,
   Progress,
   Row,
   Segmented,
@@ -101,11 +103,6 @@ function Rows<T>({ items, render, empty }: { items: T[]; render: (item: T) => Re
   );
 }
 
-function greeting() {
-  const h = new Date().getHours();
-  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-}
-
 const RECENT_COLUMNS: TableColumnsType<ApiOrder> = [
   { key: "no", title: "Order", render: (_, o) => <Typography.Text strong className="studio-num">{o.orderNumber}</Typography.Text> },
   { key: "customer", title: "Customer", render: (_, o) => o.customer.name },
@@ -122,6 +119,8 @@ const RECENT_COLUMNS: TableColumnsType<ApiOrder> = [
 export default function SalesDashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const screens = Grid.useBreakpoint();
+  const isNarrow = !screens.md;
   const [range, setRange] = useState<SalesRange>("30d");
   const [report, setReport] = useState<SalesReport | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -156,12 +155,15 @@ export default function SalesDashboardPage() {
   return (
     <>
       <ScreenHeader
-        title={`${greeting()}, ${user?.name.split(" ")[0] ?? ""}`}
+        title={<StudioGreeting name={user?.name.split(" ")[0] ?? "Admin"} />}
+        crumbLabel="Dashboard"
         description={new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
         actions={
           <>
-            <Segmented<SalesRange> value={range} onChange={setRange} options={RANGES} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/admin/orders?new=1")}>
+            <div className="studio-scroll-x">
+              <Segmented<SalesRange> value={range} onChange={setRange} options={RANGES} block={isNarrow} />
+            </div>
+            <Button type="primary" icon={<PlusOutlined />} block={isNarrow} onClick={() => router.push("/admin/orders?new=1")}>
               Record a sale
             </Button>
           </>
@@ -171,22 +173,23 @@ export default function SalesDashboardPage() {
       <ScreenBody>
         <Card size="small" style={{ marginBottom: 16 }}>
           <Steps
-            type="navigation"
+            type={isNarrow ? "default" : "navigation"}
             size="small"
+            direction={isNarrow ? "vertical" : "horizontal"}
             current={productTotal ? 1 : 0}
             onChange={(i) => router.push(i === 0 ? "/admin/products" : "/admin/content")}
             items={[
               {
                 title: "Catalogue",
                 icon: <SkinOutlined />,
-                content:
+                description:
                   productTotal === null
                     ? "Every piece lives here first"
                     : productTotal === 0
                       ? "No products yet — start here"
                       : `${productTotal} product${productTotal === 1 ? "" : "s"}`,
               },
-              { title: "Pages", icon: <FormOutlined />, content: "Home, What's New, and the rest" },
+              { title: "Pages", icon: <FormOutlined />, description: "Home, What's New, and the rest" },
             ]}
           />
         </Card>
@@ -242,7 +245,11 @@ export default function SalesDashboardPage() {
             <Card
               style={{ marginTop: 16 }}
               title={`Revenue · ${range === "12m" ? "by month" : "by day"}`}
-              extra={<Typography.Text type="secondary">Cancelled orders are not counted</Typography.Text>}
+              extra={
+                !isNarrow ? (
+                  <Typography.Text type="secondary">Cancelled orders are not counted</Typography.Text>
+                ) : undefined
+              }
               loading={!report}
             >
               {report && <RevenueChart data={report.series} />}

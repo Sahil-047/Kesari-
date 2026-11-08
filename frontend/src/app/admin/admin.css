@@ -1,8 +1,6 @@
 /*
  * Kesari Studio — minimal warm shell. Soft elevation only; no heavy neo.
  */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap");
-
 :root,
 .studio {
   --studio-ink: #1c1917;
@@ -17,7 +15,8 @@
   --studio-subtle: #f3f0eb;
   --studio-surface: #faf8f5;
   --studio-gold: #a16207;
-  --studio-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --studio-display: var(--font-serif), "Cas Olgans", Georgia, "Times New Roman", serif;
+  --studio-sans: var(--font-sans), "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --studio-ease: cubic-bezier(0.23, 1, 0.32, 1);
   --studio-elev: 0 1px 2px rgba(28, 25, 23, 0.04), 0 6px 16px -8px rgba(28, 25, 23, 0.1);
 }
@@ -26,10 +25,10 @@
   min-height: 100vh;
   background: var(--studio-subtle);
   color: var(--studio-text);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--studio-sans);
   font-size: 14px;
   line-height: 1.55;
-  font-feature-settings: "cv11", "ss01", "ss03";
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -42,11 +41,11 @@
 .studio-display.studio-display,
 .ant-drawer .ant-drawer-title {
   font-family: var(--studio-display);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
 .ant-drawer .ant-drawer-title {
-  font-size: 19px;
+  font-size: 20px;
 }
 .ant-drawer,
 .ant-modal-root,
@@ -55,8 +54,67 @@
 .ant-select-dropdown,
 .ant-message,
 .ant-picker-dropdown {
-  font-feature-settings: "cv11", "ss01", "ss03";
+  font-family: var(--studio-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+.studio-brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--studio-hairline);
+}
+.studio-brand-lockup img {
+  display: block;
+  width: auto;
+  height: 34px;
+  object-fit: contain;
+}
+.studio-brand-lockup[data-compact="true"] {
+  justify-content: center;
+  padding-inline: 12px;
+}
+.studio-brand-lockup[data-compact="true"] img {
+  height: 28px;
+  max-width: 48px;
+  object-fit: contain;
+  object-position: left center;
+}
+.studio-brand-copy {
+  min-width: 0;
+  line-height: 1.15;
+}
+.studio-brand-copy strong {
+  display: block;
+  font-family: var(--studio-display);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--studio-text);
+}
+.studio-brand-copy span {
+  display: block;
+  margin-top: 3px;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--studio-faint);
+}
+
+.studio-greeting {
+  display: inline-block;
+  overflow: hidden;
+}
+.studio-greeting-char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-greeting-char {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .studio h4.ant-typography,
@@ -304,6 +362,173 @@
   height: 6px;
   border-radius: 50%;
   background: currentColor;
+}
+
+/* —— Layout canvas —— */
+.studio .studio-main {
+  overflow-x: clip;
+  width: 100%;
+}
+.studio-screen-header {
+  padding: 28px 28px 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.studio-screen-body {
+  padding: 28px 28px 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.studio-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.studio-toolbar .studio-toolbar-search {
+  flex: 1 1 200px;
+  max-width: 100%;
+  min-width: 0;
+}
+.studio-toolbar .ant-select {
+  flex: 1 1 140px;
+  min-width: 140px;
+}
+.studio-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+.studio-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.studio-nav-drawer .studio-sider-menu.ant-menu-inline {
+  background: transparent !important;
+}
+
+/* Tables: keep cells from blowing out the canvas */
+.studio .ant-table-wrapper {
+  max-width: 100%;
+}
+.studio .ant-table {
+  font-size: 13px;
+}
+
+/* Drawers / modals fill narrow viewports */
+@media (max-width: 767px) {
+  .ant-drawer.studio-form-drawer .ant-drawer-content-wrapper,
+  .ant-drawer:not(.studio-nav-drawer) .ant-drawer-content-wrapper {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  .ant-drawer .ant-drawer-header,
+  .ant-drawer .ant-drawer-footer,
+  .ant-drawer .ant-drawer-body {
+    padding-inline: 16px !important;
+  }
+  .ant-drawer .ant-drawer-footer .ant-flex,
+  .ant-drawer .ant-drawer-footer .ant-space {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .ant-modal {
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px auto !important;
+  }
+  .ant-modal .ant-modal-body {
+    padding-inline: 16px;
+  }
+}
+
+@media (max-width: 991px) {
+  .studio-screen-header {
+    padding: 18px 16px 4px;
+  }
+  .studio-screen-body {
+    padding: 14px 16px 88px;
+  }
+  .studio-screen-title.studio-display {
+    font-size: 22px !important;
+  }
+  .studio-header-site-label {
+    display: none;
+  }
+  .studio .studio-affix-bar {
+    padding: 10px 16px !important;
+  }
+  .studio .ant-tabs-nav {
+    margin-bottom: 0 !important;
+  }
+  .studio .ant-tabs-nav-list {
+    flex-wrap: nowrap;
+  }
+  .studio .ant-card .ant-card-head {
+    padding-inline: 14px;
+  }
+  .studio .ant-card .ant-card-body {
+    padding-inline: 14px;
+  }
+  .studio-media-grid {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 12px;
+  }
+  .studio .ant-statistic-content {
+    font-size: 22px !important;
+  }
+  .studio .ant-steps-navigation {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 575px) {
+  .studio-screen-header {
+    padding: 14px 12px 2px;
+  }
+  .studio-screen-body {
+    padding: 10px 12px 96px;
+  }
+  .studio-screen-title.studio-display {
+    font-size: 20px !important;
+  }
+  .studio-screen-crumbs {
+    display: none;
+  }
+  .studio-screen-actions {
+    width: 100%;
+  }
+  .studio-screen-actions .ant-btn,
+  .studio-screen-actions .ant-upload {
+    flex: 1 1 auto;
+  }
+  .studio-media-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .studio .ant-upload-wrapper .ant-upload-drag {
+    padding: 16px 12px !important;
+  }
+  .studio .ant-upload-wrapper .ant-upload-drag .ant-flex {
+    flex-wrap: wrap;
+  }
+  .studio .ant-pagination {
+    flex-wrap: wrap;
+    justify-content: center !important;
+  }
+  .studio .ant-table-thead > tr > th {
+    padding: 10px 8px !important;
+  }
+  .studio .ant-table-tbody > tr > td {
+    padding: 10px 8px !important;
+  }
+  .studio .ant-segmented {
+    max-width: 100%;
+  }
+  .studio .ant-alert-action {
+    margin-inline-start: 0 !important;
+    margin-block-start: 8px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

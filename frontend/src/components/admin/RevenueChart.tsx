@@ -7,7 +7,6 @@ import { useEffect, useRef, useState } from "react";
 type Point = { key: string; revenue: number; orders: number };
 
 const HEIGHT = 240;
-const PAD = { top: 16, right: 8, bottom: 26, left: 56 };
 
 /** Round the axis maximum up to a friendly number. */
 function niceMax(value: number): number {
@@ -35,8 +34,14 @@ export default function RevenueChart({ data }: { data: Point[] }) {
     return () => ro.disconnect();
   }, []);
 
+  const PAD = {
+    top: 16,
+    right: 8,
+    bottom: 26,
+    left: width < 420 ? 40 : 56,
+  };
   const max = niceMax(Math.max(...data.map((d) => d.revenue), 0));
-  const plotW = width - PAD.left - PAD.right;
+  const plotW = Math.max(0, width - PAD.left - PAD.right);
   const plotH = HEIGHT - PAD.top - PAD.bottom;
   const slot = plotW / Math.max(data.length, 1);
   const barW = Math.max(2, Math.min(28, slot - 2));

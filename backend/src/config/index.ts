@@ -24,7 +24,8 @@ const envSchema = yup.object({
   AWS_SECRET_ACCESS_KEY: optional(),
   // Not yup.url(): that rejects http://localhost:4000/img, the local media proxy.
   AWS_S3_PUBLIC_URL: optional().test("url", "AWS_S3_PUBLIC_URL must be a URL", (v) => !v || URL.canParse(v)),
-  MAX_UPLOAD_MB: yup.number().positive().default(15),
+  // Videos for hero/catalogue often exceed image sizes; 100 MB default.
+  MAX_UPLOAD_MB: yup.number().positive().default(100),
   LOG_LEVEL: yup.string().oneOf(["error", "warn", "info", "debug"]).default("info"),
 });
 

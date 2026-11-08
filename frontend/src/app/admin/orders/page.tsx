@@ -15,7 +15,7 @@ import {
   shortDate,
   SOURCE_LABEL,
 } from "@/lib/admin/format";
-import { Alert, Button, Card, Empty, Flex, Input, Select, Table, Typography, type TableColumnsType } from "antd";
+import { Alert, Button, Card, Empty, Grid, Input, Select, Table, Typography, type TableColumnsType } from "antd";
 import { STUDIO } from "@/components/admin/AdminProviders";
 import StatusTag from "@/components/admin/StatusTag";
 import { useCallback, useEffect, useState } from "react";
@@ -55,6 +55,8 @@ const COLUMNS: TableColumnsType<ApiOrder> = [
 ];
 
 export default function AdminOrdersPage() {
+  const screens = Grid.useBreakpoint();
+  const isNarrow = !screens.md;
   const [orders, setOrders] = useState<ApiOrder[]>([]);
   const [meta, setMeta] = useState<PageMeta | null>(null);
   const [page, setPage] = useState(1);
@@ -97,7 +99,7 @@ export default function AdminOrdersPage() {
           meta ? `${meta.total} order${meta.total === 1 ? "" : "s"} from the website, WhatsApp and the store` : undefined
         }
         actions={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing("new")}>
+          <Button type="primary" icon={<PlusOutlined />} block={isNarrow} onClick={() => setEditing("new")}>
             Record a sale
           </Button>
         }
@@ -105,11 +107,12 @@ export default function AdminOrdersPage() {
 
       <ScreenBody>
         <Card styles={{ body: { padding: 0 } }}>
-          <Flex wrap gap={8} style={{ padding: "12px 16px", borderBottom: `1px solid ${STUDIO.hairline}` }}>
+          <div className="studio-toolbar" style={{ padding: "12px 16px", borderBottom: `1px solid ${STUDIO.hairline}` }}>
             <Input.Search
               allowClear
+              className="studio-toolbar-search"
               placeholder="Search order no., name, phone…"
-              style={{ maxWidth: 300 }}
+              style={{ maxWidth: isNarrow ? undefined : 300 }}
               onSearch={(v) => {
                 setPage(1);
                 setSearch(v);
@@ -120,7 +123,7 @@ export default function AdminOrdersPage() {
                 key={f.name}
                 allowClear
                 placeholder={f.label}
-                style={{ minWidth: 160 }}
+                style={{ minWidth: isNarrow ? undefined : 160 }}
                 value={filters[f.name] || undefined}
                 onChange={(v) => {
                   setPage(1);
@@ -129,7 +132,7 @@ export default function AdminOrdersPage() {
                 options={optionsOf(f.options)}
               />
             ))}
-          </Flex>
+          </div>
 
           {error && <Alert type="error" showIcon message={error} style={{ margin: 16 }} />}
 

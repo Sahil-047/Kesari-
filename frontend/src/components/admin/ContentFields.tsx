@@ -17,6 +17,7 @@ import {
   Card,
   Col,
   Collapse,
+  ColorPicker,
   Empty,
   Flex,
   Form,
@@ -28,7 +29,27 @@ import {
   Typography,
   Upload,
 } from "antd";
+
+/** Brand + lookbook swatches for the colour dice / picker. */
+const ACCENT_PRESETS = [
+  {
+    label: "Kesari",
+    colors: [
+      "#c9a227",
+      "#a16207",
+      "#c5a059",
+      "#d4b36e",
+      "#c9567a",
+      "#e8c4c0",
+      "#c4a090",
+      "#2c241c",
+      "#4a3f35",
+      "#b8a686",
+    ],
+  },
+];
 import { useEffect, useState } from "react";
+import CategorySelect from "./CategorySelect";
 import ImageCropModal from "./ImageCropModal";
 import MediaDrop, { LibraryPicker, uploadToLibrary } from "./MediaDrop";
 
@@ -248,6 +269,32 @@ function SimpleInput({
         value={typeof value === "string" && value ? value : undefined}
         onChange={(v: string | undefined) => onChange(v ?? "")}
         options={field.options}
+      />
+    );
+  }
+  if (field.type === "color") {
+    const hex = typeof value === "string" && value ? value : "#c9a227";
+    return (
+      <Flex align="center" gap={12}>
+        <ColorPicker
+          showText
+          disabledAlpha
+          format="hex"
+          value={hex}
+          presets={ACCENT_PRESETS}
+          onChange={(c) => onChange(c.toHexString())}
+        />
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          {hex}
+        </Typography.Text>
+      </Flex>
+    );
+  }
+  if (field.type === "category") {
+    return (
+      <CategorySelect
+        value={typeof value === "string" ? value : ""}
+        onChange={onChange}
       />
     );
   }

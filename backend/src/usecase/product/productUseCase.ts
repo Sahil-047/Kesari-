@@ -1,5 +1,6 @@
 import type { FilterQuery } from "mongoose";
 import ProductModel from "../../model/product.model.js";
+import CategoryUseCase from "../category/categoryUseCase.js";
 import { ProductPlacementEnum } from "../../util/enum/placement.enum.js";
 import { ACTIVE_PRODUCT_STATUSES } from "../../util/enum/product.enum.js";
 import CustomError from "../../util/helper/customError.js";
@@ -102,7 +103,8 @@ class ProductUseCase {
 
   async createProduct(input: CreateProductInput) {
     const slug = await resolveSlug(ProductModel, { explicit: input.slug, source: input.name });
-    const body = withPlacementFlags(input);
+    const category = await CategoryUseCase.ensureCategory(input.category);
+    const body = withPlacementFlags({ ...input, category });
     return ProductModel.create({ ...body, slug });
   }
 
@@ -112,6 +114,8 @@ class ProductUseCase {
       input.slug && input.slug !== product.slug
         ? await resolveSlug(ProductModel, { explicit: input.slug, source: product.name, excludeId: id })
         : undefined;
+    const category =
+      input.category !== undefined ? await CategoryUseCase.ensureCategory(input.category) : undefined;
     const body =
       input.placements !== undefined || input.featured !== undefined
         ? withPlacementFlags({
@@ -121,7 +125,7 @@ class ProductUseCase {
         : {};
     return ProductModel.findByIdAndUpdate(
       id,
-      { ...input, ...body, ...(slug && { slug }) },
+      { ...input, ...body, ...(slug && { slug }), ...(category && { category }) },
       { new: true, runValidators: true },
     ).exec();
   }

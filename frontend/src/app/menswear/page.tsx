@@ -40,7 +40,7 @@ export default async function MenswearPage() {
     getProductLinker(),
     getLiveProducts(),
   ]);
-  const { hero, chapters } = content;
+  const { hero, edit, chapters } = content;
 
   const curated = chaptersToMensCollections(chapters.items, (item) =>
     linker.forPiece({
@@ -90,8 +90,8 @@ export default async function MenswearPage() {
           </Link>
         </div>
 
-        <Suspense fallback={<MenswearBrowse collections={collections} />}>
-          <MenswearBrowse collections={collections} />
+        <Suspense fallback={<MenswearBrowse collections={collections} edit={edit} />}>
+          <MenswearBrowse collections={collections} edit={edit} />
         </Suspense>
       </main>
       <Footer />

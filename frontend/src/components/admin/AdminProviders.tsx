@@ -32,9 +32,12 @@ export const STUDIO = {
   shadowFloat: "0 8px 24px -10px rgba(28, 25, 23, 0.16)",
 } as const;
 
+/** House UI sans (Jost) + display serif (Cas Olgans) from the root layout. */
 const FONT =
-  "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-export const DISPLAY_FONT = "'Playfair Display', Georgia, 'Times New Roman', serif";
+  "var(--font-sans), 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+export const DISPLAY_FONT = "var(--font-serif), 'Cas Olgans', Georgia, 'Times New Roman', serif";
+
+export const STUDIO_WELCOME_KEY = "kesari-studio-welcome";
 
 export const studioTheme: ThemeConfig = {
   algorithm: theme.defaultAlgorithm,

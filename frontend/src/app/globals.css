@@ -225,12 +225,14 @@ button {
   padding: 0.35rem 0.45rem;
   font-family: var(--font-sans), system-ui, sans-serif;
   font-size: 0.625rem;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.24em;
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
-  opacity: 0.72;
+  /* Keep header labels readable on parchment and frost (was too faint at 0.72). */
+  opacity: 0.92;
+  color: inherit;
   transition:
     opacity 180ms var(--ease-out),
     color 180ms var(--ease-out);

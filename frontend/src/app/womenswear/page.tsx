@@ -10,6 +10,7 @@ import {
   WOMENS_CATEGORIES,
 } from "@/lib/color-collections";
 import { getPageContent } from "@/lib/content/getPageContent";
+import type { CollectionEdit } from "@/lib/content/pages";
 import { productHref, productIdFromHref } from "@/lib/productLinks";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -20,13 +21,25 @@ type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 async function BrowseForCategory({
   searchParams,
   collections,
+  edit,
 }: {
   searchParams: SearchParams;
   collections: ColorCollection[];
+  edit: CollectionEdit;
 }) {
   const { category } = await searchParams;
-  const initialCategory = WOMENS_CATEGORIES.find((c) => c.id === category)?.id;
-  return <WomenswearBrowse initialCategory={initialCategory} collections={collections} />;
+  const raw = typeof category === "string" ? category : undefined;
+  const initialCategory = WOMENS_CATEGORIES.find((c) => c.id === raw)?.id
+    ?? (edit.items.some((c) => c.id === raw)
+      ? (raw as (typeof WOMENS_CATEGORIES)[number]["id"])
+      : undefined);
+  return (
+    <WomenswearBrowse
+      initialCategory={initialCategory}
+      collections={collections}
+      edit={edit}
+    />
+  );
 }
 
 function chapterFromLive(p: {
@@ -60,7 +73,7 @@ export default async function WomenswearPage({
     getProductLinker(),
     getLiveProducts(),
   ]);
-  const { hero, chapters } = content;
+  const { hero, edit, chapters } = content;
 
   const curated = chaptersToCollections(chapters.items, (item) =>
     linker.forPiece({
@@ -110,8 +123,8 @@ export default async function WomenswearPage({
           </Link>
         </div>
 
-        <Suspense fallback={<WomenswearBrowse collections={collections} />}>
-          <BrowseForCategory searchParams={searchParams} collections={collections} />
+        <Suspense fallback={<WomenswearBrowse collections={collections} edit={edit} />}>
+          <BrowseForCategory searchParams={searchParams} collections={collections} edit={edit} />
         </Suspense>
       </main>
       <Footer />

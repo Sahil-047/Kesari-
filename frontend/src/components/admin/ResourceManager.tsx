@@ -13,6 +13,7 @@ import {
   Empty,
   Flex,
   Form,
+  Grid,
   Input,
   Popconfirm,
   Row,
@@ -133,6 +134,8 @@ async function refreshStorefront(productId?: string) {
 /** List + edit screen for one resource: Ant Table, filters, and a Drawer form. */
 export default function ResourceManager({ config, description }: { config: ResourceConfig; description?: string }) {
   const { message } = App.useApp();
+  const screens = Grid.useBreakpoint();
+  const drawerWide = Boolean(screens.md);
   const base = `/admin${config.endpoint}`;
   const [rows, setRows] = useState<Row[]>([]);
   const [meta, setMeta] = useState<PageMeta | null>(null);
@@ -278,7 +281,7 @@ export default function ResourceManager({ config, description }: { config: Resou
         description={description ?? (meta ? `${meta.total} in total` : undefined)}
         actions={
           config.canCreate && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => open("new")}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => open("new")} block={!drawerWide}>
               New {config.singular}
             </Button>
           )
@@ -288,12 +291,13 @@ export default function ResourceManager({ config, description }: { config: Resou
       <ScreenBody>
         <Card styles={{ body: { padding: 0 } }}>
           {(config.searchable || config.filters) && (
-            <Flex wrap gap={8} style={{ padding: "12px 16px", borderBottom: `1px solid ${STUDIO.hairline}` }}>
+            <div className="studio-toolbar" style={{ padding: "12px 16px", borderBottom: `1px solid ${STUDIO.hairline}` }}>
               {config.searchable && (
                 <Input.Search
                   allowClear
+                  className="studio-toolbar-search"
                   placeholder={`Search ${config.title.toLowerCase()}…`}
-                  style={{ maxWidth: 280 }}
+                  style={{ maxWidth: drawerWide ? 280 : undefined }}
                   onSearch={(v) => {
                     setPage(1);
                     setSearch(v);
@@ -311,7 +315,7 @@ export default function ResourceManager({ config, description }: { config: Resou
                   key={f.name}
                   allowClear
                   placeholder={`All ${f.label.toLowerCase()}`}
-                  style={{ minWidth: 160 }}
+                  style={{ minWidth: drawerWide ? 160 : undefined }}
                   value={filters[f.name] || undefined}
                   onChange={(v) => {
                     setPage(1);
@@ -320,7 +324,7 @@ export default function ResourceManager({ config, description }: { config: Resou
                   options={f.options.map((o) => ({ value: o, label: optionLabel(o) }))}
                 />
               ))}
-            </Flex>
+            </div>
           )}
 
           {listError && <Alert type="error" showIcon message={listError} style={{ margin: 16 }} />}
@@ -361,13 +365,14 @@ export default function ResourceManager({ config, description }: { config: Resou
       <Drawer
         open={editing !== null}
         onClose={() => setEditing(null)}
-        size={720}
+        width={drawerWide ? 720 : "100%"}
+        className="studio-form-drawer"
         title={drawerTitle}
         destroyOnHidden
-        extra={<Typography.Text type="secondary">{config.title}</Typography.Text>}
+        extra={drawerWide ? <Typography.Text type="secondary">{config.title}</Typography.Text> : undefined}
         styles={{ body: { background: STUDIO.subtle } }}
         footer={
-          <Flex justify="space-between" align="center" gap={12}>
+          <Flex justify="space-between" align="center" gap={12} wrap>
             {!isNew ? (
               <Popconfirm
                 title={`Delete this ${config.singular}?`}
@@ -383,7 +388,7 @@ export default function ResourceManager({ config, description }: { config: Resou
             ) : (
               <span />
             )}
-            <Space>
+            <Space wrap>
               <Button onClick={() => setEditing(null)}>Cancel</Button>
               <Button type="primary" loading={saving} onClick={save}>
                 {isNew ? `Create ${config.singular}` : "Save changes"}

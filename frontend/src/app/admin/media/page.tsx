@@ -117,11 +117,7 @@ export default function AdminMediaPage() {
     <>
       <ScreenHeader
         title="Media library"
-        description={
-          meta
-            ? `${meta.total} files on S3 — use these for product images first, then on the site.`
-            : "Upload photos and films here first; product cards and pages pull from this library."
-        }
+        description={meta ? `${meta.total} file${meta.total === 1 ? "" : "s"}` : undefined}
         actions={
           <Upload {...picker}>
             <Button type="primary" icon={<UploadOutlined />}>
@@ -142,19 +138,22 @@ export default function AdminMediaPage() {
           <p className="ant-upload-hint">JPG, PNG, WebP, AVIF, MP4 or WebM · several at once is fine</p>
         </Upload.Dragger>
 
-        <Flex justify="space-between" align="center" style={{ margin: "24px 0 16px" }}>
-          <Segmented<Filter>
-            value={type}
-            onChange={(v) => {
-              setPage(1);
-              setType(v);
-            }}
-            options={[
-              { value: "all", label: "All" },
-              { value: "image", label: "Photos" },
-              { value: "video", label: "Films" },
-            ]}
-          />
+        <Flex justify="space-between" align="center" wrap gap={8} style={{ margin: "24px 0 16px" }}>
+          <div className="studio-scroll-x" style={{ width: "100%" }}>
+            <Segmented<Filter>
+              value={type}
+              block
+              onChange={(v) => {
+                setPage(1);
+                setType(v);
+              }}
+              options={[
+                { value: "all", label: "All" },
+                { value: "image", label: "Photos" },
+                { value: "video", label: "Films" },
+              ]}
+            />
+          </div>
         </Flex>
 
         {error && <Alert type="error" showIcon closable message={error} onClose={() => setError(null)} style={{ marginBottom: 16 }} />}
@@ -165,7 +164,7 @@ export default function AdminMediaPage() {
               <Empty description="Nothing uploaded yet" />
             </Card>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16 }}>
+            <div className="studio-media-grid">
               {items.map((m) => (
                 <Card
                   key={m.id}

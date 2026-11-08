@@ -180,7 +180,7 @@ export default function ImageCropModal({
       title={title}
       open={open}
       onCancel={onCancel}
-      width={560}
+      width="min(560px, calc(100vw - 24px))"
       centered
       destroyOnHidden
       styles={{ body: { paddingTop: 12 } }}

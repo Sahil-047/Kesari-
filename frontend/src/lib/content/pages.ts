@@ -5,9 +5,17 @@
  */
 
 import { WEDDING_MOMENTS, HERO as WEDDINGS_HERO } from "@/lib/bridal-collections";
-import { COLOR_COLLECTIONS, type WomenswearChapter } from "@/lib/color-collections";
+import {
+  COLOR_COLLECTIONS,
+  WOMENS_CATEGORIES,
+  type WomenswearChapter,
+} from "@/lib/color-collections";
 import { HOME_SHOWCASE, HOUSE_COPY, WORLD_INTRO } from "@/lib/data";
-import { MENS_COLLECTIONS, type MenswearChapter } from "@/lib/mens-collections";
+import {
+  MENS_CATEGORIES,
+  MENS_COLLECTIONS,
+  type MenswearChapter,
+} from "@/lib/mens-collections";
 import { SEASON_ARRIVALS } from "@/lib/whats-new";
 
 export type { WomenswearChapter, MenswearChapter };
@@ -56,8 +64,23 @@ export type WeddingsContent = {
 
 export type CollectionPageContent = { hero: Hero };
 
+/** Shop-by-form tiles under the hero ("The Edit"). */
+export type CollectionEditTile = {
+  id: string;
+  title: string;
+  line: string;
+  image: string;
+};
+
+export type CollectionEdit = {
+  eyebrow: string;
+  title: string;
+  items: CollectionEditTile[];
+};
+
 export type WomenswearContent = {
   hero: Hero;
+  edit: CollectionEdit;
   chapters: {
     eyebrow: string;
     title: string;
@@ -67,6 +90,7 @@ export type WomenswearContent = {
 
 export type MenswearContent = {
   hero: Hero;
+  edit: CollectionEdit;
   chapters: {
     eyebrow: string;
     title: string;
@@ -219,6 +243,16 @@ export const PAGE_DEFAULTS: PageContentMap = {
       video: "/videos/womenswear.mp4",
       poster: "/images/womenswear-poster.jpg",
     },
+    edit: {
+      eyebrow: "Shop by form",
+      title: "The Edit",
+      items: WOMENS_CATEGORIES.map((c) => ({
+        id: c.id,
+        title: c.title,
+        line: c.line,
+        image: c.image,
+      })),
+    },
     chapters: {
       eyebrow: "By colour and silhouette",
       title: "The Looks",
@@ -240,6 +274,16 @@ export const PAGE_DEFAULTS: PageContentMap = {
       title: "Menswear",
       video: "/videos/menswear.mp4",
       poster: "/images/menswear-poster.jpg",
+    },
+    edit: {
+      eyebrow: "Shop by form",
+      title: "The Edit",
+      items: MENS_CATEGORIES.map((c) => ({
+        id: c.id,
+        title: c.title,
+        line: c.line,
+        image: c.image,
+      })),
     },
     chapters: {
       eyebrow: "By form and evening light",

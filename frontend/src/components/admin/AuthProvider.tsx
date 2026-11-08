@@ -1,5 +1,6 @@
 "use client";
 
+import { STUDIO_WELCOME_KEY } from "@/components/admin/AdminProviders";
 import { api, tokenStore } from "@/lib/api/client";
 import type { CmsUser } from "@/lib/api/types";
 import {
@@ -47,6 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       false,
     );
     tokenStore.set(token);
+    try {
+      sessionStorage.setItem(STUDIO_WELCOME_KEY, "1");
+    } catch {
+      /* private mode */
+    }
     setUser(me);
   }, []);
 

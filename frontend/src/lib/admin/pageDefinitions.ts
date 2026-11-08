@@ -7,7 +7,7 @@ import { PAGE_DEFAULTS, type PageSlug } from "@/lib/content/pages";
 export type SimpleField = {
   name: string;
   label: string;
-  type: "text" | "textarea" | "image" | "images" | "video" | "link" | "select";
+  type: "text" | "textarea" | "image" | "images" | "video" | "link" | "select" | "color" | "category";
   help?: string;
   placeholder?: string;
   options?: { value: string; label: string }[];
@@ -180,9 +180,37 @@ export const PAGE_DEFS: PageDef[] = [
     slug: "womenswear",
     title: "Womenswear",
     path: "/womenswear",
-    summary: "Looks & hero",
+    summary: "Hero, The Edit tiles, and looks",
     sections: [
       { key: "hero", title: "Hero", fields: heroFields() },
+      {
+        key: "edit",
+        title: "The Edit",
+        description: "Shop-by-form tiles (photograph, title, line). Category must match a master category slug.",
+        fields: [
+          { name: "eyebrow", label: "Eyebrow", type: "text" },
+          { name: "title", label: "Title", type: "text" },
+          {
+            name: "items",
+            label: "Tiles",
+            type: "repeater",
+            titleField: "title",
+            addLabel: "Add tile",
+            max: 6,
+            fields: [
+              {
+                name: "id",
+                label: "Category",
+                type: "category",
+                help: "Same as product categories — pick or type a new name (e.g. lehenga, saree).",
+              },
+              { name: "image", label: "Photograph", type: "image" },
+              { name: "title", label: "Title", type: "text" },
+              { name: "line", label: "Line", type: "text" },
+            ],
+          },
+        ],
+      },
       {
         key: "chapters",
         title: "Looks",
@@ -202,14 +230,14 @@ export const PAGE_DEFS: PageDef[] = [
               {
                 name: "category",
                 label: "Category",
-                type: "select",
-                options: [
-                  { value: "lehenga", label: "Lehenga" },
-                  { value: "dress", label: "Dress" },
-                  { value: "saree", label: "Saree" },
-                ],
+                type: "category",
               },
-              { name: "accent", label: "Accent", type: "text", placeholder: "#c9567a" },
+              {
+                name: "accent",
+                label: "Accent colour",
+                type: "color",
+                help: "Swatch used in the look gallery header",
+              },
               { name: "story", label: "Story", type: "textarea" },
               { name: "images", label: "Photos", type: "images", max: 8 },
               { name: "link", label: "Product", type: "link" },
@@ -223,9 +251,37 @@ export const PAGE_DEFS: PageDef[] = [
     slug: "menswear",
     title: "Menswear",
     path: "/menswear",
-    summary: "Looks & hero",
+    summary: "Hero, The Edit tiles, and looks",
     sections: [
       { key: "hero", title: "Hero", fields: heroFields() },
+      {
+        key: "edit",
+        title: "The Edit",
+        description: "Shop-by-form tiles (photograph, title, line). Category must match a master category slug.",
+        fields: [
+          { name: "eyebrow", label: "Eyebrow", type: "text" },
+          { name: "title", label: "Title", type: "text" },
+          {
+            name: "items",
+            label: "Tiles",
+            type: "repeater",
+            titleField: "title",
+            addLabel: "Add tile",
+            max: 6,
+            fields: [
+              {
+                name: "id",
+                label: "Category",
+                type: "category",
+                help: "Same as product categories — pick or type a new name (e.g. sherwani, kurta).",
+              },
+              { name: "image", label: "Photograph", type: "image" },
+              { name: "title", label: "Title", type: "text" },
+              { name: "line", label: "Line", type: "text" },
+            ],
+          },
+        ],
+      },
       {
         key: "chapters",
         title: "Looks",
@@ -245,14 +301,14 @@ export const PAGE_DEFS: PageDef[] = [
               {
                 name: "category",
                 label: "Category",
-                type: "select",
-                options: [
-                  { value: "sherwani", label: "Sherwani" },
-                  { value: "kurta", label: "Kurta" },
-                  { value: "bandhgala", label: "Bandhgala" },
-                ],
+                type: "category",
               },
-              { name: "accent", label: "Accent", type: "text", placeholder: "#c4a090" },
+              {
+                name: "accent",
+                label: "Accent colour",
+                type: "color",
+                help: "Swatch used in the look gallery header",
+              },
               { name: "story", label: "Story", type: "textarea" },
               { name: "images", label: "Photos", type: "images", max: 8 },
               { name: "link", label: "Product", type: "link" },

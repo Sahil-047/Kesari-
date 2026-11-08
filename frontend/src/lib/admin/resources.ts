@@ -20,7 +20,8 @@ export type FieldType =
   | "product"
   | "checkbox"
   | "checkboxes"
-  | "sizeConfig";
+  | "sizeConfig"
+  | "category";
 
 export type FieldOptionGroup = {
   group: string;
@@ -91,7 +92,14 @@ export const productsResource: ResourceConfig = {
   ],
   fields: [
     { name: "name", label: "Name", type: "text", required: true, section: "The piece" },
-    { name: "category", label: "Category", type: "text", required: true, section: "The piece", hint: "e.g. lehenga, saree, kurta" },
+    {
+      name: "category",
+      label: "Category",
+      type: "category",
+      required: true,
+      section: "The piece",
+      hint: "Pick an existing category or type a new one — it is added to master data when you save the product.",
+    },
     { name: "description", label: "Description", type: "textarea", section: "The piece" },
     { name: "details", label: "Details", type: "list", section: "The piece", hint: "One line per detail — fabric, work, finish" },
 

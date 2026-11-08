@@ -8,17 +8,33 @@ import {
   InboxOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
+  MenuOutlined,
   MenuUnfoldOutlined,
   ShoppingOutlined,
   SkinOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
+import logoDark from "@/assets/brand/kesari-logo.png";
 import { api } from "@/lib/api/client";
-import { Avatar, Badge, Button, Dropdown, Flex, Layout, Menu, Spin, Typography, type MenuProps } from "antd";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Drawer,
+  Dropdown,
+  Flex,
+  Grid,
+  Layout,
+  Menu,
+  Spin,
+  Typography,
+  type MenuProps,
+} from "antd";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { DISPLAY_FONT, STUDIO } from "./AdminProviders";
+import { STUDIO } from "./AdminProviders";
 import { useAuth } from "./AuthProvider";
 
 const { Sider, Header, Content } = Layout;
@@ -66,13 +82,16 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-/** The CMS frame: Ant Pro-style sider navigation, header with the account menu, session guard. */
+/** The CMS frame: desktop sider, mobile drawer, session guard. */
 export default function AdminShell({ children }: { children: ReactNode }) {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.lg;
   const onLogin = pathname === "/admin/login";
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [badges, setBadges] = useState({ enquiries: 0, orders: 0 });
 
   useEffect(() => {
@@ -80,7 +99,10 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     if (!loading && user && onLogin) router.replace("/admin");
   }, [loading, user, onLogin, router]);
 
-  // Badge counts once per session — not on every route change.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -98,6 +120,8 @@ export default function AdminShell({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, [user]);
+
+  const menuCollapsed = isMobile ? false : collapsed;
 
   const menuItems = useMemo<MenuProps["items"]>(() => {
     if (!user) return [];
@@ -121,10 +145,10 @@ export default function AdminShell({ children }: { children: ReactNode }) {
         });
       if (!items.length) return [];
       return group.heading
-        ? [{ type: "group" as const, key: `g${gi}`, label: collapsed ? null : group.heading, children: items }]
+        ? [{ type: "group" as const, key: `g${gi}`, label: menuCollapsed ? null : group.heading, children: items }]
         : items;
     });
-  }, [user, badges, collapsed]);
+  }, [user, badges, menuCollapsed]);
 
   const selected =
     NAV.flatMap((g) => g.items)
@@ -142,87 +166,117 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     );
   }
 
+  const brand = (
+    <div className="studio-brand-lockup" data-compact={menuCollapsed ? "true" : "false"}>
+      <Image
+        src={logoDark}
+        alt="Kesari"
+        height={34}
+        priority
+        style={{ width: "auto", height: menuCollapsed ? 28 : 34 }}
+      />
+      {!menuCollapsed && (
+        <div className="studio-brand-copy">
+          <strong>Kesari Studio</strong>
+          <span>Catalogue first · then the site</span>
+        </div>
+      )}
+    </div>
+  );
+
+  const navMenu = (
+    <>
+      {brand}
+      <Menu
+        mode="inline"
+        selectedKeys={[selected]}
+        items={menuItems}
+        className="studio-sider-menu"
+        style={{ borderInlineEnd: 0, padding: "10px 10px 24px" }}
+        onClick={() => {
+          if (isMobile) setMobileOpen(false);
+        }}
+      />
+    </>
+  );
+
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout className="studio-shell" style={{ minHeight: "100vh" }}>
       <a href="#studio-main" className="studio-skip">
         Skip to content
       </a>
-      <Sider
-        width={272}
-        collapsedWidth={76}
-        collapsible
-        collapsed={collapsed}
-        trigger={null}
-        breakpoint="lg"
-        onBreakpoint={setCollapsed}
-        className="studio-sider"
-        style={{
-          position: "sticky",
-          top: 0,
-          height: "100vh",
-          overflow: "auto",
-        }}
-      >
-        <Flex align="center" gap={12} style={{ height: 68, padding: "0 18px" }}>
-          <Avatar
-            shape="square"
-            size={34}
-            className="studio-brand-mark"
-            style={{
-              background: STUDIO.ink,
-              color: "#e9c46a",
-              flexShrink: 0,
-              fontFamily: DISPLAY_FONT,
-              fontWeight: 600,
-              fontSize: 16,
-              borderRadius: 10,
-            }}
-          >
-            K
-          </Avatar>
-          {!collapsed && (
-            <span style={{ lineHeight: 1.2, whiteSpace: "nowrap" }}>
-              <Typography.Text strong style={{ display: "block", fontSize: 17, fontFamily: DISPLAY_FONT }}>
-                Kesari Studio
-              </Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Catalogue first · then the site
-              </Typography.Text>
-            </span>
-          )}
-        </Flex>
-        <Menu
-          mode="inline"
-          selectedKeys={[selected]}
-          items={menuItems}
-          className="studio-sider-menu"
-          style={{ borderInlineEnd: 0, padding: "10px 10px 24px" }}
-        />
-      </Sider>
 
-      <Layout>
+      {!isMobile && (
+        <Sider
+          width={272}
+          collapsedWidth={76}
+          collapsible
+          collapsed={collapsed}
+          trigger={null}
+          className="studio-sider"
+          style={{
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            overflow: "auto",
+          }}
+        >
+          {navMenu}
+        </Sider>
+      )}
+
+      {isMobile && (
+        <Drawer
+          placement="left"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          width={288}
+          closable={false}
+          className="studio-nav-drawer"
+          styles={{ body: { padding: 0, background: STUDIO.surface } }}
+        >
+          {navMenu}
+        </Drawer>
+      )}
+
+      <Layout style={{ minWidth: 0 }}>
         <Header
           className="studio-header"
           style={{
             position: "sticky",
             top: 0,
             zIndex: 20,
-            padding: "0 20px 0 8px",
+            padding: isMobile ? "0 12px 0 4px" : "0 20px 0 8px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            gap: 8,
           }}
         >
-          <Button
-            type="text"
-            aria-label={collapsed ? "Expand menu" : "Collapse menu"}
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed((c) => !c)}
-            style={{ width: 40, height: 40, color: STUDIO.muted }}
-          />
-          <Flex align="center" gap={8}>
-            <Button type="text" icon={<ExportOutlined />} href="/" target="_blank" style={{ color: STUDIO.muted }}>
-              View website
+          <Flex align="center" gap={4} style={{ minWidth: 0 }}>
+            <Button
+              type="text"
+              aria-label={isMobile ? "Open menu" : collapsed ? "Expand menu" : "Collapse menu"}
+              icon={isMobile ? <MenuOutlined /> : collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => (isMobile ? setMobileOpen(true) : setCollapsed((c) => !c))}
+              style={{ width: 40, height: 40, color: STUDIO.muted, flexShrink: 0 }}
+            />
+            {isMobile && (
+              <Typography.Text strong className="studio-display" style={{ fontSize: 16, whiteSpace: "nowrap" }}>
+                Studio
+              </Typography.Text>
+            )}
+          </Flex>
+          <Flex align="center" gap={4} style={{ flexShrink: 0 }}>
+            <Button
+              type="text"
+              icon={<ExportOutlined />}
+              href="/"
+              target="_blank"
+              aria-label="View website"
+              style={{ color: STUDIO.muted }}
+            >
+              <span className="studio-header-site-label">View website</span>
             </Button>
             <Dropdown
               trigger={["click"]}
@@ -239,15 +293,19 @@ export default function AdminShell({ children }: { children: ReactNode }) {
                 <Avatar size={26} style={{ background: STUDIO.ink, fontSize: 11, fontWeight: 600 }}>
                   {initials(user.name)}
                 </Avatar>
-                <span style={{ fontWeight: 500 }}>{user.name}</span>
-                <Typography.Text type="secondary" style={{ fontSize: 12, textTransform: "capitalize" }}>
-                  {user.role}
-                </Typography.Text>
+                {!isMobile && (
+                  <>
+                    <span style={{ fontWeight: 500 }}>{user.name}</span>
+                    <Typography.Text type="secondary" style={{ fontSize: 12, textTransform: "capitalize" }}>
+                      {user.role}
+                    </Typography.Text>
+                  </>
+                )}
               </Button>
             </Dropdown>
           </Flex>
         </Header>
-        <Content id="studio-main" tabIndex={-1} style={{ minWidth: 0, outline: "none" }}>
+        <Content id="studio-main" tabIndex={-1} className="studio-main" style={{ minWidth: 0, outline: "none" }}>
           {children}
         </Content>
       </Layout>

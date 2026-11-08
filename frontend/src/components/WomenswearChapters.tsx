@@ -231,7 +231,7 @@ function Plate({
 function ChapterStory({ col }: { col: ColorCollection }) {
   return (
     <>
-      <span className="mx-auto hairline bg-[#d4b36e] opacity-90" />
+      <span className="mx-auto hairline opacity-90" style={{ backgroundColor: col.accent || "#d4b36e" }} />
       {col.story ? (
         <p className="display mx-auto mt-4 max-w-md text-[0.98rem] italic leading-relaxed text-ink-soft md:mt-5 md:text-[clamp(0.88rem,1.25vw,1.05rem)] lg:max-w-[22rem]">
           {col.story}

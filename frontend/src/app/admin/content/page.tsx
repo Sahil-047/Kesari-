@@ -18,6 +18,7 @@ import {
   Divider,
   Flex,
   Form,
+  Grid,
   Row,
   Space,
   Spin,
@@ -64,6 +65,8 @@ function statusInfo(loaded: Loaded | undefined) {
 export default function WebsiteContentPage() {
   const { message } = App.useApp();
   const router = useRouter();
+  const screens = Grid.useBreakpoint();
+  const isNarrow = !screens.md;
   const [pageSlug, setPageSlug] = useState<PageSlug>(FIRST_SLUG);
   const [pages, setPages] = useState<Partial<Record<PageSlug, Loaded>>>({});
   const [busy, setBusy] = useState<"save" | "publish" | null>(null);
@@ -253,7 +256,7 @@ export default function WebsiteContentPage() {
         description="Edit · save · publish"
         meta={<StatusTag tone={status.tone}>{status.text}</StatusTag>}
         actions={
-          <Button icon={<ExportOutlined />} href={def.path} target="_blank">
+          <Button icon={<ExportOutlined />} href={def.path} target="_blank" block={isNarrow}>
             View
           </Button>
         }
@@ -280,9 +283,10 @@ export default function WebsiteContentPage() {
           activeKey={def.slug}
           onChange={(key) => setPageSlug(key as PageSlug)}
           type="card"
-          size="middle"
+          size={isNarrow ? "small" : "middle"}
           style={{ marginBottom: 0 }}
           tabBarStyle={{ marginBottom: 0 }}
+          tabBarGutter={isNarrow ? 4 : undefined}
           items={PAGE_DEFS.map((p) => ({
             key: p.slug,
             label: pages[p.slug]?.dirty ? `${p.title} ·` : p.title,
@@ -297,10 +301,10 @@ export default function WebsiteContentPage() {
           <Card
             size="small"
             style={{ borderTopLeftRadius: 0, borderTop: `1px solid ${STUDIO.border}` }}
-            styles={{ body: { padding: "20px 20px 8px" } }}
+            styles={{ body: { padding: isNarrow ? "14px 12px 8px" : "20px 20px 8px" } }}
             title={
               <Flex align="baseline" justify="space-between" gap={12} wrap>
-                <Flex align="baseline" gap={10} wrap>
+                <Flex vertical={isNarrow} align={isNarrow ? "flex-start" : "baseline"} gap={isNarrow ? 2 : 10} wrap>
                   <Typography.Text strong style={{ fontSize: 15 }}>
                     {def.title}
                   </Typography.Text>
@@ -358,12 +362,16 @@ export default function WebsiteContentPage() {
       </ScreenBody>
 
       <Affix offsetBottom={0}>
-        <div className="studio-affix-bar" style={{ padding: "12px 28px" }}>
+        <div className="studio-affix-bar" style={{ padding: isNarrow ? "10px 12px" : "12px 28px" }}>
           <Flex justify="space-between" align="center" wrap gap={12}>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              {dirtyPages.length ? `Unsaved · ${dirtyPages.join(", ")}` : "All saved"}
+            <Typography.Text type="secondary" style={{ fontSize: 12, minWidth: 0, flex: "1 1 120px" }}>
+              {dirtyPages.length
+                ? isNarrow
+                  ? "Unsaved changes"
+                  : `Unsaved · ${dirtyPages.join(", ")}`
+                : "All saved"}
             </Typography.Text>
-            <Space>
+            <Space wrap size="small">
               <Button size="middle" icon={<SaveOutlined />} disabled={!loaded?.dirty || busy !== null} loading={busy === "save"} onClick={save}>
                 Save
               </Button>
