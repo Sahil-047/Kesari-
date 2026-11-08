@@ -2,9 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
-import { houseWhatsappLink, useSiteContact } from "@/lib/content/useSiteContact";
+import {
+  houseWhatsappLink,
+  useSiteContact,
+  type Contact,
+} from "@/lib/content/useSiteContact";
 import type { ProductEnquiryView } from "@/lib/lookbook";
 
 const FALLBACK_SIZES = ["XS", "S", "M", "L", "XL", "Custom"];
@@ -15,18 +18,20 @@ const focus = "focus-visible:outline focus-visible:outline-2 focus-visible:outli
 export default function LookbookProductDetail({
   product,
   photos,
+  initialContact,
 }: {
   product: ProductEnquiryView;
   photos: string[];
+  initialContact?: Contact;
 }) {
-  const router = useRouter();
-  const contact = useSiteContact();
+  const contact = useSiteContact(initialContact);
   const [activeImage, setActiveImage] = useState(0);
   const [optionId, setOptionId] = useState(product.priceOptions[0]?.id ?? "");
   const [size, setSize] = useState("");
   const [addOnIds, setAddOnIds] = useState<string[]>([]);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
+  const [enquireStatus, setEnquireStatus] = useState("");
   const sizeGuideButton = useRef<HTMLButtonElement>(null);
   const option = product.priceOptions.find((item) => item.id === optionId);
   const addOns = product.addOns.filter((item) => addOnIds.includes(item.id));
@@ -47,6 +52,7 @@ export default function LookbookProductDetail({
 
   function enquire(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setEnquireStatus("");
     const selection = needsSize ? size : "Saree only; please advise on draping";
     const qty = size && size !== "Custom" ? stockBySize.get(size) : undefined;
     const message = [
@@ -60,11 +66,11 @@ export default function LookbookProductDetail({
       window.location.href,
     ].filter(Boolean).join("\n");
     const href = houseWhatsappLink(contact.whatsapp, message);
-    if (href) {
-      window.open(href, "_blank", "noopener,noreferrer");
-    } else {
-      router.push(`/atelier?product=${encodeURIComponent(product.id)}`);
+    if (!href) {
+      setEnquireStatus("WhatsApp is not set for the house yet. Please try again shortly.");
+      return;
     }
+    window.open(href, "_blank", "noopener,noreferrer");
   }
 
   async function share() {
@@ -319,9 +325,18 @@ export default function LookbookProductDetail({
                 <path d="M21 11.5a9 9 0 0 1-13.3 7.9L3 21l1.6-4.7A9 9 0 1 1 21 11.5Z" />
                 <path d="m8 7 1.5-.2 1 2.4-1.1 1.1a9 9 0 0 0 3.3 3.3l1.1-1.1 2.4 1-.2 1.5c-.1.8-.8 1.4-1.6 1.3A9.5 9.5 0 0 1 6.7 8.6C6.6 7.8 7.2 7.1 8 7Z" />
               </svg>
-              <span>Contact the house</span><span aria-hidden>↗</span>
+              <span>Contact us</span><span aria-hidden>↗</span>
             </button>
-            <p className="mt-3 text-center font-sans text-xs leading-relaxed text-ink-soft">{hasWhatsapp ? "Your selection is included in the message. No payment is taken here." : "Contact the house to confirm your preferred size and ensemble."}</p>
+            <p className="mt-3 text-center font-sans text-xs leading-relaxed text-ink-soft">
+              {hasWhatsapp
+                ? "Opens WhatsApp with your selection. No payment is taken here."
+                : "WhatsApp opens with your selection once the house number is available."}
+            </p>
+            {enquireStatus && (
+              <p role="alert" className="mt-2 text-center font-sans text-xs text-[#8a3a2e]">
+                {enquireStatus}
+              </p>
+            )}
           </form>
 
         </section>

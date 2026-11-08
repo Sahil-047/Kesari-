@@ -13,7 +13,7 @@ import {
 } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 /* ------------------------------------------------------------------ */
 /* Hero — video sinks and swells while the title lifts away            */
@@ -237,6 +237,23 @@ export default function WhatsNewExperience({
   header: ReactNode;
   content: WhatsNewContent;
 }) {
+  // Soft nav can leave Lenis mid-page; Framer useScroll would then mount as if
+  // the hero were already scrolled away. Wait one frame at scroll top first.
+  const [ready, setReady] = useState(false);
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  if (!ready) {
+    return (
+      <div className="relative h-[100svh] w-full bg-ink" aria-hidden>
+        {header}
+      </div>
+    );
+  }
+
   return (
     <>
       <Hero header={header} hero={content.hero} />

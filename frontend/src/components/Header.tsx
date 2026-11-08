@@ -38,6 +38,9 @@ export default function Header({ variant = "solid" }: HeaderProps) {
 
   useEffect(() => {
     setMenuOpen(false);
+    setCollapsed(false);
+    setScrolled(false);
+    lastY.current = 0;
   }, [pathname]);
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LookbookProductDetail from "@/components/LookbookProductDetail";
 import { getLiveProduct } from "@/lib/api/storefront";
+import { getSiteContact } from "@/lib/content/getSiteContact";
 import { getProduct, PRODUCTS, type Product } from "@/lib/data";
 import { enquiryPhotos, productToEnquiryView } from "@/lib/lookbook";
 
@@ -52,7 +53,7 @@ async function ProductContent({ params }: Props) {
   const { id } = await params;
   if (/^KES-\d+/i.test(id)) redirect(`/product_detail/${id.toUpperCase()}`);
 
-  const product = await resolve(id);
+  const [product, contact] = await Promise.all([resolve(id), getSiteContact()]);
   if (!product) notFound();
 
   return (
@@ -60,6 +61,7 @@ async function ProductContent({ params }: Props) {
       key={product.id ?? product.slug}
       product={productToEnquiryView(product)}
       photos={enquiryPhotos(product)}
+      initialContact={contact}
     />
   );
 }

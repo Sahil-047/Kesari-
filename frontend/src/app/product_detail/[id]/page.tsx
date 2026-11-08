@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import LookbookProductDetail from "@/components/LookbookProductDetail";
+import { getSiteContact } from "@/lib/content/getSiteContact";
 import { getLookbookProduct, LOOKBOOK_PRODUCTS, lookbookPhotos } from "@/lib/lookbook";
 
 type Props = { params: Promise<{ id: string }> };
@@ -31,11 +32,14 @@ async function ProductContent({ params }: Props) {
     notFound();
   }
 
+  const contact = await getSiteContact();
+
   return (
     <LookbookProductDetail
       key={product.id}
       product={product}
       photos={lookbookPhotos(product)}
+      initialContact={contact}
     />
   );
 }
