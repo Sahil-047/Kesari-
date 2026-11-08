@@ -1,7 +1,7 @@
 import * as yup from "yup";
 import { PRODUCT_PLACEMENTS } from "../util/enum/placement.enum.js";
 import { BuyActionEnum, PRODUCT_SIZE_LABELS, ProductStatusEnum } from "../util/enum/product.enum.js";
-import { assetUrl, imageInput, paginationQuery, slug, textList } from "./commonSchema.js";
+import { assetUrl, assetUrlFromImage, imageInput, paginationQuery, slug, textList } from "./commonSchema.js";
 
 const defaultSizeStock = () => PRODUCT_SIZE_LABELS.map((size) => ({ size, quantity: 1 }));
 
@@ -30,12 +30,17 @@ const fields = {
   category: yup.string().trim().min(1).max(80),
   craft: yup.string().trim().max(120),
   priceInr: yup.number().integer().min(0),
+  blouseName: yup.string().trim().min(1).max(80),
+  blousePriceInr: yup.number().integer().min(0),
+  dupattaName: yup.string().trim().min(1).max(80),
+  dupattaPriceInr: yup.number().integer().min(0),
   description: yup.string().max(4000),
   details: textList(),
   note: yup.string().max(1000).optional(),
   images: yup.array(imageInput().required()).max(20),
   video: assetUrl().optional(),
   videoPoster: assetUrl().optional(),
+  sizeGuideImage: assetUrlFromImage(),
   buyAction: yup.string().oneOf(Object.values(BuyActionEnum)),
   sizing: sizingSchema,
   featured: yup.boolean(),
@@ -52,6 +57,10 @@ export const createProductSchema = yup.object({
   category: fields.category.required(),
   craft: fields.craft.default(""),
   priceInr: fields.priceInr.required(),
+  blouseName: fields.blouseName.default("Blouse"),
+  blousePriceInr: fields.blousePriceInr.default(0),
+  dupattaName: fields.dupattaName.default("Dupatta"),
+  dupattaPriceInr: fields.dupattaPriceInr.default(0),
   description: fields.description.default(""),
   details: fields.details.default([]),
   images: fields.images.default([]),

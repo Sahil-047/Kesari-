@@ -37,6 +37,27 @@ export const assetUrl = () =>
     .trim()
     .test("assetUrl", "Invalid URL", (v) => v === undefined || v.startsWith("/") || URL.canParse(v));
 
+/**
+ * Accepts a URL string or a CMS image object `{ url }`, then validates as assetUrl.
+ * Empty string / null clears to undefined (useful on PATCH).
+ */
+export const assetUrlFromImage = () =>
+  yup
+    .mixed()
+    .transform((v) => {
+      if (v == null || v === "") return undefined;
+      if (typeof v === "string") return v.trim() || undefined;
+      if (typeof v === "object" && v !== null && typeof (v as { url?: unknown }).url === "string") {
+        return (v as { url: string }).url.trim() || undefined;
+      }
+      return v;
+    })
+    .test(
+      "assetUrlFromImage",
+      "Invalid URL",
+      (v) => v === undefined || (typeof v === "string" && (v.startsWith("/") || URL.canParse(v))),
+    );
+
 export const imageInput = () =>
   yup.object({
     url: assetUrl().required(),

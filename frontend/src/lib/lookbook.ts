@@ -13,6 +13,8 @@ export type ProductEnquiryView = {
   description: string;
   priceOptions: { id: string; label: string; price: number }[];
   addOns: { id: string; name: string; price: number }[];
+  /** Optional chart shown inside Size & fit guide. */
+  sizeGuideImage?: string;
   /**
    * When set (CMS), drives the size picker. When omitted (static lookbook),
    * the page falls back to category / ensemble rules.
@@ -61,6 +63,22 @@ export function productToEnquiryView(product: Product): ProductEnquiryView {
         ],
       };
 
+  const addOns: ProductEnquiryView["addOns"] = [];
+  if ((product.blousePrice ?? 0) > 0) {
+    addOns.push({
+      id: "blouse",
+      name: product.blouseName?.trim() || "Blouse",
+      price: product.blousePrice!,
+    });
+  }
+  if ((product.dupattaPrice ?? 0) > 0) {
+    addOns.push({
+      id: "dupatta",
+      name: product.dupattaName?.trim() || "Dupatta",
+      price: product.dupattaPrice!,
+    });
+  }
+
   return {
     id: product.id ?? product.slug,
     name: product.name,
@@ -68,7 +86,8 @@ export function productToEnquiryView(product: Product): ProductEnquiryView {
     price: product.price,
     description: product.description ?? "",
     priceOptions: [],
-    addOns: [],
+    addOns,
+    sizeGuideImage: product.sizeGuideImage,
     sizing,
   };
 }

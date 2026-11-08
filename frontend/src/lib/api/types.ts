@@ -37,6 +37,10 @@ export type ApiProduct = {
   category: string;
   craft: string;
   priceInr: number;
+  blouseName?: string;
+  blousePriceInr?: number;
+  dupattaName?: string;
+  dupattaPriceInr?: number;
   buyAction?: BuyAction;
   sizing?: ApiProductSizing;
   status: ProductStatus | PublishStatus;
@@ -46,6 +50,7 @@ export type ApiProduct = {
   images?: ApiImage[];
   video?: string;
   videoPoster?: string;
+  sizeGuideImage?: string;
   featured?: boolean;
   /** Storefront page/module keys this product may auto-appear on. */
   placements?: string[];

@@ -25,13 +25,24 @@ export interface IProduct extends Document {
   category: string;
   /** Optional craft label, kept for storefront stories. */
   craft: string;
+  /** Base lookbook price in INR. */
   priceInr: number;
+  /** Display name for the blouse-style add-on (per product). */
+  blouseName: string;
+  /** Optional blouse add-on price; 0 = not offered. */
+  blousePriceInr: number;
+  /** Display name for the dupatta-style add-on (per product). */
+  dupattaName: string;
+  /** Optional dupatta add-on price; 0 = not offered. */
+  dupattaPriceInr: number;
   description: string;
   details: string[];
   note?: string;
   images: IImage[];
   video?: string;
   videoPoster?: string;
+  /** Optional chart / fit guide image for the size & fit panel. */
+  sizeGuideImage?: string;
   buyAction: BuyActionEnum;
   sizing: IProductSizing;
   /** @deprecated Prefer placements includes "home"; kept in sync for older clients. */

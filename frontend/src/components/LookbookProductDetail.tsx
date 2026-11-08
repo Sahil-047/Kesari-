@@ -157,7 +157,34 @@ export default function LookbookProductDetail({
           <p className="mt-4 max-w-lg text-base leading-7 text-ink-soft">{product.description}</p>
           <div aria-live="polite" aria-atomic="true" className="mt-5">
             <p className="text-2xl text-ink">{priceLabel(total)}</p>
-            <p className="mt-1 font-sans text-xs tracking-wide text-ink-soft">INR · Lookbook pricing{addOns.length ? ", including selected add-ons" : ""}</p>
+            <p className="mt-1 font-sans text-xs tracking-wide text-ink-soft">INR · Lookbook pricing</p>
+            {product.addOns.length > 0 && (
+              <dl className="mt-3 space-y-1.5 border-t border-ink/15 pt-3 font-sans text-xs text-ink-soft">
+                <div className="flex justify-between gap-4">
+                  <dt>Base</dt>
+                  <dd className="text-ink">{priceLabel(option?.price ?? product.price)}</dd>
+                </div>
+                {product.addOns.map((item) => {
+                  const selected = addOnIds.includes(item.id);
+                  return (
+                    <div
+                      key={item.id}
+                      className={`flex justify-between gap-4 ${selected ? "text-ink" : "opacity-45"}`}
+                    >
+                      <dt>
+                        {selected ? "+" : ""} {item.name}
+                        {!selected && <span className="sr-only"> (not selected)</span>}
+                      </dt>
+                      <dd className={selected ? "text-ink" : undefined}>{priceLabel(item.price)}</dd>
+                    </div>
+                  );
+                })}
+                <div className="flex justify-between gap-4 border-t border-ink/15 pt-1.5 font-medium text-ink">
+                  <dt>Total</dt>
+                  <dd>{priceLabel(total)}</dd>
+                </div>
+              </dl>
+            )}
           </div>
 
           <form onSubmit={enquire} className="mt-8">
@@ -220,9 +247,36 @@ export default function LookbookProductDetail({
             {sizeGuideOpen && (
               <div id="lookbook-size-guide" className="mt-4 border border-gold/40 bg-cream p-5 text-ink-soft">
                 <h2 className="text-xl font-medium text-ink">A considered fit</h2>
-                <p className="mt-3 text-base leading-relaxed">The lookbook does not include a measurement chart. Please share your bust or chest, waist, hip, and height measurements with the atelier for guidance. Choose Custom if you would like to discuss your fit.</p>
-                <p className="mt-3 font-sans text-xs leading-relaxed">Do not treat the size labels as verified measurements or availability.</p>
-                <button type="button" onClick={() => { setSizeGuideOpen(false); sizeGuideButton.current?.focus(); }} className={`mt-4 min-h-11 font-sans text-xs underline underline-offset-4 ${focus}`}>Close guide</button>
+                {product.sizeGuideImage ? (
+                  <div className="relative mt-4 aspect-video w-full overflow-hidden border border-gold/25 bg-parchment-light">
+                    <Image
+                      src={product.sizeGuideImage}
+                      alt={`Size and fit guide for ${product.name}`}
+                      fill
+                      sizes="(min-width: 1024px) 420px, 90vw"
+                      className="object-contain"
+                    />
+                  </div>
+                ) : (
+                  <p className="mt-3 text-base leading-relaxed">
+                    The lookbook does not include a measurement chart. Please share your bust or chest, waist, hip, and
+                    height measurements with the atelier for guidance. Choose Custom if you would like to discuss your
+                    fit.
+                  </p>
+                )}
+                <p className="mt-3 font-sans text-xs leading-relaxed">
+                  Do not treat the size labels as verified measurements or availability.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSizeGuideOpen(false);
+                    sizeGuideButton.current?.focus();
+                  }}
+                  className={`mt-4 min-h-11 font-sans text-xs underline underline-offset-4 ${focus}`}
+                >
+                  Close guide
+                </button>
               </div>
             )}
 
@@ -231,7 +285,19 @@ export default function LookbookProductDetail({
                 <legend className="font-sans text-[0.65rem] uppercase tracking-[0.24em] text-ink">Complete the ensemble</legend>
                 {product.addOns.map((item) => (
                   <label key={item.id} className="flex min-h-12 cursor-pointer items-center justify-between gap-4 py-2 text-ink">
-                    <span className="flex items-center gap-3"><input type="checkbox" checked={addOnIds.includes(item.id)} onChange={(event) => setAddOnIds(event.target.checked ? [...addOnIds, item.id] : addOnIds.filter((id) => id !== item.id))} className="h-4 w-4 accent-ink" /><span>{item.name}</span></span>
+                    <span className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={addOnIds.includes(item.id)}
+                        onChange={(event) =>
+                          setAddOnIds(
+                            event.target.checked ? [...addOnIds, item.id] : addOnIds.filter((id) => id !== item.id),
+                          )
+                        }
+                        className="h-4 w-4 accent-ink"
+                      />
+                      <span>{item.name}</span>
+                    </span>
                     <span className="shrink-0 text-sm">+ {priceLabel(item.price)}</span>
                   </label>
                 ))}

@@ -55,10 +55,19 @@ function mediaFolderFor(prefix: string | undefined, values: Record<string, unkno
 
 function fieldSections(fields: ResourceConfig["fields"]) {
   const sections: { title?: string; fields: ResourceConfig["fields"] }[] = [];
+  const byTitle = new Map<string, (typeof sections)[number]>();
   for (const field of fields) {
-    const last = sections[sections.length - 1];
-    if (last && last.title === field.section) last.fields.push(field);
-    else sections.push({ title: field.section, fields: [field] });
+    const title = field.section;
+    const key = title ?? `__untitled-${sections.length}`;
+    const existing = title ? byTitle.get(title) : undefined;
+    if (existing) {
+      existing.fields.push(field);
+      continue;
+    }
+    const section = { title, fields: [field] };
+    sections.push(section);
+    if (title) byTitle.set(title, section);
+    else byTitle.set(key, section);
   }
   return sections;
 }
@@ -107,6 +116,14 @@ function toPayload(config: ResourceConfig, values: Record<string, unknown>, isNe
     }
     if (field.type === "images" && Array.isArray(value)) {
       value = value.filter((img) => img && (img as { url?: string }).url);
+    }
+    // Single-image fields store a URL string on products; the form keeps { url, alt }.
+    if (field.type === "image") {
+      if (value && typeof value === "object" && "url" in value) {
+        value = (value as { url?: string }).url?.trim() || undefined;
+      } else if (typeof value === "string") {
+        value = value.trim() || undefined;
+      }
     }
     if (field.type === "product" && value && typeof value === "object") {
       value = (value as { id: string }).id;
@@ -181,9 +198,13 @@ export default function ResourceManager({ config, description }: { config: Resou
       const next =
         row === "new" ? { ...config.defaults } : ({ ...row } as Record<string, unknown>);
       // Older products may predate sizeConfig — seed the form from defaults so save persists stock.
+      // API stores single images as URL strings; the image field UI expects { url, alt }.
       for (const field of config.fields) {
         if (field.type === "sizeConfig" && next[field.name] == null && config.defaults[field.name] != null) {
           next[field.name] = config.defaults[field.name];
+        }
+        if (field.type === "image" && typeof next[field.name] === "string" && next[field.name]) {
+          next[field.name] = { url: next[field.name] as string, alt: "" };
         }
       }
       setValues(next);
@@ -327,7 +348,7 @@ export default function ResourceManager({ config, description }: { config: Resou
             </div>
           )}
 
-          {listError && <Alert type="error" showIcon message={listError} style={{ margin: 16 }} />}
+          {listError && <Alert type="error" showIcon title={listError} style={{ margin: 16 }} />}
 
           <Table<Row>
             rowKey="id"
@@ -397,12 +418,12 @@ export default function ResourceManager({ config, description }: { config: Resou
           </Flex>
         }
       >
-        {formError && <Alert type="error" showIcon message={formError} style={{ marginBottom: 16 }} />}
+        {formError && <Alert type="error" showIcon title={formError} style={{ marginBottom: 16 }} />}
         <Form layout="vertical" component="div">
           <Flex vertical gap={16}>
             {sections.map((section, i) => (
               <Card
-                key={section.title ?? `section-${i}`}
+                key={section.title ? `section-${section.title}` : `section-${i}`}
                 size="small"
                 title={section.title}
                 extra={

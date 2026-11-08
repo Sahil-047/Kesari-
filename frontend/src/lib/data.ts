@@ -33,6 +33,14 @@ export type Product = {
   category: string;
   craft: string;
   price: number;
+  /** Display name for the blouse-style add-on. */
+  blouseName?: string;
+  /** Optional blouse add-on (INR). 0 / omitted = not offered. */
+  blousePrice?: number;
+  /** Display name for the dupatta-style add-on. */
+  dupattaName?: string;
+  /** Optional dupatta add-on (INR). 0 / omitted = not offered. */
+  dupattaPrice?: number;
   description: string;
   details: string[];
   image: string;
@@ -40,6 +48,8 @@ export type Product = {
   images?: string[];
   video?: string;
   videoPoster?: string;
+  /** Optional size & fit guide image. */
+  sizeGuideImage?: string;
   note?: string;
   /** Product page primary CTA — bag vs WhatsApp. Defaults to buy now. */
   buyAction?: BuyAction;
