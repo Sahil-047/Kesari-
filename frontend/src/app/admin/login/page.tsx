@@ -1,6 +1,7 @@
 "use client";
 
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
+import loginHero from "@/assets/admin/login-hero.jpg";
 import logoDark from "@/assets/brand/kesari-logo.png";
 import { useAuth } from "@/components/admin/AuthProvider";
 import { Alert, Button, Card, Form, Input, Typography } from "antd";
@@ -12,8 +13,6 @@ type Credentials = { email: string; password: string };
 /** Intrinsic logo is 370×250 — keep one locked size so it never jumps. */
 const LOGO_W = 72;
 const LOGO_H = 49;
-
-const LOGIN_IMAGE = "/images/hero-wedding.jpg";
 
 export default function AdminLoginPage() {
   const { login } = useAuth();
@@ -36,7 +35,7 @@ export default function AdminLoginPage() {
     <div className="studio-login">
       <aside className="studio-login-panel" aria-hidden>
         <Image
-          src={LOGIN_IMAGE}
+          src={loginHero}
           alt=""
           fill
           priority
@@ -61,7 +60,7 @@ export default function AdminLoginPage() {
         <Card variant="borderless" className="studio-login-card" styles={{ body: { padding: 0 } }}>
           <div className="studio-login-card-media">
             <Image
-              src={LOGIN_IMAGE}
+              src={loginHero}
               alt=""
               fill
               priority
