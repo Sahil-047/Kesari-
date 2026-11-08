@@ -2,14 +2,16 @@
 
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import logoDark from "@/assets/brand/kesari-logo.png";
-import logoLight from "@/assets/brand/kesari-logo-light.png";
-import { STUDIO } from "@/components/admin/AdminProviders";
 import { useAuth } from "@/components/admin/AuthProvider";
-import { Alert, Button, Card, Flex, Form, Input, Typography } from "antd";
+import { Alert, Button, Card, Form, Input, Typography } from "antd";
 import Image from "next/image";
 import { useState } from "react";
 
 type Credentials = { email: string; password: string };
+
+/** Intrinsic logo is 370×250 — keep one locked size so it never jumps. */
+const LOGO_W = 72;
+const LOGO_H = 49;
 
 export default function AdminLoginPage() {
   const { login } = useAuth();
@@ -29,82 +31,90 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div style={{ display: "grid", minHeight: "100vh" }} className="lg:grid-cols-[1fr_minmax(460px,0.8fr)]">
-      <div className="relative hidden overflow-hidden bg-[#0c0a09] lg:block">
+    <div className="studio-login">
+      <div className="studio-login-panel" aria-hidden>
         <Image
           src="/images/hero-wedding.jpg"
           alt=""
           fill
           priority
-          sizes="55vw"
+          sizes="(min-width: 1024px) 55vw, 100vw"
           className="object-cover object-[50%_25%] opacity-60 grayscale"
         />
-        <div className="relative flex h-full flex-col justify-between p-12">
-          <Image src={logoLight} alt="Kesari" height={40} style={{ width: "auto", height: 40 }} priority />
-          <div style={{ maxWidth: 440 }}>
-            <Typography.Title className="studio-display" style={{ color: "#fff", margin: 0, fontSize: 48, lineHeight: 1.08, fontWeight: 400 }}>
-              Same traditions.
-              <br />
-              New stories.
-            </Typography.Title>
-            <Typography.Paragraph style={{ color: "rgba(255,255,255,0.7)", fontSize: 15, marginTop: 16 }}>
-              Change the site&apos;s words, photos and films, add pieces to the catalogue, and answer every note
-              written to the house.
-            </Typography.Paragraph>
-          </div>
+        <div className="studio-login-panel-copy">
+          <p className="studio-login-panel-title studio-display">
+            Same traditions.
+            <br />
+            New stories.
+          </p>
+          <p className="studio-login-panel-text">
+            Change the site&apos;s words, photos and films, add pieces to the catalogue, and answer every note written
+            to the house.
+          </p>
         </div>
       </div>
 
-      <Flex align="center" justify="center" style={{ padding: 24, background: STUDIO.subtle }}>
-        <Card
-          variant="borderless"
-          style={{ width: "100%", maxWidth: 400, borderRadius: 18 }}
-          styles={{ body: { padding: 22 } }}
-        >
-          <Flex vertical align="flex-start" gap={10} style={{ marginBottom: 18 }}>
-            <Image src={logoDark} alt="Kesari" height={36} style={{ width: "auto", height: 36 }} priority />
-            <div>
-              <Typography.Title
-                level={1}
-                className="studio-display"
-                style={{ marginTop: 0, marginBottom: 4, fontSize: 32, fontWeight: 400 }}
-              >
-                Welcome back
-              </Typography.Title>
-              <Typography.Paragraph type="secondary" style={{ margin: 0 }}>
-                Sign in to Studio.
-              </Typography.Paragraph>
-            </div>
-          </Flex>
-
-          {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
-
-          <Form<Credentials> layout="vertical" requiredMark={false} onFinish={onFinish} disabled={busy}>
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[{ required: true, type: "email", message: "Enter your email" }]}
-            >
-              <Input prefix={<MailOutlined />} placeholder="you@kesari.in" autoComplete="username" size="large" />
-            </Form.Item>
-            <Form.Item label="Password" name="password" rules={[{ required: true, message: "Enter your password" }]}>
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Your password"
-                autoComplete="current-password"
-                size="large"
+      <div className="studio-login-form-wrap">
+        <Card variant="borderless" className="studio-login-card" styles={{ body: { padding: 0 } }}>
+          <div className="studio-login-card-inner">
+            <div className="studio-login-brand">
+              <Image
+                src={logoDark}
+                alt="Kesari"
+                width={LOGO_W}
+                height={LOGO_H}
+                priority
+                className="studio-login-logo"
               />
-            </Form.Item>
-            <Button type="primary" htmlType="submit" block size="large" loading={busy}>
-              Sign in
-            </Button>
-          </Form>
+              <div className="studio-login-brand-copy">
+                <Typography.Title level={1} className="studio-display studio-login-heading">
+                  Welcome back
+                </Typography.Title>
+                <Typography.Paragraph type="secondary" className="studio-login-sub">
+                  Sign in to Studio.
+                </Typography.Paragraph>
+              </div>
+            </div>
 
-          <Typography.Paragraph type="secondary" style={{ textAlign: "center", marginTop: 24, marginBottom: 0 }}>
-            No account yet? Ask an admin to add you under Team.
-          </Typography.Paragraph>
+            {error && <Alert type="error" showIcon title={error} style={{ marginBottom: 16 }} />}
+
+            <Form<Credentials> layout="vertical" requiredMark={false} onFinish={onFinish} disabled={busy}>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[{ required: true, type: "email", message: "Enter your email" }]}
+              >
+                <Input
+                  prefix={<MailOutlined />}
+                  placeholder="you@kesari.in"
+                  autoComplete="username"
+                  size="large"
+                  inputMode="email"
+                />
+              </Form.Item>
+              <Form.Item
+                label="Password"
+                name="password"
+                rules={[{ required: true, message: "Enter your password" }]}
+              >
+                <Input.Password
+                  prefix={<LockOutlined />}
+                  placeholder="Your password"
+                  autoComplete="current-password"
+                  size="large"
+                />
+              </Form.Item>
+              <Button type="primary" htmlType="submit" block size="large" loading={busy} className="studio-login-submit">
+                Sign in
+              </Button>
+            </Form>
+
+            <Typography.Paragraph type="secondary" className="studio-login-foot">
+              No account yet? Ask an admin to add you under Team.
+            </Typography.Paragraph>
+          </div>
         </Card>
-      </Flex>
+      </div>
     </div>
   );
 }
