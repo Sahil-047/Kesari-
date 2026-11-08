@@ -13,6 +13,8 @@ type Credentials = { email: string; password: string };
 const LOGO_W = 72;
 const LOGO_H = 49;
 
+const LOGIN_IMAGE = "/images/hero-wedding.jpg";
+
 export default function AdminLoginPage() {
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
@@ -32,15 +34,16 @@ export default function AdminLoginPage() {
 
   return (
     <div className="studio-login">
-      <div className="studio-login-panel" aria-hidden>
+      <aside className="studio-login-panel" aria-hidden>
         <Image
-          src="/images/hero-wedding.jpg"
+          src={LOGIN_IMAGE}
           alt=""
           fill
           priority
           sizes="(min-width: 1024px) 55vw, 100vw"
-          className="object-cover object-[50%_25%] opacity-60 grayscale"
+          className="studio-login-photo"
         />
+        <div className="studio-login-panel-scrim" />
         <div className="studio-login-panel-copy">
           <p className="studio-login-panel-title studio-display">
             Same traditions.
@@ -52,10 +55,20 @@ export default function AdminLoginPage() {
             to the house.
           </p>
         </div>
-      </div>
+      </aside>
 
       <div className="studio-login-form-wrap">
         <Card variant="borderless" className="studio-login-card" styles={{ body: { padding: 0 } }}>
+          <div className="studio-login-card-media">
+            <Image
+              src={LOGIN_IMAGE}
+              alt=""
+              fill
+              priority
+              sizes="(min-width: 1024px) 400px, 92vw"
+              className="studio-login-photo"
+            />
+          </div>
           <div className="studio-login-card-inner">
             <div className="studio-login-brand">
               <Image
