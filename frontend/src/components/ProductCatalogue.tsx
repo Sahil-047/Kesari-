@@ -28,6 +28,7 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const closingRef = useRef(false);
   const visible = useMemo(() => filterCatalogue(products, filters, sort), [products, filters, sort]);
   const garmentTypes = useMemo(() => [...new Set(products.map((product) => product.garmentType))], [products]);
   const priceFiltered = filters.minPrice !== 0 || filters.maxPrice !== ceiling;
@@ -40,14 +41,69 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
     return () => { document.body.style.overflow = previousOverflow; };
   }, [filterOpen]);
 
+  function pinDrawerLayout(dialog: HTMLDialogElement) {
+    // Inline + !important so UA dialog centering cannot win.
+    const pin = (prop: string, value: string) => dialog.style.setProperty(prop, value, "important");
+    pin("position", "fixed");
+    pin("inset", "0 auto 0 0");
+    pin("top", "0");
+    pin("left", "0");
+    pin("right", "auto");
+    pin("bottom", "0");
+    pin("margin", "0");
+    pin("padding", "0");
+    pin("border", "0");
+    pin("border-radius", "0");
+    pin("width", "min(24rem, 92vw)");
+    pin("max-width", "none");
+    pin("height", "100dvh");
+    pin("max-height", "100dvh");
+    pin("overflow", "hidden");
+    pin("background", "var(--cream)");
+    pin("transition", "transform 280ms cubic-bezier(0.23, 1, 0.32, 1)");
+  }
+
   function openFilters() {
-    dialogRef.current?.showModal();
+    const dialog = dialogRef.current;
+    if (!dialog || dialog.open) return;
+    closingRef.current = false;
+    pinDrawerLayout(dialog);
+    dialog.dataset.visible = "false";
+    dialog.showModal();
     setFilterOpen(true);
-    closeRef.current?.focus();
+    // Reflow, then reveal so transform actually transitions.
+    void dialog.offsetWidth;
+    requestAnimationFrame(() => {
+      if (!dialogRef.current) return;
+      pinDrawerLayout(dialogRef.current);
+      dialogRef.current.dataset.visible = "true";
+      closeRef.current?.focus();
+    });
   }
 
   function closeFilters() {
-    dialogRef.current?.close();
+    const dialog = dialogRef.current;
+    if (!dialog?.open || closingRef.current) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      dialog.dataset.visible = "false";
+      dialog.close();
+      return;
+    }
+    closingRef.current = true;
+    dialog.dataset.visible = "false";
+    const finish = () => {
+      dialog.removeEventListener("transitionend", onEnd);
+      window.clearTimeout(fallback);
+      closingRef.current = false;
+      if (dialog.open) dialog.close();
+    };
+    const onEnd = (event: TransitionEvent) => {
+      if (event.target !== dialog || event.propertyName !== "transform") return;
+      finish();
+    };
+    const fallback = window.setTimeout(finish, 320);
+    dialog.addEventListener("transitionend", onEnd);
   }
 
   function writeUrl(nextFilters: CatalogueFilters, nextSort: CatalogueSort, replace = false) {
@@ -160,8 +216,13 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
         ref={dialogRef}
         id="catalogue-filters"
         aria-labelledby="catalogue-filter-title"
-        className={`${styles.filterDialog} font-sans`}
+        className="font-sans"
+        data-visible="false"
         data-lenis-prevent
+        onCancel={(event) => {
+          event.preventDefault();
+          closeFilters();
+        }}
         onClose={() => { setFilterOpen(false); triggerRef.current?.focus(); }}
         onClick={(event) => {
           if (event.target !== event.currentTarget) return;
@@ -169,7 +230,7 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
           if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeFilters();
         }}
       >
-        <div className="flex h-full flex-col">
+        <div className="flex h-full min-h-0 flex-col">
           <div className="flex shrink-0 items-center justify-between gap-4 border-b border-gold/35 px-6 py-4">
             <h2 id="catalogue-filter-title" className="display text-2xl">Refine your edit</h2>
             <button ref={closeRef} type="button" onClick={closeFilters} aria-label="Close filters" className={`grid h-11 w-11 place-items-center text-2xl ${focus}`}>×</button>
