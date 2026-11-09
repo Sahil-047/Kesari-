@@ -11,6 +11,7 @@ type Props = {
   className?: string;
   stroke?: string;
   strokeWidth?: number;
+  preserveAspectRatio?: string;
 };
 
 /** Wrapper that animates child pathLength once in view */
@@ -21,6 +22,7 @@ export default function DrawSvg({
   viewBox = "0 0 200 200",
   stroke = "currentColor",
   strokeWidth = 1.15,
+  preserveAspectRatio,
 }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const reduce = useReducedMotionSafe();
@@ -33,6 +35,7 @@ export default function DrawSvg({
       fill="none"
       stroke={stroke}
       strokeWidth={strokeWidth}
+      preserveAspectRatio={preserveAspectRatio}
       className={className}
       initial={draw && !reduce ? "hidden" : "show"}
       animate={draw && !reduce ? (inView ? "show" : "hidden") : "show"}
