@@ -10,6 +10,9 @@
   --gold-soft: #b8a070;
   --ink: #2c241c;
   --ink-soft: #4a3f35;
+  /* Storefront header — overridden by CMS Site → Header colour pickers. */
+  --header-color: var(--ink);
+  --header-overlay-color: #ffffff;
   --charcoal: #14110f;
   --footer: #12100e;
   --header-h: 7.5rem;
@@ -179,14 +182,25 @@ button {
   flex: 1 0 auto;
 }
 
-/* Auto-hide header: soft slide + fade. Frost has no fill and no hard edge. */
+/* Auto-hide header: soft slide + fade. Frost has no fill and no hard edge.
+   Colour comes from CMS (--header-color / --header-overlay-color). */
 .site-header {
   border: 0;
+  color: var(--header-color);
   transform: translate3d(0, 0, 0);
   opacity: 1;
   transition:
     transform 680ms cubic-bezier(0.16, 1, 0.3, 1),
     opacity 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-header[data-tone="overlay"] {
+  color: var(--header-overlay-color);
+}
+
+.site-header[data-tone="solid"],
+.site-header[data-tone="menu"] {
+  color: var(--header-color);
 }
 
 .site-header--collapsed {

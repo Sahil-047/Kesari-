@@ -149,12 +149,12 @@ export const PAGE_DEFS: PageDef[] = [
     slug: "weddings",
     title: "Weddings",
     path: "/weddings",
-    summary: "Bridal page",
+    summary: "Hero, moments, collections, closing",
     sections: [
       { key: "hero", title: "Hero", fields: heroFields(true) },
       {
         key: "moments",
-        title: "Moments",
+        title: "Bridal moments",
         fields: [
           { name: "eyebrow", label: "Eyebrow", type: "text" },
           { name: "title", label: "Title", type: "text" },
@@ -164,7 +164,7 @@ export const PAGE_DEFS: PageDef[] = [
             type: "repeater",
             titleField: "title",
             addLabel: "Add moment",
-            max: 6,
+            max: 8,
             fields: [
               { name: "image", label: "Photo", type: "image" },
               { name: "title", label: "Title", type: "text" },
@@ -172,6 +172,37 @@ export const PAGE_DEFS: PageDef[] = [
               { name: "video", label: "Film", type: "video" },
             ],
           },
+        ],
+      },
+      {
+        key: "collections",
+        title: "Collections",
+        fields: [
+          { name: "eyebrow", label: "Eyebrow", type: "text" },
+          {
+            name: "items",
+            label: "Looks",
+            type: "repeater",
+            titleField: "title",
+            addLabel: "Add collection",
+            max: 8,
+            fields: [
+              { name: "id", label: "Id", type: "text", placeholder: "bridal-room" },
+              { name: "kicker", label: "Kicker", type: "text" },
+              { name: "title", label: "Title", type: "text" },
+              { name: "images", label: "Photos", type: "images", max: 6 },
+            ],
+          },
+        ],
+      },
+      {
+        key: "closing",
+        title: "Closing",
+        fields: [
+          { name: "image", label: "Photograph", type: "image" },
+          { name: "line", label: "Line", type: "textarea" },
+          { name: "ctaLabel", label: "Button label", type: "text" },
+          { name: "ctaHref", label: "Button link", type: "link", placeholder: "/atelier" },
         ],
       },
     ],
@@ -376,10 +407,42 @@ export const PAGE_DEFS: PageDef[] = [
   },
   {
     slug: "site",
-    title: "Contact",
+    title: "Site",
     path: "/",
-    summary: "WhatsApp & details",
+    summary: "Colours, WhatsApp & details",
     sections: [
+      {
+        key: "header",
+        title: "Header",
+        fields: [
+          {
+            name: "color",
+            label: "Text colour",
+            type: "color",
+          },
+          {
+            name: "overlayColor",
+            label: "On media",
+            type: "color",
+          },
+        ],
+      },
+      {
+        key: "accent",
+        title: "Gold",
+        fields: [
+          {
+            name: "gold",
+            label: "Gold",
+            type: "color",
+          },
+          {
+            name: "goldSoft",
+            label: "Gold soft",
+            type: "color",
+          },
+        ],
+      },
       {
         key: "contact",
         title: "Contact",
@@ -389,7 +452,6 @@ export const PAGE_DEFS: PageDef[] = [
             label: "WhatsApp",
             type: "text",
             placeholder: "+91 98765 43210",
-            help: "Country code. Blank hides chat.",
           },
           { name: "whatsappGreeting", label: "Greeting", type: "text" },
           { name: "phone", label: "Phone", type: "text" },

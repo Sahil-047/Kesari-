@@ -113,20 +113,21 @@ export default function Header({ variant = "solid" }: HeaderProps) {
     ? "bg-gradient-to-b from-black/45 via-black/20 to-transparent"
     : "bg-transparent";
 
-  const inkTone = overlay && !menuOpen ? "text-white" : "text-ink";
+  const tone = menuOpen ? "menu" : overlay ? "overlay" : "solid";
 
   return (
     <>
       {!overlay && <div style={{ height: spacerH }} aria-hidden className="shrink-0" />}
       <header
         ref={headerRef}
+        data-tone={tone}
         className={`site-header fixed inset-x-0 top-0 z-40 w-full will-change-transform ${
           menuOpen
-            ? "bg-cream text-ink"
+            ? "bg-cream"
             : scrolled
               ? "site-header--frost bg-transparent"
               : atTopSurface
-        } ${inkTone} ${
+        } ${
           collapsed && !reduce && !menuOpen ? "site-header--collapsed" : ""
         } ${reduce ? "site-header--static" : ""}`}
       >

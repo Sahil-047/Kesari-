@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 const CYCLE_MS = 6000;
 
 export default function BridalMoments({ content }: { content: WeddingsContent["moments"] }) {
-  const moments = content.items;
+  const moments = (content.items ?? []).filter((m) => m.title?.trim() && m.image);
   const total = moments.length;
   const reduce = useReducedMotionSafe();
   const sectionRef = useRef<HTMLElement>(null);
@@ -20,13 +20,15 @@ export default function BridalMoments({ content }: { content: WeddingsContent["m
 
   // Auto-advance while the section is on screen and nobody is interacting.
   useEffect(() => {
-    if (reduce || paused || !inView) return;
+    if (reduce || paused || !inView || total < 2) return;
     const t = setTimeout(
-      () => setActive((a) => (a + 1) % Math.max(total, 1)),
+      () => setActive((a) => (a + 1) % total),
       CYCLE_MS,
     );
     return () => clearTimeout(t);
   }, [active, paused, inView, reduce, total]);
+
+  if (!total) return null;
 
   return (
     <section

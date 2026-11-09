@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Great_Vibes, Jost } from "next/font/google";
 import { Suspense } from "react";
 import IntroSplash from "@/components/IntroSplash";
+import SiteTheme from "@/components/SiteTheme";
 import SiteWhatsApp from "@/components/SiteWhatsApp";
 import SmoothScroll from "@/components/SmoothScroll";
 import StorefrontOnly from "@/components/StorefrontOnly";
@@ -56,6 +57,9 @@ export default function RootLayout({
         className={`${casOlgans.className} min-h-full flex flex-col text-ink`}
       >
         <BagWishlistProvider>
+          <Suspense fallback={null}>
+            <SiteTheme />
+          </Suspense>
           <SmoothScroll />
           <IntroSplash />
           {children}

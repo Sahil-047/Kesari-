@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import multer from "multer";
 import { ValidationError } from "yup";
+import config from "../config/index.js";
 import logger from "../lib/winston/logger.js";
 import CustomError from "../util/helper/customError.js";
 
@@ -45,10 +46,13 @@ function toCustomError(error: unknown): CustomError | undefined {
   }
 
   if (error instanceof multer.MulterError) {
-    return new CustomError(
-      error.message,
-      error.code === "LIMIT_FILE_SIZE" ? HttpStatusCode.PayloadTooLarge : HttpStatusCode.BadRequest,
-    );
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return new CustomError(
+        `File is too large. Maximum upload size is ${config.uploadConfig.maxUploadMb} MB.`,
+        HttpStatusCode.PayloadTooLarge,
+      );
+    }
+    return new CustomError(error.message, HttpStatusCode.BadRequest);
   }
 
   if (error instanceof jwt.TokenExpiredError) return CustomError.unauthorized("Session expired");

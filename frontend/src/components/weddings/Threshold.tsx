@@ -2,14 +2,14 @@
 
 import Doors from "@/components/illustrations/Doors";
 import Knot from "@/components/illustrations/Knot";
-import { THRESHOLD } from "@/lib/bridal-collections";
+import type { WeddingsContent } from "@/lib/content/pages";
 import { EASE_FLUENT, SPRING_SCROLL, useReducedMotionSafe } from "@/lib/motion";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-export default function Threshold() {
+export default function Threshold({ content }: { content: WeddingsContent["closing"] }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotionSafe();
   const [mounted, setMounted] = useState(false);
@@ -46,9 +46,7 @@ export default function Threshold() {
     return knotTied.on("change", (v) => setTied(v));
   }, [knotTied, reduce]);
 
-  const focal = THRESHOLD.image.focal
-    ? `${THRESHOLD.image.focal.x}% ${THRESHOLD.image.focal.y}%`
-    : "50% 30%";
+  if (!content.image && !content.line) return null;
 
   return (
     <section
@@ -60,20 +58,18 @@ export default function Threshold() {
         className="sticky top-0 h-[100dvh] overflow-hidden"
         style={{ perspective: "1600px" }}
       >
-        {mounted ? (
+        {mounted && content.image ? (
           <Image
-            src={THRESHOLD.image.src}
-            alt={THRESHOLD.image.alt}
+            src={content.image}
+            alt=""
             fill
             quality={92}
             sizes="100vw"
-            className="object-cover"
-            style={{ objectPosition: focal }}
+            className="object-cover object-[50%_30%]"
           />
         ) : null}
         <div className="absolute inset-0 bg-ink/25" />
 
-        {/* Doors */}
         <div className="absolute inset-0 z-[2] flex">
           <motion.div
             className="relative h-full w-1/2 origin-left bg-ink text-gold/65"
@@ -100,22 +96,26 @@ export default function Threshold() {
         </div>
 
         <div className="absolute inset-x-0 bottom-0 z-[4] section-pad pb-14 text-center md:pb-20">
-          <motion.p
-            className="display mx-auto max-w-2xl text-[clamp(1.4rem,3.5vw,2.6rem)] uppercase leading-[1.15] tracking-[0.12em] text-cream"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.6 }}
-            transition={{ duration: 0.8, ease: EASE_FLUENT }}
-          >
-            {THRESHOLD.line}
-          </motion.p>
-          <Link
-            href={THRESHOLD.cta.href}
-            className="group mt-8 inline-block font-sans text-[0.62rem] uppercase tracking-[0.32em] text-cream/85 transition-colors hover:text-cream focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-gold"
-          >
-            {THRESHOLD.cta.label}
-            <span className="mt-2 block h-px w-full origin-left scale-x-0 bg-gold transition-transform duration-300 group-hover:scale-x-100" />
-          </Link>
+          {content.line ? (
+            <motion.p
+              className="display mx-auto max-w-2xl text-[clamp(1.4rem,3.5vw,2.6rem)] uppercase leading-[1.15] tracking-[0.12em] text-cream"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.8, ease: EASE_FLUENT }}
+            >
+              {content.line}
+            </motion.p>
+          ) : null}
+          {content.ctaLabel && content.ctaHref ? (
+            <Link
+              href={content.ctaHref}
+              className="group mt-8 inline-block font-sans text-[0.62rem] uppercase tracking-[0.32em] text-cream/85 transition-colors hover:text-cream focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-gold"
+            >
+              {content.ctaLabel}
+              <span className="mt-2 block h-px w-full origin-left scale-x-0 bg-gold transition-transform duration-300 group-hover:scale-x-100" />
+            </Link>
+          ) : null}
         </div>
       </div>
     </section>

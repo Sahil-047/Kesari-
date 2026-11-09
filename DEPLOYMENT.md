@@ -101,12 +101,12 @@ AWS_S3_BUCKET=<your-bucket>
 AWS_ACCESS_KEY_ID=<key>
 AWS_SECRET_ACCESS_KEY=<secret>
 
-MAX_UPLOAD_MB=100
-PAGE_SIZE=20
+MAX_UPLOAD_MB=200
+PAGE_SIZE=10
 LOG_LEVEL=info
 ```
 
-Videos: only **MP4** / **WebM**. `MAX_UPLOAD_MB` and nginx `client_max_body_size` must both be ≥ the file (e.g. 100m for a 50 MB film).
+Videos: **MP4** / **WebM** (MOV uploads too). `MAX_UPLOAD_MB` and nginx `client_max_body_size` must both be ≥ the file (e.g. `200m` when `MAX_UPLOAD_MB=200`).
 
 Rules:
 

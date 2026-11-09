@@ -53,7 +53,7 @@ export default function LookbookProductDetail({
   function enquire(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setEnquireStatus("");
-    const selection = needsSize ? size : "Saree only; please advise on draping";
+    const selection = needsSize ? size : "No size request; please advise on fit";
     const qty = size && size !== "Custom" ? stockBySize.get(size) : undefined;
     const message = [
       `Hello Kesari, I would like to enquire about ${product.name} (${product.id}).`,
@@ -211,7 +211,9 @@ export default function LookbookProductDetail({
             )}
 
             <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-              <span id="size-label" className="font-sans text-[0.65rem] uppercase tracking-[0.24em] text-ink">{needsSize ? "Size request" : "Saree sizing"}</span>
+              <span id="size-label" className="font-sans text-[0.65rem] uppercase tracking-[0.24em] text-ink">
+                Sizing
+              </span>
               <button ref={sizeGuideButton} type="button" aria-expanded={sizeGuideOpen} aria-controls="lookbook-size-guide" onClick={() => setSizeGuideOpen(!sizeGuideOpen)} className={`min-h-11 font-sans text-xs text-ink-soft underline underline-offset-4 ${focus}`}>Size & fit guide</button>
             </div>
             {needsSize ? (
@@ -239,15 +241,13 @@ export default function LookbookProductDetail({
               )
             ) : (
               <p className="text-base text-ink-soft">
-                {product.priceOptions.length > 0
-                  ? "Draped fit. Select “With blouse” above to request a blouse size."
-                  : "This piece is offered without a size request. Write to the house about fit if you need guidance."}
+                This piece is offered without a size request. Write to the house about fit if you need guidance.
               </p>
             )}
             <p id="size-note" className="mt-3 font-sans text-xs leading-relaxed text-ink-soft">
               {needsSize
                 ? "Sizes and quantities are enquiry preferences. The atelier will confirm measurements, fit, and availability."
-                : "Please confirm saree dimensions and any fitting requirements with the atelier."}
+                : "Please confirm fit and any measurements with the atelier."}
             </p>
 
             {sizeGuideOpen && (

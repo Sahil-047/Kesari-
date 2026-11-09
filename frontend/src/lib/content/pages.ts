@@ -4,7 +4,12 @@
  * editor starts from. Images and videos are plain URLs (S3 or /public paths).
  */
 
-import { WEDDING_MOMENTS, HERO as WEDDINGS_HERO } from "@/lib/bridal-collections";
+import {
+  COLLECTIONS as WEDDING_COLLECTIONS,
+  WEDDING_MOMENTS,
+  HERO as WEDDINGS_HERO,
+  THRESHOLD as WEDDING_THRESHOLD,
+} from "@/lib/bridal-collections";
 import {
   COLOR_COLLECTIONS,
   WOMENS_CATEGORIES,
@@ -53,12 +58,32 @@ export type WhatsNewContent = {
   };
 };
 
+/** One bridal look in the Weddings collections gallery. */
+export type WeddingCollectionItem = {
+  /** Stable key for tabs; falls back to a slug of the title when blank. */
+  id: string;
+  kicker: string;
+  title: string;
+  /** First photo is the lead stage; the rest are thumbnails. */
+  images: string[];
+};
+
 export type WeddingsContent = {
   hero: Hero;
   moments: {
     eyebrow: string;
     title: string;
     items: { title: string; line: string; image: string; video?: string }[];
+  };
+  collections: {
+    eyebrow: string;
+    items: WeddingCollectionItem[];
+  };
+  closing: {
+    image: string;
+    line: string;
+    ctaLabel: string;
+    ctaHref: string;
   };
 };
 
@@ -113,6 +138,18 @@ export type WorldContent = {
 };
 
 export type SiteContent = {
+  /** Site-wide header (nav) colours — driven by CMS colour pickers. */
+  header: {
+    /** Nav / icon colour on light parchment pages. */
+    color: string;
+    /** Nav / icon colour over hero media (overlay headers). */
+    overlayColor: string;
+  };
+  /** Brand accent (gold) used for lines, labels, and highlights. */
+  accent: {
+    gold: string;
+    goldSoft: string;
+  };
   contact: { whatsapp: string; whatsappGreeting: string; phone: string; email: string };
 };
 
@@ -234,6 +271,21 @@ export const PAGE_DEFAULTS: PageContentMap = {
         video: m.video?.src ?? "",
       })),
     },
+    collections: {
+      eyebrow: "The collections",
+      items: WEDDING_COLLECTIONS.map((c) => ({
+        id: c.id,
+        kicker: c.kicker,
+        title: c.title,
+        images: [c.lead.src, ...c.side.map((m) => m.src)],
+      })),
+    },
+    closing: {
+      image: WEDDING_THRESHOLD.image.src,
+      line: WEDDING_THRESHOLD.line,
+      ctaLabel: WEDDING_THRESHOLD.cta.label,
+      ctaHref: WEDDING_THRESHOLD.cta.href,
+    },
   },
 
   womenswear: {
@@ -328,6 +380,14 @@ export const PAGE_DEFAULTS: PageContentMap = {
   },
 
   site: {
+    header: {
+      color: "#2c241c",
+      overlayColor: "#ffffff",
+    },
+    accent: {
+      gold: "#c5a059",
+      goldSoft: "#b8a070",
+    },
     contact: {
       whatsapp: "",
       whatsappGreeting: "Hello Kesari, I would like to ask about",

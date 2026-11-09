@@ -1,6 +1,7 @@
 "use client";
 
 import { DeleteOutlined, FolderOpenOutlined, InboxOutlined, LinkOutlined, ScissorOutlined } from "@ant-design/icons";
+import { IMAGE_ACCEPT, VIDEO_ACCEPT, VIDEO_HINT, looksLikeImage, looksLikeVideo } from "@/lib/admin/uploadAccept";
 import { api, type PageMeta } from "@/lib/api/client";
 import type { ApiMedia } from "@/lib/api/types";
 import { Button, Card, Empty, Flex, Input, Modal, Pagination, Space, Spin, Typography, Upload } from "antd";
@@ -135,8 +136,13 @@ export default function MediaDrop({
   };
 
   const handleFile = async (file: File) => {
-    if (!file.type.startsWith(`${kind}/`)) {
-      setError(kind === "image" ? "That isn't an image." : "That isn't a video.");
+    const ok = kind === "image" ? looksLikeImage(file) : looksLikeVideo(file);
+    if (!ok) {
+      setError(
+        kind === "image"
+          ? "That isn't an image (JPG, PNG, WebP, AVIF)."
+          : "That isn't a supported video. Use MP4, WebM or MOV.",
+      );
       return;
     }
     if (kind === "image") {
@@ -156,12 +162,12 @@ export default function MediaDrop({
   return (
     <div>
       <Upload.Dragger
-        accept={kind === "image" ? "image/*" : "video/mp4,video/webm"}
+        accept={kind === "image" ? IMAGE_ACCEPT : VIDEO_ACCEPT}
         showUploadList={false}
         multiple={false}
         disabled={busy}
         beforeUpload={(file) => {
-          handleFile(file);
+          void handleFile(file);
           return false;
         }}
         style={{ padding: 0 }}
@@ -193,7 +199,7 @@ export default function MediaDrop({
             </Typography.Text>
             <br />
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              Click or drag a file to this area
+              {kind === "video" ? VIDEO_HINT : "Click or drag a file to this area"}
             </Typography.Text>
             {value && (
               <Typography.Paragraph type="secondary" ellipsis style={{ fontSize: 11, margin: "4px 0 0", maxWidth: 360 }}>

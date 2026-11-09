@@ -103,12 +103,12 @@ export default function AdminMediaPage() {
   };
 
   const picker = {
-    accept: "image/*,video/mp4,video/webm",
+    accept: "image/*,video/mp4,video/webm,video/quicktime,.mov,.m4v",
     multiple: true,
     showUploadList: false,
     // Ant calls this once per file; upload the whole batch from the first call.
     beforeUpload: (file: File, list: File[]) => {
-      if (file === list[0]) upload(list);
+      if (file === list[0]) void upload(list);
       return false;
     },
   };
@@ -135,7 +135,7 @@ export default function AdminMediaPage() {
           <p className="ant-upload-text">
             {uploading ? `Uploading ${uploading} file${uploading === 1 ? "" : "s"}…` : "Click or drag photos and films here"}
           </p>
-          <p className="ant-upload-hint">JPG, PNG, WebP, AVIF, MP4 or WebM · several at once is fine</p>
+          <p className="ant-upload-hint">JPG, PNG, WebP, AVIF, MP4, WebM or MOV · several at once is fine</p>
         </Upload.Dragger>
 
         <Flex justify="space-between" align="center" wrap gap={8} style={{ margin: "24px 0 16px" }}>
