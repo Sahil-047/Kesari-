@@ -4,6 +4,7 @@ import { api, ApiRequestError } from "@/lib/api/client";
 import type { AtelierContent } from "@/lib/content/pages";
 import { EASE_FLUENT, useReducedMotionSafe } from "@/lib/motion";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import { useState, type FormEvent } from "react";
 
 const fieldClass =
@@ -11,16 +12,14 @@ const fieldClass =
 const labelClass =
   "font-sans text-[0.58rem] uppercase tracking-[0.24em] text-ink-soft";
 
+const FALLBACK_IMAGE = "/images/Wedding/DSC07493.jpg";
+
 export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro"] }) {
-  const titleWords = intro.title.split(" ");
   const reduce = useReducedMotionSafe();
-  const [started, setStarted] = useState(false);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Steps light up as the visitor moves through the enquiry.
-  const stage = sent ? 1 : 0;
+  const image = intro.image?.trim() || FALLBACK_IMAGE;
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,74 +51,36 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
   };
 
   return (
-    <section className="relative overflow-hidden px-6 pb-16 pt-44 md:px-10 md:pb-24 md:pt-36 lg:px-14">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-gold/15 blur-[120px]"
-      />
-
-      <div className="relative mx-auto grid max-w-[1180px] grid-cols-1 gap-12 md:grid-cols-12 md:gap-10 lg:gap-16">
-        <div className="md:col-span-6">
-          <p className="font-sans text-[0.6rem] uppercase tracking-[0.35em] text-ink-soft">
-            {intro.eyebrow}
-          </p>
-          <h1 className="display mt-3 text-[clamp(2.6rem,7vw,6rem)] uppercase leading-[0.9] tracking-[0.12em] text-ink">
-            {titleWords.map((word, i) => (
-              <span key={i} className="block">
-                {word}
-              </span>
-            ))}
-          </h1>
-          <p className="mt-6 max-w-md text-[1.02rem] leading-relaxed text-ink-soft">
-            {intro.text}
-          </p>
-
-          <ol className="relative mt-10 max-w-md">
-            <span
-              aria-hidden
-              className="absolute bottom-3 left-[0.9rem] top-3 w-px bg-ink/15"
-            />
-            {intro.steps.map((s, i) => {
-              const lit = i < stage || (i === stage && (started || sent));
-              const current = i === stage;
-              return (
-                <li key={s.title} className="relative flex gap-5 pb-6 last:pb-0">
-                  <span
-                    className={`relative z-10 grid h-[1.8rem] w-[1.8rem] shrink-0 place-items-center rounded-full border font-sans text-[0.58rem] tracking-[0.1em] transition-colors duration-500 ${
-                      lit
-                        ? "border-gold bg-cream text-ink"
-                        : "border-ink/25 bg-transparent text-ink-soft"
-                    }`}
-                  >
-                    0{i + 1}
-                    {current && !reduce && (
-                      <motion.span
-                        layoutId="step-ring"
-                        className="absolute -inset-1 rounded-full border border-gold/50"
-                        transition={{ duration: 0.6, ease: EASE_FLUENT }}
-                      />
-                    )}
-                  </span>
-                  <div className="pt-1">
-                    <p
-                      className={`font-sans text-[0.62rem] uppercase tracking-[0.26em] transition-colors duration-500 ${
-                        lit ? "text-ink" : "text-ink-soft"
-                      }`}
-                    >
-                      {s.title}
-                    </p>
-                    <p className="mt-1 text-[0.9rem] leading-snug text-ink-soft">
-                      {s.line}
-                    </p>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+    <section className="relative" aria-labelledby="contact-title">
+      <div className="grid min-h-[calc(100dvh-var(--header-h))] lg:grid-cols-2">
+        <div className="relative min-h-[42vh] overflow-hidden bg-ink lg:min-h-full lg:sticky lg:top-0 lg:h-[100dvh]">
+          <Image
+            src={image}
+            alt=""
+            fill
+            priority
+            quality={92}
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="object-cover object-[50%_28%]"
+          />
+          <div className="absolute inset-0 bg-ink/15" />
         </div>
 
-        <div className="md:col-span-6">
-          <div className="border border-ink/15 bg-cream/40 p-6 md:p-9">
+        <div className="relative flex flex-col justify-center px-6 py-14 md:px-12 md:py-20 lg:px-16 lg:py-24">
+          <div className="w-full max-w-lg">
+            <p className="font-sans text-[0.6rem] uppercase tracking-[0.32em] text-ink-soft">
+              {intro.eyebrow}
+            </p>
+            <h1
+              id="contact-title"
+              className="display mt-3 text-[clamp(2.2rem,4.5vw,3.4rem)] uppercase leading-[0.95] tracking-[0.1em] text-ink"
+            >
+              {intro.title}
+            </h1>
+            <p className="mt-4 text-[1.02rem] leading-relaxed text-ink-soft">
+              {intro.text}
+            </p>
+
             <AnimatePresence mode="wait" initial={false}>
               {sent ? (
                 <motion.div
@@ -129,7 +90,7 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.6, ease: EASE_FLUENT }}
                   role="status"
-                  className="py-6"
+                  className="mt-10 py-2"
                 >
                   <p className="font-sans text-[0.6rem] uppercase tracking-[0.3em] text-ink-soft">
                     Received
@@ -138,14 +99,11 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                     Your note is with the house
                   </p>
                   <p className="mt-3 text-[0.98rem] leading-relaxed text-ink-soft">
-                    The atelier will write back with a note.
+                    We will write back with a personal note.
                   </p>
                   <button
                     type="button"
-                    onClick={() => {
-                      setSent(false);
-                      setStarted(false);
-                    }}
+                    onClick={() => setSent(false)}
                     className="mt-8 font-sans text-[0.62rem] uppercase tracking-[0.26em] text-ink-soft underline-offset-4 hover:text-ink hover:underline"
                   >
                     Write another note
@@ -155,17 +113,12 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                 <motion.form
                   key="form"
                   onSubmit={onSubmit}
-                  onFocus={() => setStarted(true)}
-                  className="flex flex-col gap-7"
+                  className="mt-10 flex flex-col gap-7"
                   initial={reduce ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <p className="font-sans text-[0.62rem] uppercase tracking-[0.3em] text-ink-soft">
-                    Enquiry
-                  </p>
-
                   <div className="grid gap-7 sm:grid-cols-2 sm:gap-5">
                     <label className="block">
                       <span className={labelClass}>Name</span>
@@ -190,10 +143,7 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                   </div>
 
                   <label className="block">
-                    <span className={labelClass}>
-                      Wedding date{" "}
-                      <span className="text-ink/40">(optional)</span>
-                    </span>
+                    <span className={labelClass}>Date</span>
                     <input type="date" name="date" className={fieldClass} />
                   </label>
 
@@ -202,7 +152,7 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                     <textarea
                       name="note"
                       rows={4}
-                      placeholder="Commission, fitting, or bridal appointment…"
+                      placeholder="Commission, fitting, or bridal appointment"
                       className={`${fieldClass} resize-none`}
                     />
                   </label>
@@ -227,7 +177,7 @@ export default function AtelierEnquiry({ intro }: { intro: AtelierContent["intro
                     disabled={sending}
                     className="solid-btn group w-full cursor-pointer gap-3 disabled:cursor-wait disabled:opacity-70"
                   >
-                    {sending ? "Sending…" : "Write to the House"}
+                    {sending ? "Sending…" : "Contact Us"}
                     <span
                       aria-hidden
                       className="transition-transform duration-300 group-hover:translate-x-1"

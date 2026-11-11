@@ -9,7 +9,7 @@ const links = [
   { href: "/womenswear", label: "Womenswear" },
   { href: "/menswear", label: "Menswear" },
   { href: "/weddings", label: "Weddings" },
-  { href: "/atelier", label: "Atelier" },
+  { href: "/atelier", label: "Contact Us" },
   { href: "/bag", label: "Bag" },
 ];
 

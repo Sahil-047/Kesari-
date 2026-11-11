@@ -128,6 +128,7 @@ export type AtelierContent = {
     eyebrow: string;
     title: string;
     text: string;
+    image?: string;
     steps: { title: string; line: string }[];
   };
 };
@@ -354,12 +355,13 @@ export const PAGE_DEFAULTS: PageContentMap = {
 
   atelier: {
     intro: {
-      eyebrow: "The House",
-      title: "The Atelier",
-      text: "Write to the house for fittings, commissions, and bridal appointments. The atelier replies with a note, never a catalogue blast.",
+      eyebrow: "A conversation with Kesari",
+      title: "Contact Us",
+      text: "Write for fittings, commissions, and bridal appointments. We reply with a personal note, never a catalogue blast.",
+      image: "/images/Wedding/DSC07493.jpg",
       steps: [
         { title: "You write", line: "A few lines about the occasion and the piece." },
-        { title: "A note comes back", line: "The atelier answers personally." },
+        { title: "A note comes back", line: "We answer personally." },
         { title: "The sitting", line: "A fitting or appointment at the house." },
       ],
     },

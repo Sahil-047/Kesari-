@@ -63,7 +63,7 @@ export const NAV_LINKS = [
   { href: "/womenswear", label: "Womenswear" },
   { href: "/menswear", label: "Menswear" },
   { href: "/weddings", label: "Weddings" },
-  { href: "/atelier", label: "The Atelier" },
+  { href: "/atelier", label: "Contact Us" },
   { href: "/world-of-kesari", label: "World of Kesari" },
 ] as const;
 

@@ -351,9 +351,9 @@ export const PAGE_DEFS: PageDef[] = [
   },
   {
     slug: "atelier",
-    title: "Atelier",
+    title: "Contact Us",
     path: "/atelier",
-    summary: "Enquiry page",
+    summary: "Contact / enquiry page",
     sections: [
       {
         key: "intro",
@@ -362,6 +362,7 @@ export const PAGE_DEFS: PageDef[] = [
           { name: "eyebrow", label: "Eyebrow", type: "text" },
           { name: "title", label: "Title", type: "text" },
           { name: "text", label: "Text", type: "textarea" },
+          { name: "image", label: "Side image", type: "image" },
           {
             name: "steps",
             label: "Steps",
