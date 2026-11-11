@@ -21,7 +21,7 @@ export default async function SiteTheme() {
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: `:root{--header-color:${color};--header-overlay-color:${overlayColor};--gold:${gold};--gold-soft:${goldSoft};}`,
+        __html: `:root{--header-color:${color};--header-overlay-color:${overlayColor};--gold:${gold};--gold-soft:${goldSoft};--site-background:#ebe3d4;}`,
       }}
     />
   );

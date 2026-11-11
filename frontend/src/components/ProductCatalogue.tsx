@@ -35,32 +35,45 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
   const activeCount = filters.categories.length + filters.garmentTypes.length + Number(priceFiltered) + Number(Boolean(filters.query.trim()));
 
   useEffect(() => {
-    if (!filterOpen) return;
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
+    const shell = document.querySelector<HTMLElement>(".site-shell");
+    document.body.classList.toggle("filters-open", filterOpen);
+    document.body.style.overflow = filterOpen ? "hidden" : previousOverflow;
+    if (shell) {
+      if (filterOpen) {
+        shell.style.setProperty("filter", "blur(12px) brightness(0.88)");
+        shell.style.setProperty("transition", "filter 280ms cubic-bezier(0.23, 1, 0.32, 1)");
+      } else {
+        shell.style.removeProperty("filter");
+      }
+    }
+    return () => {
+      document.body.classList.remove("filters-open");
+      document.body.style.overflow = previousOverflow;
+      shell?.style.removeProperty("filter");
+    };
   }, [filterOpen]);
 
   function pinDrawerLayout(dialog: HTMLDialogElement) {
+    // Full-viewport shell so the blur scrim can sit in the top layer.
     // Inline + !important so UA dialog centering cannot win.
     const pin = (prop: string, value: string) => dialog.style.setProperty(prop, value, "important");
     pin("position", "fixed");
-    pin("inset", "0 auto 0 0");
+    pin("inset", "0");
     pin("top", "0");
     pin("left", "0");
-    pin("right", "auto");
+    pin("right", "0");
     pin("bottom", "0");
     pin("margin", "0");
     pin("padding", "0");
     pin("border", "0");
     pin("border-radius", "0");
-    pin("width", "min(24rem, 92vw)");
+    pin("width", "100vw");
     pin("max-width", "none");
     pin("height", "100dvh");
     pin("max-height", "100dvh");
     pin("overflow", "hidden");
-    pin("background", "var(--cream)");
-    pin("transition", "transform 280ms cubic-bezier(0.23, 1, 0.32, 1)");
+    pin("background", "transparent");
   }
 
   function openFilters() {
@@ -71,7 +84,7 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
     dialog.dataset.visible = "false";
     dialog.showModal();
     setFilterOpen(true);
-    // Reflow, then reveal so transform actually transitions.
+    // Reflow, then reveal so transform / opacity actually transition.
     void dialog.offsetWidth;
     requestAnimationFrame(() => {
       if (!dialogRef.current) return;
@@ -84,8 +97,9 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
   function closeFilters() {
     const dialog = dialogRef.current;
     if (!dialog?.open || closingRef.current) return;
+    const panel = dialog.querySelector<HTMLElement>(".catalogue-filters__panel");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
+    if (reduced || !panel) {
       dialog.dataset.visible = "false";
       dialog.close();
       return;
@@ -93,17 +107,17 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
     closingRef.current = true;
     dialog.dataset.visible = "false";
     const finish = () => {
-      dialog.removeEventListener("transitionend", onEnd);
+      panel.removeEventListener("transitionend", onEnd);
       window.clearTimeout(fallback);
       closingRef.current = false;
       if (dialog.open) dialog.close();
     };
     const onEnd = (event: TransitionEvent) => {
-      if (event.target !== dialog || event.propertyName !== "transform") return;
+      if (event.target !== panel || event.propertyName !== "transform") return;
       finish();
     };
     const fallback = window.setTimeout(finish, 320);
-    dialog.addEventListener("transitionend", onEnd);
+    panel.addEventListener("transitionend", onEnd);
   }
 
   function writeUrl(nextFilters: CatalogueFilters, nextSort: CatalogueSort, replace = false) {
@@ -216,7 +230,7 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
         ref={dialogRef}
         id="catalogue-filters"
         aria-labelledby="catalogue-filter-title"
-        className="font-sans"
+        className="group/filters font-sans"
         data-visible="false"
         data-lenis-prevent
         onCancel={(event) => {
@@ -224,13 +238,15 @@ export default function ProductCatalogue({ products }: { products: CatalogueProd
           closeFilters();
         }}
         onClose={() => { setFilterOpen(false); triggerRef.current?.focus(); }}
-        onClick={(event) => {
-          if (event.target !== event.currentTarget) return;
-          const bounds = event.currentTarget.getBoundingClientRect();
-          if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeFilters();
-        }}
       >
-        <div className="flex h-full min-h-0 flex-col">
+        <button
+          type="button"
+          className="catalogue-filters__scrim absolute inset-0 z-0 m-0 cursor-pointer border-0 bg-ink/0 opacity-0 transition-[background-color,opacity] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-[visible=true]/filters:bg-ink/25 group-data-[visible=true]/filters:opacity-100 motion-reduce:transition-none"
+          aria-label="Close filters"
+          tabIndex={-1}
+          onClick={closeFilters}
+        />
+        <div className="catalogue-filters__panel absolute inset-y-0 left-0 z-10 flex h-full min-h-0 w-[min(24rem,92vw)] -translate-x-full flex-col bg-cream transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-[visible=true]/filters:translate-x-0 motion-reduce:transition-none">
           <div className="flex shrink-0 items-center justify-between gap-4 border-b border-gold/35 px-6 py-4">
             <h2 id="catalogue-filter-title" className="display text-2xl">Refine your edit</h2>
             <button ref={closeRef} type="button" onClick={closeFilters} aria-label="Close filters" className={`grid h-11 w-11 place-items-center text-2xl ${focus}`}>×</button>

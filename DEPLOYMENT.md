@@ -518,3 +518,16 @@ docker compose --profile caddy up -d --build
 ```
 
 On `srv927075` keep nginx + Certbot as documented above.
+
+---
+
+## Load testing
+
+Light, read-only k6 scripts live in [`loadtest/`](loadtest/). They hit production storefront pages and public GET APIs with a safe ramp (default peak **8 VUs**, hard cap **20**).
+
+```bash
+cd loadtest
+k6 run -e BASE_URL=https://kesaribybhumikapatel.in k6.mixed.js
+```
+
+See [`loadtest/README.md`](loadtest/README.md) for install steps, pages-only / API-only scripts, thresholds, and VPS watch commands. Do not use these scripts for uploads, Studio, or write endpoints.

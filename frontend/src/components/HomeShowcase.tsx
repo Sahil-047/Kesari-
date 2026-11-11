@@ -235,10 +235,10 @@ export default function HomeShowcase({
         className="relative z-10 section-pad py-10 md:py-14"
         aria-labelledby="home-contact-title"
       >
-        <div className="relative mx-auto max-w-[1680px] overflow-hidden rounded-[1.5rem] border border-gold/30 bg-cream px-6 py-10 sm:px-10 md:px-12 md:py-12 lg:px-16">
+        <div className="relative mx-auto max-w-[1680px] overflow-hidden rounded-[1.5rem] border border-gold/35 bg-parchment px-6 py-10 sm:px-10 md:px-12 md:py-12 lg:px-16">
           <div
             aria-hidden
-            className="pointer-events-none absolute -right-20 -top-20 grid w-[26rem] rotate-12 grid-cols-3 gap-4 text-gold opacity-20 md:-right-8 md:-top-24 md:w-[34rem]"
+            className="pointer-events-none absolute -right-20 -top-20 grid w-[26rem] rotate-12 grid-cols-3 gap-4 text-gold opacity-25 md:-right-8 md:-top-24 md:w-[34rem]"
           >
             {Array.from({ length: 9 }, (_, index) => (
               <JaaliMark key={index} className="h-auto w-full" />
@@ -249,7 +249,7 @@ export default function HomeShowcase({
             <div className="max-w-xl">
               <span
                 aria-hidden
-                className="mb-5 grid h-12 w-12 place-items-center rounded-xl border border-gold/40 bg-transparent"
+                className="mb-5 grid h-12 w-12 place-items-center rounded-xl border border-gold/45 bg-transparent"
               >
                 <JaaliMark className="h-9 w-8 text-gold" />
               </span>
